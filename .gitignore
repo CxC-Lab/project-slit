@@ -1,0 +1,51 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# IDE and editor-local settings
+.idea/
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*.swo
+*~
+
+# Build outputs and generated artifacts
+build/
+out/
+dist/
+bin/
+obj/
+Debug/
+Release/
+*.tmp
+
+# Caches and test artifacts
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+__pycache__/
+coverage/
+.coverage
+
+# Logs and crash reports
+*.log
+logs/
+*.dmp
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+secrets/
