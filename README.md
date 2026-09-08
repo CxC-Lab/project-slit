@@ -31,6 +31,7 @@ Project Slit은 처음부터 거대한 범용 엔진이나 완성된 온라인 �
 
 - [`docs/project-brief.md`](docs/project-brief.md): 프로젝트의 방향, 기술적 가설과 열린 질문
 - [`docs/visual-direction.md`](docs/visual-direction.md): 콘셉트 아트에서 읽을 수 있는 비주얼 방향과 검증 질문
+- [`docs/animation-policy.md`](docs/animation-policy.md): 플레이어 스프라이트 제작과 이동 애니메이션 정책
 - [`docs/decisions/`](docs/decisions/README.md): 중요한 기술 결정의 ADR 기록 방식
 - [`experiments/`](experiments/README.md): 독립적인 기술 실험의 계획과 결과
 - [`AGENTS.md`](AGENTS.md): 저장소에서 작업할 때 적용할 최소 원칙
