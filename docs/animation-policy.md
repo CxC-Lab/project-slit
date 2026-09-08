@@ -1,8 +1,8 @@
 # Project Slit 플레이어 스프라이트 및 이동 애니메이션 정책
 
-이 문서는 Project Slit 플레이어 아바타의 2D 스프라이트 제작과 이동 애니메이션에 대한 정책을 기록하는 살아 있는 문서다. [`project-brief.md`](project-brief.md)의 "작은 실험으로 먼저 검증하고, 살아남은 결과만 확정한다"는 원칙을 따르며, 아래 내용은 대부분 검증되지 않은 가설과 후보로 남는다. 캐릭터 종수, 정확한 프레임 수, canvas 크기 등은 확정된 production requirement가 아니다.
+이 문서는 Project Slit 플레이어 스프라이트 제작과 이동 애니메이션에 대한 현재 기준 문서다. [`project-brief.md`](project-brief.md)의 "작은 실험으로 먼저 검증하고, 살아남은 결과만 확정한다"는 원칙을 따르며, 최종 확정 사양이 아니라 대부분 검증되지 않은 가설과 후보로 남는다. 캐릭터 종수, 정확한 프레임 수, canvas 크기 등은 확정된 production requirement가 아니며 실제 프로토타입 검증에 따라 달라질 수 있다.
 
-관련 배경은 [`visual-direction.md`](visual-direction.md)의 "플레이어 아바타와 스프라이트 정책 가설" 절에도 기록되어 있다. 두 문서 사이의 차이는 해당 절 상단의 참고 문구를 확인한다.
+아바타의 시각적 방향(SD 로봇형 컨셉, 실루엣과 체형의 개성 등)은 [`visual-direction.md`](visual-direction.md)에서 다룬다. 이 문서는 그 위에서 실제 스프라이트 제작 규격과 이동 애니메이션 정책을 다룬다.
 
 ## 1. 아바타 제작 기본 방향
 
