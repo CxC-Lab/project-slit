@@ -25,7 +25,40 @@ Project Slit은 처음부터 거대한 범용 엔진이나 완성된 온라인 �
 
 현재는 게임 제품을 본격적으로 개발하는 단계가 아닙니다.
 
-독립적인 기술 실험과 Unit Test를 준비하고 있으며, 검증된 결과만 향후 게임의 기반으로 발전시킵니다. 기술 스택, 플랫폼, 렌더링 API, 네트워크 구조와 아트 스타일은 아직 확정되지 않았습니다.
+독립적인 기술 실험과 Unit Test로 아이디어를 검증하고 있으며, 검증된 결과만 향후 게임의 기반으로 발전시킵니다. 기술 스택, 플랫폼, 렌더링 API, 네트워크 구조와 아트 스타일은 아직 확정되지 않았습니다.
+
+### 2026-09-09: 이동 프로토타입이 실행 가능해졌습니다
+
+Windows에서 빌드하고 실행할 수 있는 첫 이동 프로토타입을 만들었습니다. 스프라이트와 애니메이션 없이 임시 사각형으로 이동 규칙만 검증하는 단계이며, 게임의 최종 사양이 아닙니다.
+
+현재 조작할 수 있는 것은 다음과 같습니다.
+
+- 좌우 이동, 점프, 중력, 플랫폼 착지
+- 벽 blocking과 wall slide
+- 벽에 접촉하면 점프가 다시 가능해지는 연속 벽 점프
+- 방향키 더블탭으로 발동하는 8방향 공중 대쉬와 연속 대쉬
+- 지상에서 방향키 더블탭 후 방향을 유지하면 발동하는 달리기
+- 세로 dead-zone과 smoothing을 적용한 follow camera
+
+이동 수치는 모두 플레이 테스트용 후보값이며 확정 사양이 아닙니다. 자세한 내용은 [`docs/project-brief.md`](docs/project-brief.md)의 이동과 공중 행동 가설 항목과 [`experiments/`](experiments/README.md)의 진행 상황을 참고하세요.
+
+### 빌드와 실행
+
+Windows x64에서 Visual Studio 2022의 C++ 개발 도구, CMake 3.28 이상, Git이 필요합니다. 최초 구성 시 SFML을 내려받으므로 인터넷 연결이 필요합니다.
+
+```
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+cmake --build build --config Release
+.\build\Release\project_slit.exe
+```
+
+회귀 테스트는 CTest로 실행합니다.
+
+```
+ctest --test-dir build -C Release
+```
+
+조작은 이동 `A` `D` 또는 `←` `→`, 점프 `Space`이며, 같은 방향을 빠르게 두 번 누르면 지상에서는 달리기, 공중에서는 대쉬가 발동합니다. 공중 대쉬의 세로 입력은 `W` `S` 또는 `↑` `↓`를 함께 사용합니다.
 
 ## 문서 안내
 
@@ -34,4 +67,6 @@ Project Slit은 처음부터 거대한 범용 엔진이나 완성된 온라인 �
 - [`docs/animation-policy.md`](docs/animation-policy.md): 플레이어 스프라이트 제작과 이동 애니메이션 정책
 - [`docs/decisions/`](docs/decisions/README.md): 중요한 기술 결정의 ADR 기록 방식
 - [`experiments/`](experiments/README.md): 독립적인 기술 실험의 계획과 결과
+- [`src/`](src): 현재 이동 프로토타입 구현
+- [`tests/`](tests): 이동과 카메라의 회귀 테스트
 - [`AGENTS.md`](AGENTS.md): 저장소에서 작업할 때 적용할 최소 원칙
