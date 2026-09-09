@@ -1,6 +1,7 @@
 #include "Camera.hpp"
 #include "Input.hpp"
 #include "Player.hpp"
+#include "levels/PracticeRoom.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -127,6 +128,23 @@ void fallAndMomentum()
     for (int i = 0; i < 60; ++i) platform.update({{0.f, 1.f}}, 0.05f, thin, 3200.f);
     check(platform.grounded() && near(platform.collisionBounds().position.y, 252.f), "fast fall cannot tunnel through thin platform");
 }
+void practiceRoom()
+{
+    const PracticeRoom room;
+    check(room.bounds() == sf::FloatRect({0.f, -1200.f}, {3200.f, 1800.f}), "practice bounds preserved");
+    check(room.spawn() == sf::Vector2f(100.f, 472.f), "practice spawn preserved");
+    check(room.solids().size() == 16, "practice terrain count preserved");
+    check(room.solids().front() == sf::FloatRect({0.f, 520.f}, {3200.f, 80.f}), "practice floor preserved");
+    check(room.solids()[1] == sf::FloatRect({40.f, 180.f}, {24.f, 340.f}), "practice wall preserved");
+    check(room.solids().back() == sf::FloatRect({128.f, -1080.f}, {140.f, 20.f}), "practice upper platform preserved");
+    Player p(room.spawn());
+    p.update({}, 1.f / 60.f, room.solids(), room.bounds().size.x);
+    check(p.grounded() && p.collisionBounds().position == room.spawn(), "room spawn rests on floor");
+    sf::View view(sf::FloatRect({0.f, 0.f}, {800.f, 600.f}));
+    for (int i = 0; i < 300; ++i)
+        Camera::follow(view, {5000.f, -5000.f}, room.bounds(), 1.f / 60.f);
+    check(near(view.getCenter().x, 2800.f) && near(view.getCenter().y, -900.f), "camera consumes room bounds");
+}
 void cameras()
 {
     const sf::FloatRect world({0.f, -1200.f}, {3200.f, 1800.f});
@@ -191,6 +209,6 @@ void climbingRoute()
 }
 int main()
 {
-    try { runs(); fallAndMomentum(); cameras(); climbingRoute(); std::cout << "PASS: running, vertical camera, climbing route\n"; }
+    try { runs(); fallAndMomentum(); cameras(); climbingRoute(); practiceRoom(); std::cout << "PASS: running, vertical camera, climbing route\n"; }
     catch (const std::exception& e) { std::cerr << "FAIL: " << e.what() << '\n'; return 1; }
 }
