@@ -71,7 +71,17 @@ void Player::update(const InputIntent& intent, float deltaTime,
                     const std::vector<sf::FloatRect>& solids, float roomWidth)
 {
     refreshContacts(solids);
-    // Grounded requests are rejected even when jump and dash arrive together.
+    if (!grounded_ || intent.direction.x != runDirection_)
+        runDirection_ = 0.f;
+    // Reuse the input double-tap signal; only a held horizontal direction starts Run.
+    if (grounded_ && intent.dashDirection.x != 0.f &&
+        intent.direction.x == (intent.dashDirection.x > 0.f ? 1.f : -1.f))
+    {
+        if (runDirection_ == 0.f)
+            velocity_.x = intent.direction.x * Movement::moveSpeed;
+        runDirection_ = intent.direction.x;
+    }
+    // Grounded input never starts an air dash, including on the jump frame.
     if (!grounded_ && dashRemaining_ <= 0.f && intent.dashDirection != sf::Vector2f{})
     {
         const float length = std::sqrt(intent.dashDirection.x * intent.dashDirection.x +
@@ -95,7 +105,16 @@ void Player::update(const InputIntent& intent, float deltaTime,
         if (dashing)
             step = std::min(step, dashRemaining_);
         else
-            velocity_.x = intent.direction.x * Movement::moveSpeed;
+        {
+            // Jumping or walking off an edge restores the existing air control immediately.
+            if (!grounded_)
+                runDirection_ = 0.f;
+            if (runDirection_ != 0.f)
+                velocity_.x = runDirection_ * std::min(Movement::runMaxSpeed,
+                    std::max(Movement::moveSpeed, std::abs(velocity_.x)) + Movement::runAcceleration * step);
+            else
+                velocity_.x = intent.direction.x * Movement::moveSpeed;
+        }
 
         velocity_.y += Movement::gravity * (dashing ? Movement::dashGravityScale : 1.f) * step;
         if (!dashing && touchingWall_ && !grounded_ && velocity_.y > Movement::wallSlideSpeed)
@@ -126,7 +145,7 @@ MovementState Player::state() const
     if (dashRemaining_ > 0.f)
         return MovementState::Dashing;
     if (grounded_)
-        return MovementState::Grounded;
+        return runDirection_ != 0.f ? MovementState::Running : MovementState::Grounded;
     if (touchingWall_ && velocity_.y >= 0.f)
         return MovementState::WallSliding;
     return MovementState::Airborne;

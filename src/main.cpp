@@ -1,3 +1,4 @@
+#include "Camera.hpp"
 #include "Input.hpp"
 #include "Player.hpp"
 
@@ -11,8 +12,7 @@ int main()
     constexpr unsigned int windowWidth = 800;
     constexpr unsigned int windowHeight = 600;
     constexpr float worldWidth = 3200.f; // Current camera playtest size.
-    constexpr float worldHeight = 600.f;
-    constexpr float halfViewWidth = static_cast<float>(windowWidth) / 2.f;
+    const sf::FloatRect world({0.f, -1200.f}, {worldWidth, 1800.f});
     sf::RenderWindow window(sf::VideoMode({windowWidth, windowHeight}),
                             "Project Slit Prototype", sf::Style::Titlebar | sf::Style::Close);
     window.setFramerateLimit(60);
@@ -29,7 +29,16 @@ int main()
         {{1350.f, 360.f}, {80.f, 160.f}},
         {{1800.f, 280.f}, {80.f, 240.f}},
         {{2300.f, 400.f}, {160.f, 20.f}},
-        {{2850.f, 400.f}, {100.f, 120.f}}
+        {{2850.f, 400.f}, {100.f, 120.f}},
+        // Continue the existing wall upward for repeatable ninja-jump camera tests.
+        {{40.f, -1050.f}, {24.f, 1230.f}},
+        // Resting platforms beside the wall; the clear strip x=64..128 is climbable.
+        {{128.f, 80.f}, {140.f, 20.f}},
+        {{128.f, -160.f}, {140.f, 20.f}},
+        {{128.f, -400.f}, {140.f, 20.f}},
+        {{128.f, -640.f}, {140.f, 20.f}},
+        {{128.f, -880.f}, {140.f, 20.f}},
+        {{128.f, -1080.f}, {140.f, 20.f}}
     };
     sf::RectangleShape terrain;
     terrain.setFillColor(sf::Color(70, 80, 90));
@@ -62,10 +71,7 @@ int main()
         player.update(input.consume(), deltaTime, solids, worldWidth);
         const auto playerBounds = player.collisionBounds();
         playerShape.setPosition(playerBounds.position);
-        // Follow horizontally; fixed Y keeps jumps from moving the screen vertically.
-        const float centerX = playerBounds.position.x + playerBounds.size.x / 2.f;
-        camera.setCenter({std::clamp(centerX, halfViewWidth, worldWidth - halfViewWidth),
-                          worldHeight / 2.f});
+        Camera::follow(camera, playerBounds.position + playerBounds.size / 2.f, world, deltaTime);
         window.setView(camera);
         window.clear(sf::Color(25, 30, 45));
         for (const auto& solid : solids)

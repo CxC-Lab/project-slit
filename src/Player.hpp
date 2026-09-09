@@ -7,7 +7,9 @@
 // Current playtest candidates, not final movement specifications.
 namespace Movement
 {
-inline constexpr float moveSpeed = 260.f;
+inline constexpr float moveSpeed = 260.f; // Walking speed, unchanged.
+inline constexpr float runMaxSpeed = 440.f;
+inline constexpr float runAcceleration = 600.f;
 inline constexpr float jumpSpeed = 520.f;
 inline constexpr float gravity = 1500.f;
 inline constexpr float dashSpeed = 700.f;
@@ -25,7 +27,7 @@ struct InputIntent
     sf::Vector2f dashDirection{}; // Zero means no request; captured at the second tap.
 };
 
-enum class MovementState { Grounded, Airborne, Dashing, WallSliding };
+enum class MovementState { Grounded, Running, Airborne, Dashing, WallSliding };
 
 class Player
 {
@@ -47,4 +49,5 @@ private:
     bool grounded_ = false;
     bool touchingWall_ = false;
     float dashRemaining_ = 0.f;
+    float runDirection_ = 0.f;
 };
