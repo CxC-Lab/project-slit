@@ -13,7 +13,17 @@ FetchContent_Declare(SFML
 )
 FetchContent_MakeAvailable(SFML)
 
-add_executable(project_slit main.cpp)
+add_executable(project_slit src/main.cpp src/Player.cpp src/Input.cpp)
 target_compile_features(project_slit PRIVATE cxx_std_20)
 set_target_properties(project_slit PROPERTIES CXX_EXTENSIONS OFF)
 target_link_libraries(project_slit PRIVATE SFML::Graphics)
+
+include(CTest)
+if(BUILD_TESTING)
+    add_executable(movement_tests tests/MovementTests.cpp src/Player.cpp src/Input.cpp)
+    target_include_directories(movement_tests PRIVATE src)
+    target_compile_features(movement_tests PRIVATE cxx_std_20)
+    set_target_properties(movement_tests PROPERTIES CXX_EXTENSIONS OFF)
+    target_link_libraries(movement_tests PRIVATE SFML::Graphics)
+    add_test(NAME movement_tests COMMAND movement_tests)
+endif()
