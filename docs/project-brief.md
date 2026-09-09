@@ -21,7 +21,7 @@ Project Slit은 이중슬릿 실험에서 영감을 받은 내부 코드네임�
 아래 항목은 모두 후보이며 기술 스택이나 제품 요구사항으로 확정되지 않았다.
 
 - Windows PC에서 동작하는 C++ 기반 경량 2D 런타임
-- DirectX 11 또는 DirectX 12 기반 렌더링과, DirectX를 선택할 경우의 HLSL 셰이더 작성
+- DirectX 11 또는 DirectX 12 기반 렌더링과, DirectX를 선택할 경우의 HLSL 셰이더 작성. 초기 프로토타입은 SFML 3을 사용하며, 이 항목은 현재 필수 스택이 아니라 필요가 확인될 때 재검토할 deferred 후보다. 자세한 관계는 아래 "초기 프로토타입 기술 스택" 참고.
 - 고정 60Hz 시뮬레이션과 Sweep 또는 CCD 방식의 고속 충돌 처리
 - 같은 시드와 좌표가 같은 결과를 만드는 결정론적 월드 생성과 세그먼트 또는 청크 단위 로드·언로드
 - 생성 규칙, 시드와 최소한의 플레이어 흔적만 영속화하는 월드
@@ -40,6 +40,35 @@ Project Slit은 이중슬릿 실험에서 영감을 받은 내부 코드네임�
 - 다수의 사전 제작 2D 로봇형 픽셀 아바타가 하나의 스프라이트·애니메이션 규격을 공유하는 방식. 초기 상한 후보는 64종이나 수량은 미확정이며, 한 종으로 규격을 검증한 뒤 확대한다.
 - 런타임 생성형 AI보다 사전 제작 아바타 선택을 우선 검토하고, AI는 개발 중 시안과 에셋 제작을 보조하는 용도로 제한하는 방향
 - 제작 보조 또는 별도 실험으로서의 AI, 에이전트, MCP와 A2A 연계
+
+### 초기 프로토타입 기술 스택
+
+현재 초기 프로토타입을 진행하기 위한 기준이며, Project Slit 전체 수명 동안 변경 불가능한 최종 기술 결정으로 기록하지 않는다. "작은 실험으로 검증하고 살아남은 결과만 확정한다"는 원칙에 따라 SFML을 포함해 아래 항목 모두 향후 검증 결과에 따라 교체될 수 있다.
+
+- Platform: Windows x64
+- Language: C++20
+- 2D Framework: SFML 3
+- Build: CMake
+- Development Environment: Visual Studio 2022. CMake의 Visual Studio generator를 사용할 수 있으며, 이 경우 `.sln` / `.vcxproj`가 생성될 수 있다. 다만 Visual Studio solution 자체를 프로젝트의 원본 빌드 정의로 취급하지 않고 CMake를 기준으로 한다.
+- Version Control: Git, GitHub
+
+#### SFML 선택 목적
+
+SFML을 선택한 현재 목적은 범용 게임 엔진을 구축하기 위한 것이 아니다. Project Slit 초기 단계에서는 플레이어 이동, 점프, 공중 이동, 2D sprite, animation, input, collision과 이후 multiplayer prototype을 빠르게 검증해야 한다. Win32 + DirectX를 직접 초기화하는 것보다 SFML을 이용해 불필요한 렌더링 보일러플레이트를 줄이고 게임플레이 실험에 집중하는 방향을 현재 프로토타입 기준으로 삼는다.
+
+#### DirectX / HLSL의 현재 위치
+
+DirectX 11 직접 렌더링, DirectX 12, HLSL 직접 작성은 현재 프로토타입의 필수 기술 스택이 아니다. 다만 Project Slit에서 영구적으로 배제된 기술도 아니며, 다음과 같은 이유가 실제로 발생할 경우 별도 기술 실험 대상으로 다시 검토할 수 있다.
+
+- SFML의 렌더링 추상화가 요구사항을 제한하는 경우
+- 특수 shader 또는 rendering technique가 필요한 경우
+- 성능 문제를 직접 해결할 필요가 있는 경우
+- 저수준 graphics API 연구의 가치가 확인되는 경우
+
+현재 관계는 다음과 같다.
+
+- Current prototype: C++20 + SFML 3 + CMake + Visual Studio 2022 + Windows x64
+- Deferred / future investigation: DirectX 11 / DirectX 12 / HLSL
 
 ### 이동과 공중 행동 가설
 
