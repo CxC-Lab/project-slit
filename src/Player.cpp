@@ -71,6 +71,8 @@ void Player::update(const InputIntent& intent, float deltaTime,
                     const std::vector<sf::FloatRect>& solids, float roomWidth)
 {
     refreshContacts(solids);
+    if (grounded_)
+        sprintMomentum_ = false;
     if (!grounded_ || intent.direction.x != runDirection_)
         runDirection_ = 0.f;
     // Reuse the input double-tap signal; only a held horizontal direction starts Run.
@@ -88,9 +90,11 @@ void Player::update(const InputIntent& intent, float deltaTime,
                                        intent.dashDirection.y * intent.dashDirection.y);
         velocity_ = intent.dashDirection / length * Movement::dashSpeed;
         dashRemaining_ = Movement::dashDuration;
+        sprintMomentum_ = false;
     }
     if (intent.jumpRequested && (grounded_ || touchingWall_))
     {
+        sprintMomentum_ = grounded_ && runDirection_ != 0.f;
         // Wall jumps deliberately have no horizontal kick: repeated wall jumps are allowed.
         dashRemaining_ = 0.f;
         velocity_.y = -Movement::jumpSpeed;
@@ -100,25 +104,32 @@ void Player::update(const InputIntent& intent, float deltaTime,
     float remaining = deltaTime;
     while (remaining > 0.f)
     {
-        const bool dashing = dashRemaining_ > 0.f;
+        updateState(intent);
+        const bool dashing = state_ == MovementState::AirDashing;
         float step = std::min(remaining, maxStep);
         if (dashing)
             step = std::min(step, dashRemaining_);
         else
         {
-            // Jumping or walking off an edge restores the existing air control immediately.
+            // Sprint jumps keep their takeoff speed only while holding the same direction.
             if (!grounded_)
                 runDirection_ = 0.f;
             if (runDirection_ != 0.f)
                 velocity_.x = runDirection_ * std::min(Movement::runMaxSpeed,
                     std::max(Movement::moveSpeed, std::abs(velocity_.x)) + Movement::runAcceleration * step);
-            else
+            else if (!sprintMomentum_ || grounded_ || velocity_.x * intent.direction.x <= 0.f)
+            {
+                sprintMomentum_ = false;
                 velocity_.x = intent.direction.x * Movement::moveSpeed;
+            }
         }
 
-        velocity_.y += Movement::gravity * (dashing ? Movement::dashGravityScale : 1.f) * step;
-        if (!dashing && touchingWall_ && !grounded_ && velocity_.y > Movement::wallSlideSpeed)
-            velocity_.y = Movement::wallSlideSpeed;
+        float acceleration = Movement::gravity * (dashing ? Movement::dashGravityScale : 1.f);
+        if (state_ == MovementState::FastFalling)
+            acceleration += Movement::fastFallAcceleration;
+        velocity_.y += acceleration * step;
+        updateState(intent);
+        limitFallSpeed();
 
         moveAxis(velocity_.x * step, true, solids);
         const float clampedX = std::clamp(position_.x, 0.f,
@@ -128,8 +139,8 @@ void Player::update(const InputIntent& intent, float deltaTime,
         position_.x = clampedX;
         // Detect a newly reached wall before integrating the fall this step.
         refreshContacts(solids);
-        if (!dashing && touchingWall_ && !grounded_ && velocity_.y > Movement::wallSlideSpeed)
-            velocity_.y = Movement::wallSlideSpeed;
+        updateState(intent);
+        limitFallSpeed();
         moveAxis(velocity_.y * step, false, solids);
         refreshContacts(solids);
         if (dashing)
@@ -138,15 +149,58 @@ void Player::update(const InputIntent& intent, float deltaTime,
             dashRemaining_ = 0.f;
         remaining = std::max(0.f, remaining - step);
     }
+    updateState(intent);
 }
 
-MovementState Player::state() const
+void Player::updateState(const InputIntent& intent)
 {
+    // The single state-decision point. Contacts/velocity remain the physical truth.
+    MovementState next;
     if (dashRemaining_ > 0.f)
-        return MovementState::Dashing;
-    if (grounded_)
-        return runDirection_ != 0.f ? MovementState::Running : MovementState::Grounded;
-    if (touchingWall_ && velocity_.y >= 0.f)
-        return MovementState::WallSliding;
-    return MovementState::Airborne;
+        next = MovementState::AirDashing;
+    else if (grounded_)
+        next = runDirection_ != 0.f ? MovementState::Sprinting :
+               (velocity_.x != 0.f ? MovementState::Walking : MovementState::Idle);
+    else if (velocity_.y < 0.f)
+        next = MovementState::Jumping;
+    else if (touchingWall_)
+        next = MovementState::WallSliding;
+    else if (intent.direction.y < 0.f)
+        next = MovementState::SlowFalling;
+    else if (intent.direction.y > 0.f)
+        next = MovementState::FastFalling;
+    else
+        next = MovementState::Falling;
+    state_ = next;
+}
+
+void Player::limitFallSpeed()
+{
+    switch (state_)
+    {
+    case MovementState::WallSliding:
+        velocity_.y = std::min(velocity_.y, Movement::wallSlideSpeed); break;
+    case MovementState::SlowFalling:
+        velocity_.y = std::min(velocity_.y, Movement::slowFallMaxSpeed); break;
+    case MovementState::FastFalling:
+        velocity_.y = std::min(velocity_.y, Movement::fastFallMaxSpeed); break;
+    default: break;
+    }
+}
+
+const char* toString(MovementState state)
+{
+    switch (state)
+    {
+    case MovementState::Idle: return "Idle";
+    case MovementState::Walking: return "Walking";
+    case MovementState::Sprinting: return "Sprinting";
+    case MovementState::Jumping: return "Jumping";
+    case MovementState::Falling: return "Falling";
+    case MovementState::AirDashing: return "AirDashing";
+    case MovementState::WallSliding: return "WallSliding";
+    case MovementState::SlowFalling: return "SlowFalling";
+    case MovementState::FastFalling: return "FastFalling";
+    }
+    return "Unknown";
 }

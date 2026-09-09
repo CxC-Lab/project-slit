@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <optional>
+#include <string>
 #include <vector>
 
 int main()
@@ -71,7 +72,11 @@ int main()
         player.update(input.consume(), deltaTime, solids, worldWidth);
         const auto playerBounds = player.collisionBounds();
         playerShape.setPosition(playerBounds.position);
-        Camera::follow(camera, playerBounds.position + playerBounds.size / 2.f, world, deltaTime);
+        const bool catchUp = player.state() == MovementState::FastFalling ||
+                             player.velocity().y >= Camera::catchUpFallSpeed;
+        Camera::follow(camera, playerBounds.position + playerBounds.size / 2.f, world, deltaTime,
+                       catchUp ? Camera::catchUpMultiplier : 1.f);
+        window.setTitle(std::string("Project Slit Prototype - ") + toString(player.state()));
         window.setView(camera);
         window.clear(sf::Color(25, 30, 45));
         for (const auto& solid : solids)

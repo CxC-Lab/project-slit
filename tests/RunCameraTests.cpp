@@ -27,35 +27,37 @@ void runs()
         Player p({1600.f, 472.f});
         input.keyPressed(key, 1.f);
         step(p, input.consume());
-        check(p.state() == MovementState::Grounded, "single tap walks");
+        check(p.state() == MovementState::Walking, "single tap walks");
         input.keyReleased(key);
         step(p, input.consume());
         input.keyPressed(key, 1.1f);
         step(p, input.consume());
-        check(p.state() == MovementState::Running, "horizontal double tap starts run");
+        check(p.state() == MovementState::Sprinting, "horizontal double tap starts run");
         check(std::abs(p.velocity().x) > 260.f && std::abs(p.velocity().x) < Movement::runMaxSpeed,
               "run accelerates rather than snapping");
         for (int i = 0; i < 60; ++i) step(p, input.consume());
-        check(p.state() == MovementState::Running && near(std::abs(p.velocity().x), Movement::runMaxSpeed),
+        check(p.state() == MovementState::Sprinting && near(std::abs(p.velocity().x), Movement::runMaxSpeed),
               "one-frame trigger sustains run to maximum");
         input.keyReleased(key);
         step(p, input.consume());
-        check(p.state() == MovementState::Grounded && near(p.velocity().x, 0.f), "release stops run");
+        check(p.state() == MovementState::Idle && near(p.velocity().x, 0.f), "release stops run");
     }
     Player p;
     step(p, {{1.f, 0.f}, false, {1.f, 0.f}});
     step(p, {{-1.f, 0.f}});
-    check(p.state() == MovementState::Grounded && near(p.velocity().x, -260.f), "reverse clears run without residual speed");
+    check(p.state() == MovementState::Walking && near(p.velocity().x, -260.f), "reverse clears run without residual speed");
     step(p, {{1.f, 0.f}, false, {1.f, 0.f}});
+    const float takeoffSpeed = p.velocity().x;
     step(p, {{1.f, 0.f}, true});
-    check(!p.grounded() && p.velocity().y < 0.f && near(p.velocity().x, 260.f), "run jump uses original air control");
+    check(!p.grounded() && p.state() == MovementState::Jumping && p.velocity().y < 0.f &&
+          near(p.velocity().x, takeoffSpeed), "sprint jump preserves takeoff speed");
     step(p, {{1.f, 0.f}, false, {1.f, 0.f}});
-    check(p.state() == MovementState::Dashing, "same input in air starts dash");
+    check(p.state() == MovementState::AirDashing, "same input in air starts dash");
     for (int i = 0; i < 120; ++i) step(p, {{1.f, 0.f}});
-    check(p.state() == MovementState::Grounded && near(p.velocity().x, 260.f), "landing does not restore old run");
+    check(p.state() == MovementState::Walking && near(p.velocity().x, 260.f), "landing does not restore old run");
     Player vertical;
     step(vertical, {{0.f, -1.f}, false, {0.f, -1.f}});
-    check(vertical.state() == MovementState::Grounded, "vertical double tap does not run");
+    check(vertical.state() == MovementState::Idle, "vertical double tap does not run");
     for (const int rate : {30, 60, 144})
     {
         Player timed;
@@ -64,6 +66,66 @@ void runs()
         check(near(timed.velocity().x, 440.f), "run reaches same speed across frame rates");
         check(near(timed.collisionBounds().position.x, 513.f, 1.f), "run acceleration distance across frame rates");
     }
+}
+void fallAndMomentum()
+{
+    Player sprint({100.f, 472.f});
+    step(sprint, {{1.f, 0.f}, false, {1.f, 0.f}});
+    for (int i = 0; i < 30; ++i) step(sprint, {{1.f, 0.f}});
+    const float start = sprint.collisionBounds().position.x;
+    Player walk({start, 472.f});
+    step(sprint, {{1.f, 0.f}, true});
+    step(walk, {{1.f, 0.f}, true});
+    check(sprint.state() == MovementState::Jumping && near(sprint.velocity().x, 440.f), "full sprint takeoff momentum");
+    for (int i = 0; i < 20; ++i)
+    {
+        step(sprint, {{1.f, 0.f}}); step(walk, {{1.f, 0.f}});
+        check(near(sprint.velocity().x, 440.f), "momentum persists in air");
+    }
+    check(sprint.collisionBounds().position.x - walk.collisionBounds().position.x > 60.f, "sprint jump travels farther");
+    step(sprint, {});
+    check(near(sprint.velocity().x, 0.f), "release cancels sprint momentum");
+    step(sprint, {{-1.f, 0.f}});
+    check(near(sprint.velocity().x, -260.f), "reverse uses original air control");
+
+    Player slow({500.f, -500.f});
+    Player fast({500.f, -500.f});
+    Player normal({500.f, -500.f});
+    for (int i = 0; i < 10; ++i) { step(slow, {}); step(fast, {}); step(normal, {}); }
+    check(slow.state() == MovementState::Falling, "ordinary falling state");
+    for (int i = 0; i < 10; ++i)
+    {
+        step(slow, {{0.f, -1.f}}); step(fast, {{0.f, 1.f}}); step(normal, {});
+    }
+    check(slow.state() == MovementState::SlowFalling && near(slow.velocity().y, 120.f), "slow fall limits downward speed");
+    check(fast.state() == MovementState::FastFalling && fast.velocity().y > normal.velocity().y, "fast fall accelerates faster than gravity");
+    step(slow, {});
+    check(slow.state() == MovementState::Falling && slow.velocity().y > 120.f, "release resumes gravity");
+    for (int i = 0; i < 120; ++i) step(fast, {{0.f, 1.f}}, 0.05f);
+    check(fast.grounded() && fast.state() == MovementState::Idle && near(fast.collisionBounds().position.y, 472.f), "fast fall floor blocking and landing");
+    Player rising;
+    step(rising, {{0.f, -1.f}, true});
+    Player ordinary;
+    step(ordinary, {{}, true});
+    check(rising.state() == MovementState::Jumping && near(rising.velocity().y, ordinary.velocity().y), "up hold leaves ascent unchanged");
+    step(rising, {{0.f, 1.f}}); step(ordinary, {});
+    check(near(rising.velocity().y, ordinary.velocity().y), "down hold leaves ascent unchanged");
+    Player dash({500.f, -500.f});
+    step(dash, {{0.f, 1.f}, false, {1.f, 0.f}});
+    check(dash.state() == MovementState::AirDashing && near(dash.velocity().y, 0.f), "dash wins over fall hold");
+    for (int i = 0; i < 12; ++i) step(dash, {{0.f, 1.f}});
+    check(dash.state() == MovementState::FastFalling, "held down applies after dash ends");
+    step(dash, {{0.f, -1.f}, false, {1.f, 0.f}});
+    for (int i = 0; i < 12; ++i) step(dash, {{0.f, -1.f}});
+    check(dash.state() == MovementState::SlowFalling, "held up applies after dash ends");
+    const std::vector<sf::FloatRect> wall{{{40.f, -1000.f}, {24.f, 1520.f}}};
+    Player sliding({64.f, -500.f});
+    for (int i = 0; i < 30; ++i) sliding.update({{0.f, 1.f}}, 1.f / 60.f, wall, 3200.f);
+    check(sliding.state() == MovementState::WallSliding && near(sliding.velocity().y, 90.f), "wall slide wins over fast fall");
+    const std::vector<sf::FloatRect> thin{{{0.f, 300.f}, {3200.f, 1.f}}};
+    Player platform({500.f, -500.f});
+    for (int i = 0; i < 60; ++i) platform.update({{0.f, 1.f}}, 0.05f, thin, 3200.f);
+    check(platform.grounded() && near(platform.collisionBounds().position.y, 252.f), "fast fall cannot tunnel through thin platform");
 }
 void cameras()
 {
@@ -80,6 +142,16 @@ void cameras()
     check(view.getCenter().y < -300.f && view.getCenter().y > -580.f, "large ascent follows without snap");
     Camera::follow(view, {900.f, 400.f}, world, 1.f / 60.f);
     check(view.getCenter().y > -327.f, "large descent follows down");
+    sf::View regular = view;
+    sf::View accelerated = view;
+    Camera::follow(regular, {900.f, 400.f}, world, 1.f / 60.f);
+    Camera::follow(accelerated, {900.f, 400.f}, world, 1.f / 60.f, Camera::catchUpMultiplier);
+    check(accelerated.getCenter().y > regular.getCenter().y && accelerated.getCenter().y < 280.f,
+          "fast fall camera catches up without snapping");
+    const float beforeRecovery = accelerated.getCenter().y;
+    Camera::follow(accelerated, {900.f, 400.f}, world, 1.f / 60.f);
+    check(near(accelerated.getCenter().y, beforeRecovery + (280.f - beforeRecovery) *
+               (1.f - std::exp(-6.f / 60.f))), "camera returns to original follow rate");
     float reference = 0.f;
     for (const int rate : {30, 60, 144})
     {
@@ -119,6 +191,6 @@ void climbingRoute()
 }
 int main()
 {
-    try { runs(); cameras(); climbingRoute(); std::cout << "PASS: running, vertical camera, climbing route\n"; }
+    try { runs(); fallAndMomentum(); cameras(); climbingRoute(); std::cout << "PASS: running, vertical camera, climbing route\n"; }
     catch (const std::exception& e) { std::cerr << "FAIL: " << e.what() << '\n'; return 1; }
 }

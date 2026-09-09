@@ -42,7 +42,7 @@ void baseline()
 {
     Player p;
     advance(p, {}, 60);
-    check(p.grounded() && p.state() == MovementState::Grounded, "floor grounding");
+    check(p.grounded() && p.state() == MovementState::Idle, "floor grounding");
     check(near(p.collisionBounds().position.y, 472.f), "floor position");
     advance(p, {{1.f, 0.f}}, 60);
     check(near(p.collisionBounds().position.x, 360.f), "delta time right movement");
@@ -97,22 +97,22 @@ void dash()
             if (x == 0 && y == 0) continue;
             Player p({400.f, 200.f});
             p.update({{}, false, {static_cast<float>(x), static_cast<float>(y)}}, 0.01f, floorOnly, 800.f);
-            check(p.state() == MovementState::Dashing, "eight direction dash starts");
+            check(p.state() == MovementState::AirDashing, "eight direction dash starts");
             const auto v = p.velocity();
             check(near(std::sqrt(v.x * v.x + v.y * v.y), Movement::dashSpeed), "diagonal normalized speed");
             check(v.x * x >= 0.f && v.y * y >= 0.f, "dash direction");
         }
     Player ground;
     ground.update({{}, false, {1.f, 0.f}}, 0.01f, floorOnly, 800.f);
-    check(ground.state() == MovementState::Grounded, "ground dash rejected");
+    check(ground.state() == MovementState::Idle, "ground dash rejected");
     Player p({400.f, 200.f});
     p.update({{}, false, {1.f, 0.f}}, 0.01f, floorOnly, 800.f);
     p.update({{}, false, {-1.f, 0.f}}, 0.01f, floorOnly, 800.f);
     check(p.velocity().x > 0.f, "dash cannot restart while active");
     advance(p, {}, 9);
-    check(p.state() != MovementState::Dashing && !p.grounded(), "dash duration ends airborne");
+    check(p.state() != MovementState::AirDashing && !p.grounded(), "dash duration ends airborne");
     p.update({{}, false, {-1.f, 0.f}}, 0.01f, floorOnly, 800.f);
-    check(p.state() == MovementState::Dashing && p.velocity().x < 0.f, "repeat airborne dash without landing");
+    check(p.state() == MovementState::AirDashing && p.velocity().x < 0.f, "repeat airborne dash without landing");
 }
 void walls()
 {

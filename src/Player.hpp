@@ -17,6 +17,9 @@ inline constexpr float dashDuration = 0.14f;
 inline constexpr float doubleTapWindow = 0.25f;
 inline constexpr float dashGravityScale = 0.f;
 inline constexpr float wallSlideSpeed = 90.f;
+inline constexpr float slowFallMaxSpeed = 120.f;
+inline constexpr float fastFallAcceleration = 3000.f; // Added to ordinary gravity while descending.
+inline constexpr float fastFallMaxSpeed = 1200.f;
 inline constexpr sf::Vector2f collisionSize{32.f, 48.f};
 }
 
@@ -27,7 +30,11 @@ struct InputIntent
     sf::Vector2f dashDirection{}; // Zero means no request; captured at the second tap.
 };
 
-enum class MovementState { Grounded, Running, Airborne, Dashing, WallSliding };
+enum class MovementState
+{
+    Idle, Walking, Sprinting, Jumping, Falling, AirDashing, WallSliding, SlowFalling, FastFalling
+};
+const char* toString(MovementState state);
 
 class Player
 {
@@ -39,9 +46,11 @@ public:
     sf::Vector2f velocity() const { return velocity_; }
     bool grounded() const { return grounded_; }
     bool touchingWall() const { return touchingWall_; }
-    MovementState state() const;
+    MovementState state() const { return state_; }
 
 private:
+    void updateState(const InputIntent& intent);
+    void limitFallSpeed();
     void refreshContacts(const std::vector<sf::FloatRect>& solids);
     void moveAxis(float distance, bool horizontal, const std::vector<sf::FloatRect>& solids);
     sf::Vector2f position_;
@@ -50,4 +59,6 @@ private:
     bool touchingWall_ = false;
     float dashRemaining_ = 0.f;
     float runDirection_ = 0.f;
+    bool sprintMomentum_ = false;
+    MovementState state_ = MovementState::Falling;
 };
