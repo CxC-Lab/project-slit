@@ -50,12 +50,18 @@ int main() try
     ClipVisual walking(manifest, "Walking");
     ClipVisual sprinting(manifest, "Sprinting");
     ClipVisual turn(manifest, "Turn");
+    ClipVisual jumping(manifest, "Jumping");
+    ClipVisual falling(manifest, "Falling");
+    bool jumpPlaying = false;
+    MovementState previousMovementState = player.state();
     TurnVisual facing;
     if (turn.clip.loops())
         throw std::runtime_error("Turn must be a non-looping clip");
-    for (const auto* visual : {&walking, &sprinting, &turn})
+    if (jumping.clip.loops() || !falling.clip.loops())
+        throw std::runtime_error("Jumping must be one-shot and Falling must loop");
+    for (const auto* visual : {&walking, &sprinting, &turn, &jumping, &falling})
         if (idle.clip.pivot() != visual->clip.pivot() || idle.clip.frameRect().size != visual->clip.frameRect().size)
-            throw std::runtime_error("Idle, Walking, Sprinting and Turn must share canvas and pivot");
+            throw std::runtime_error("All six animation clips must share canvas and pivot");
     ClipVisual* activeVisual = &idle;
     sf::Sprite playerSprite(idle.texture, idle.clip.frameRect());
     playerSprite.setOrigin(idle.clip.pivot());
@@ -96,13 +102,32 @@ int main() try
         player.update(intent, deltaTime, room.solids(), room.bounds().size.x);
         const auto playerBounds = player.collisionBounds();
         playerShape.setPosition(playerBounds.position);
+        const auto movementState = player.state();
+        const int previousJumpFrame = jumping.clip.frameIndex();
+        if (movementState == MovementState::Jumping && previousMovementState != MovementState::Jumping)
+        {
+            jumping.clip.reset();
+            jumpPlaying = true;
+        }
+        else if (jumpPlaying)
+        {
+            // Like Turn, finish the one-shot independently of subsequent physics states.
+            jumping.clip.advance(deltaTime);
+            jumpPlaying = !jumping.clip.finished();
+        }
+        previousMovementState = movementState;
+        jumping.frameChanges += jumping.clip.frameIndex() != previousJumpFrame;
         ClipVisual* nextVisual = &idle;
-        switch (player.state())
+        switch (movementState)
         {
         case MovementState::Walking: nextVisual = &walking; break;
         case MovementState::Sprinting: nextVisual = &sprinting; break;
+        case MovementState::Jumping: nextVisual = &jumping; break;
+        case MovementState::Falling: nextVisual = &falling; break;
         default: break;
         }
+        if (jumpPlaying)
+            nextVisual = &jumping;
         const int previousTurnFrame = turn.clip.frameIndex();
         facing.update(intent.direction.x, deltaTime, turn.clip);
         turn.frameChanges += turn.clip.frameIndex() != previousTurnFrame;
@@ -112,12 +137,12 @@ int main() try
         if (changedClip)
         {
             activeVisual = nextVisual;
-            if (activeVisual != &turn) // TurnVisual owns the one-shot timer.
+            if (activeVisual != &turn && activeVisual != &jumping) // One-shot timers are managed above.
                 activeVisual->clip.reset();
             playerSprite.setTexture(activeVisual->texture);
         }
         const int previousFrame = activeVisual->clip.frameIndex();
-        if (activeVisual != &turn)
+        if (activeVisual != &turn && activeVisual != &jumping)
         {
             if (!changedClip)
                 activeVisual->clip.advance(deltaTime);
@@ -145,7 +170,8 @@ int main() try
         window.display();
     }
     std::cout << "Animation frame changes: Idle=" << idle.frameChanges
-              << " Walking=" << walking.frameChanges << " Sprinting=" << sprinting.frameChanges << " Turn=" << turn.frameChanges << std::endl;
+              << " Walking=" << walking.frameChanges << " Sprinting=" << sprinting.frameChanges << " Turn=" << turn.frameChanges
+              << " Jumping=" << jumping.frameChanges << " Falling=" << falling.frameChanges << std::endl;
 }
 catch (const std::exception& error)
 {

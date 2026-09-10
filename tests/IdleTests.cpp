@@ -127,6 +127,40 @@ int main() try
         visual.setScale({sign * 0.5f, 0.5f});
         check(visual.getTransform().transformPoint(turn.pivot()) == visual.getPosition(), "flip leaves pivot at exact world anchor");
     }
+    AnimationClip jumping(manifest, "Jumping");
+    AnimationClip falling(manifest, "Falling");
+    for (auto* clip : {&jumping, &falling})
+    {
+        sf::Image atlas;
+        check(atlas.loadFromFile(clip->atlasPath()), "air animation atlas loads");
+        clip->validateAtlas(atlas.getSize());
+        check(clip->pivot() == idle.pivot() && clip->frameRect().size == idle.frameRect().size,
+              "air animation canvas and pivot shared");
+        for (int i = 0; i < clip->frames(); ++i)
+        {
+            const auto rect = clip->frameRect();
+            check(clip->frameIndex() == i && rect.position.x == i * rect.size.x &&
+                  rect.position.x + rect.size.x <= static_cast<int>(atlas.getSize().x) &&
+                  rect.position.y + rect.size.y <= static_cast<int>(atlas.getSize().y), "air animation rect range");
+            clip->advance(1. / clip->fps());
+        }
+    }
+    check(!jumping.loops() && jumping.finished(), "Jumping one-shot completes");
+    check(falling.loops() && !falling.finished() && falling.frameIndex() == 0, "Falling loops");
+    jumping.reset();
+    const double jumpDuration = jumping.frames() / jumping.fps();
+    for (int i = 0; i < 5; ++i) jumping.advance(jumpDuration / 8.);
+    check(!jumping.finished() && jumping.frameIndex() > 0, "Jumping progresses without per-frame reset");
+    // Entering Falling before the visual completes must not reset or replace the timer.
+    for (int i = 0; i < 3; ++i) jumping.advance(jumpDuration / 8.);
+    check(jumping.finished(), "one-shot finishes across physics state changes");
+    jumping.reset();
+    check(!jumping.finished() && jumping.frameIndex() == 0, "Jumping re-entry restarts one-shot");
+    jumping.advance(jumpDuration / 8.);
+    check(jumping.frameIndex() == 0, "Jumping re-entry resets fractional timer");
+    falling.reset();
+    falling.advance(2. * falling.frames() / falling.fps());
+    check(falling.frameIndex() == 0 && !falling.finished(), "Falling remains looping over multiple cycles");
     std::cout << "PASS: manifest, atlas, paths, rectangles, timing and wrap\n";
 }
 catch (const std::exception& error)
