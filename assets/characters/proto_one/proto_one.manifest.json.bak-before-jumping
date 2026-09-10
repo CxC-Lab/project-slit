@@ -1,0 +1,71 @@
+{
+  "character": "proto_one",
+  "status": "prototype - not a final production spec, see docs/animation-policy.md",
+  "canvas": [128, 128],
+  "pivot": {
+    "x": 64,
+    "y": 123,
+    "basis": "fixed across all animations/frames of this character; horizontal = shared silhouette center, vertical = lowest observed hover-pod position among the adopted Idle frames (virtual ground line). proto_one is a hover-type character with no literal foot contact. Walking and Sprinting both reuse this exact pivot (not independently re-fit) so switching between animations in-game does not pop the character's position or scale."
+  },
+  "atlas": {
+    "idle": "atlas/proto_one_idle.png",
+    "walking": "atlas/proto_one_walking.png",
+    "sprinting": "atlas/proto_one_sprinting.png",
+    "turn": "atlas/proto_one_turn.png"
+  },
+  "animations": {
+    "Idle": {
+      "atlas": "idle",
+      "row": 0,
+      "frames": 4,
+      "frame_files": [
+        "normalized/idle/proto_one_idle_00.png",
+        "normalized/idle/proto_one_idle_01.png",
+        "normalized/idle/proto_one_idle_02.png",
+        "normalized/idle/proto_one_idle_03.png"
+      ],
+      "fps": 4,
+      "loop": true
+    },
+    "Walking": {
+      "atlas": "walking",
+      "row": 0,
+      "frames": 4,
+      "frame_files": [
+        "normalized/walking/proto_one_walking_00.png",
+        "normalized/walking/proto_one_walking_01.png",
+        "normalized/walking/proto_one_walking_02.png",
+        "normalized/walking/proto_one_walking_03.png"
+      ],
+      "fps": 4,
+      "loop": true
+    },
+    "Sprinting": {
+      "atlas": "sprinting",
+      "row": 0,
+      "frames": 4,
+      "frame_files": [
+        "normalized/sprinting/proto_one_sprinting_00.png",
+        "normalized/sprinting/proto_one_sprinting_01.png",
+        "normalized/sprinting/proto_one_sprinting_02.png",
+        "normalized/sprinting/proto_one_sprinting_03.png"
+      ],
+      "fps": 8,
+      "loop": true
+    },
+    "Turn": {
+      "atlas": "turn",
+      "row": 0,
+      "frames": 3,
+      "frame_files": [
+        "normalized/turn/proto_one_turn_00.png",
+        "normalized/turn/proto_one_turn_01.png",
+        "normalized/turn/proto_one_turn_02.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "notes": "One-shot direction-change transition, not a looping locomotion cycle: frame 00 = facing left, frame 01 = stylized spin/twist motion-blur effect, frame 02 = facing right. No corresponding code MovementState exists yet (see animation-policy.md); this is asset-only preparation ahead of movement-logic wiring."
+    }
+  },
+  "notes": "2026-09-10: frames/idle raw source PNGs were fully replaced by the user and re-normalized from scratch (previous values backed up at proto_one.manifest.json.bak-oldframes). Schema unchanged; canvas stayed 128x128; pivot.y shifted 124->123 due to the new source's tighter bbox. New source set has visibly less body-scale jitter than the previous one (bbox width varies by only ~3px across all 4 frames vs ~85px before). Same day: Walking animation added (previous manifest backed up at proto_one.manifest.json.bak-before-walking). Walking=4 frames was adopted in animation-policy.md's Current Animation Contract (source had exactly 4 raw frames, within the existing 3-4 candidate range). Walking's normalized frames were scaled independently (0.1329 vs Idle's 0.1429, since Walking's raw union bbox is larger) but deliberately mapped onto the SAME fixed pivot (64,123) as Idle so the two animations share a stable ground line and center when swapped at runtime. 2026-09-10 (later same day): proto_one_walking_01 (from raw walking02.png) measured as a body-silhouette outlier (antenna tip and cyan glow excluded from the measurement) - body bbox 103x102px on the 128 canvas vs 93-97x96px for the other three. Corrected by rescaling that single frame 0.933x around the fixed pivot (64,123) only, with no change to crop/scale of the other three frames and no per-frame re-centering. Post-fix body bbox is 96x95px, within the other frames' range. Previous manifest backed up at proto_one.manifest.json.bak-before-walking-rescale. 2026-09-10 (later same day): Sprinting animation added (previous manifest backed up at proto_one.manifest.json.bak-before-sprinting). Sprinting=4 frames was adopted in animation-policy.md's Current Animation Contract (source had exactly 4 raw frames, within the existing 4-6 candidate range for Run). Same body-silhouette-outlier check as Walking was run proactively before normalizing (antenna tip and cyan/white glow-trail pixels excluded via a blue-channel filter, verified against a debug mask overlay) - the largest frame (sprinting02) was only ~2-3% larger than the other three, well under the threshold that triggered Walking's correction, so no per-frame rescale was applied here. All 4 frames share the same crop/scale and the same fixed pivot (64,123) as Idle/Walking; Sprinting's raw union bbox (840x978) is the largest of the three states so far, giving the smallest per-state scale (0.1196) - expected and correct, not an error. fps set to 8 (vs Idle/Walking's 4) as a candidate value to match Sprint's higher-energy read; this fps choice is NOT part of the Current Animation Contract (which only governs frame count) and remains an independent, unconfirmed candidate. 2026-09-10 (later same day): Turn animation added (previous manifest backed up at proto_one.manifest.json.bak-before-turn). Turn=3 frames was adopted in animation-policy.md's Current Animation Contract as a NEW row (Turn did not previously exist in the contract table) - the raw source had exactly 3 frames, which exceeds the old non-binding candidate range of ~1-2 but the candidate table is explicitly advisory, not binding, so the actual provided asset count was adopted. Turn's 3 raw frames are not simply pose variations of one category: frame 1 and frame 3 are mirrored static facing poses (left vs right), while frame 2 is a categorically different stylized spin/twist motion-blur effect frame. The body-silhouette-outlier check was applied ONLY between frame 1 and frame 3 (the two comparable static poses) - they measured 101x99 vs 111x105 on the 128 canvas (~9% mismatch), so both were corrected toward their shared average via pivot-anchored rescale (frame 1 x1.040, frame 3 x0.963, both anchored at the fixed pivot (64,123)), landing at 106x104 vs 107x101 after correction. Frame 2 (the spin-blur) was deliberately left unmeasured/uncorrected: the row-profiling body-silhouette method is not meaningful for it (most of its pixels are the excluded cyan/white glow trail, not opaque body material), and its larger, more dynamic footprint is treated as an intentional effect (comparable to how Air Dash is expected to use stretch/afterimage per animation-policy.md section 8), not a jitter bug to fix. All 3 frames still share the same crop/scale and the same fixed pivot (64,123) as the other animations. loop is false (unlike Idle/Walking/Sprinting) since Turn is a one-shot transition, not a repeating cycle."
+}
