@@ -12,6 +12,24 @@
 #include <stdexcept>
 #include <string>
 
+namespace
+{
+struct ClipVisual
+{
+    AnimationClip clip;
+    sf::Texture texture;
+    unsigned int frameChanges = 0;
+
+    ClipVisual(const std::filesystem::path& manifest, const std::string& name) : clip(manifest, name)
+    {
+        if (!texture.loadFromFile(clip.atlasPath()))
+            throw std::runtime_error("Cannot load animation texture: " + clip.atlasPath().string());
+        clip.validateAtlas(texture.getSize());
+        texture.setSmooth(false);
+    }
+};
+}
+
 int main() try
 {
     Display display;
@@ -27,32 +45,16 @@ int main() try
     constexpr bool showPlayerCollider = false;
     constexpr float visualScale = 0.5f; // Rendering-only playtest candidate.
     const auto manifest = AnimationClip::findManifest();
-    AnimationClip idle(manifest);
-    AnimationClip walking(manifest, "Walking");
-    sf::Texture idleTexture;
-    if (!idleTexture.loadFromFile(idle.atlasPath()))
-        throw std::runtime_error("Cannot load Idle texture: " + idle.atlasPath().string());
-    idle.validateAtlas(idleTexture.getSize());
-    idleTexture.setSmooth(false);
-    sf::Texture walkingTexture;
-    if (!walkingTexture.loadFromFile(walking.atlasPath()))
-        throw std::runtime_error("Cannot load Walking texture: " + walking.atlasPath().string());
-    walking.validateAtlas(walkingTexture.getSize());
-    walkingTexture.setSmooth(false);
-    if (idle.pivot() != walking.pivot() || idle.frameRect().size != walking.frameRect().size)
-        throw std::runtime_error("Idle and Walking must share canvas and pivot");
-    AnimationClip* activeClip = &idle;
-    sf::Sprite playerSprite(idleTexture, idle.frameRect());
-    playerSprite.setOrigin(idle.pivot());
+    ClipVisual idle(manifest, "Idle");
+    ClipVisual walking(manifest, "Walking");
+    ClipVisual sprinting(manifest, "Sprinting");
+    for (const auto* visual : {&walking, &sprinting})
+        if (idle.clip.pivot() != visual->clip.pivot() || idle.clip.frameRect().size != visual->clip.frameRect().size)
+            throw std::runtime_error("Idle, Walking and Sprinting must share canvas and pivot");
+    ClipVisual* activeVisual = &idle;
+    sf::Sprite playerSprite(idle.texture, idle.clip.frameRect());
+    playerSprite.setOrigin(idle.clip.pivot());
     playerSprite.setScale({visualScale, visualScale});
-    std::cout << "Idle loaded: " << idle.atlasPath() << " frames=" << idle.frames()
-              << " fps=" << idle.fps() << " atlas=" << idleTexture.getSize().x
-              << 'x' << idleTexture.getSize().y << std::endl;
-    std::cout << "Walking loaded: " << walking.atlasPath() << " frames=" << walking.frames()
-              << " fps=" << walking.fps() << " atlas=" << walkingTexture.getSize().x
-              << 'x' << walkingTexture.getSize().y << std::endl;
-    unsigned int idleFrameChanges = 0;
-    unsigned int walkingFrameChanges = 0;
     Input input;
     sf::Clock frameClock;
     sf::Clock inputClock;
@@ -88,20 +90,25 @@ int main() try
         player.update(input.consume(), deltaTime, room.solids(), room.bounds().size.x);
         const auto playerBounds = player.collisionBounds();
         playerShape.setPosition(playerBounds.position);
-        AnimationClip* nextClip = player.state() == MovementState::Walking ? &walking : &idle;
-        const bool changedClip = nextClip != activeClip;
+        ClipVisual* nextVisual = &idle;
+        switch (player.state())
+        {
+        case MovementState::Walking: nextVisual = &walking; break;
+        case MovementState::Sprinting: nextVisual = &sprinting; break;
+        default: break;
+        }
+        const bool changedClip = nextVisual != activeVisual;
         if (changedClip)
         {
-            activeClip = nextClip;
-            activeClip->reset();
-            playerSprite.setTexture(activeClip == &walking ? walkingTexture : idleTexture);
+            activeVisual = nextVisual;
+            activeVisual->clip.reset();
+            playerSprite.setTexture(activeVisual->texture);
         }
-        const int previousFrame = activeClip->frameIndex();
+        const int previousFrame = activeVisual->clip.frameIndex();
         if (!changedClip)
-            activeClip->advance(deltaTime);
-        auto& frameChanges = activeClip == &walking ? walkingFrameChanges : idleFrameChanges;
-        frameChanges += activeClip->frameIndex() != previousFrame;
-        playerSprite.setTextureRect(activeClip->frameRect());
+            activeVisual->clip.advance(deltaTime);
+        activeVisual->frameChanges += activeVisual->clip.frameIndex() != previousFrame;
+        playerSprite.setTextureRect(activeVisual->clip.frameRect());
         playerSprite.setPosition({playerBounds.position.x + playerBounds.size.x / 2.f,
                                   playerBounds.position.y + playerBounds.size.y});
         const bool catchUp = player.state() == MovementState::FastFalling ||
@@ -121,8 +128,8 @@ int main() try
             window.draw(playerShape);
         window.display();
     }
-    std::cout << "Idle frame changes: " << idleFrameChanges << std::endl;
-    std::cout << "Walking frame changes: " << walkingFrameChanges << std::endl;
+    std::cout << "Animation frame changes: Idle=" << idle.frameChanges
+              << " Walking=" << walking.frameChanges << " Sprinting=" << sprinting.frameChanges << std::endl;
 }
 catch (const std::exception& error)
 {

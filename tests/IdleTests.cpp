@@ -63,6 +63,27 @@ int main() try
     check(walking.frameIndex() == 0, "clip change resets frame");
     walking.advance(0.75 / walking.fps());
     check(walking.frameIndex() == 0, "clip change resets fractional timer");
+    AnimationClip sprinting(manifest, "Sprinting");
+    sf::Image sprintingImage;
+    check(sprintingImage.loadFromFile(sprinting.atlasPath()), "Sprinting atlas loads");
+    sprinting.validateAtlas(sprintingImage.getSize());
+    check(sprinting.frames() == 4 && sprinting.fps() == 8. && sprinting.loops(), "Sprinting manifest contract uses 8 fps");
+    check(sprinting.pivot() == idle.pivot() && sprinting.frameRect().size == idle.frameRect().size,
+          "Sprinting shares canvas and pivot");
+    for (int i = 0; i < sprinting.frames(); ++i)
+    {
+        const auto rect = sprinting.frameRect();
+        check(sprinting.frameIndex() == i && rect.position.x == i * rect.size.x && rect.position.y == 0,
+              "Sprinting left-to-right frame slicing");
+        check(rect.position.x + rect.size.x <= static_cast<int>(sprintingImage.getSize().x) &&
+              rect.position.y + rect.size.y <= static_cast<int>(sprintingImage.getSize().y), "Sprinting rect in atlas");
+        sprinting.advance(1. / sprinting.fps());
+    }
+    check(sprinting.frameIndex() == 0, "Sprinting loop wrap");
+    sprinting.advance(0.125);
+    check(sprinting.frameIndex() == 1, "Sprinting advances at 8 fps, not Idle 4 fps");
+    sprinting.reset();
+    check(sprinting.frameIndex() == 0, "Sprinting transition resets frame");
     std::cout << "PASS: manifest, atlas, paths, rectangles, timing and wrap\n";
 }
 catch (const std::exception& error)
