@@ -1,4 +1,5 @@
 #include "Camera.hpp"
+#include "Display.hpp"
 #include "Input.hpp"
 #include "IdleAnimation.hpp"
 #include "Player.hpp"
@@ -13,14 +14,11 @@
 
 int main() try
 {
-    constexpr unsigned int windowWidth = 800;
-    constexpr unsigned int windowHeight = 600;
-    sf::RenderWindow window(sf::VideoMode({windowWidth, windowHeight}),
-                            "Project Slit Prototype", sf::Style::Titlebar | sf::Style::Close);
-    window.setFramerateLimit(60);
-    window.setKeyRepeatEnabled(false);
-    sf::View camera(sf::FloatRect({0.f, 0.f},
-                                  {static_cast<float>(windowWidth), static_cast<float>(windowHeight)}));
+    Display display;
+    sf::RenderWindow window;
+    display.open(window);
+    sf::View camera(sf::FloatRect({0.f, 0.f}, Display::referenceViewSize));
+    Display::apply(camera, window.getSize());
 
     const PracticeRoom room;
     Player player(room.spawn());
@@ -50,7 +48,16 @@ int main() try
         while (const std::optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
+            {
                 window.close();
+                break;
+            }
+            if (display.handleEvent(*event, window, camera))
+            {
+                if (event->is<sf::Event::KeyPressed>())
+                    input.reset();
+                continue;
+            }
             if (event->is<sf::Event::FocusLost>())
                 input.reset();
             if (const auto* key = event->getIf<sf::Event::KeyReleased>())
@@ -79,7 +86,11 @@ int main() try
                        catchUp ? Camera::catchUpMultiplier : 1.f);
         window.setTitle(std::string("Project Slit Prototype - ") + toString(player.state()));
         window.setView(camera);
-        window.clear(sf::Color(25, 30, 45));
+        window.clear(sf::Color::Black);
+        sf::RectangleShape viewBackground(camera.getSize());
+        viewBackground.setPosition(camera.getCenter() - camera.getSize() / 2.f);
+        viewBackground.setFillColor(sf::Color(25, 30, 45));
+        window.draw(viewBackground);
         room.render(window);
         window.draw(playerSprite);
         if (showPlayerCollider)
