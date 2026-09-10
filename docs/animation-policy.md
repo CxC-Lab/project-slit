@@ -164,7 +164,7 @@ Project Slit에서는 이동 자체가 핵심 재미 중 하나다.
 | Animation State | Frame Count | Status |
 | --- | ---: | --- |
 | Idle | 4 | Adopted |
-| Walking | TBD | Not adopted |
+| Walking | 4 | Adopted |
 | Sprinting | TBD | Not adopted |
 | Jumping | TBD | Not adopted |
 | Falling | TBD | Not adopted |
@@ -173,7 +173,7 @@ Project Slit에서는 이동 자체가 핵심 재미 중 하나다.
 | SlowFalling | TBD | Not adopted |
 | FastFalling | TBD | Not adopted |
 
-`Idle = 4`는 proto_one에서 실제로 채택해 런타임에서 재생 중인 값이다. 나머지는 아직 정하지 않았으며 근거 없이 숫자를 채워 넣지 않는다.
+`Idle = 4`는 proto_one에서 실제로 채택해 런타임에서 재생 중인 값이다. `Walking = 4`는 2026-09-10, proto_one에 실제로 제공된 raw Walking 프레임이 정확히 4장이고 앞의 "프레임 수 후보" 표의 Walk 범위(약 3~4)와도 맞아 채택했다. 두 값은 proto_one 만의 값이 아니라 앞으로 만들 모든 캐릭터가 따라야 하는 공통 프레임 수다. 나머지는 아직 정하지 않았으며 근거 없이 숫자를 채워 넣지 않는다.
 
 #### 이 표의 역할
 
@@ -470,8 +470,8 @@ sprite image의 실제 크기와 player physics는 독립적으로 관리한다.
 
 1. 임시 geometry 또는 placeholder로 이동 기능 검증
 2. 테스트 캐릭터 1종 적용
-3. Idle
-4. Walk / Run
+3. Idle (2026-09-10 proto_one 적용 완료)
+4. Walk / Run (2026-09-10 Walk 적용 완료, Run 미착수)
 5. Start / Stop / Turn
 6. Jump Start / Airborne / Land
 7. Air Dash
