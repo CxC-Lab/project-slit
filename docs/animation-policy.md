@@ -165,7 +165,7 @@ Project Slit에서는 이동 자체가 핵심 재미 중 하나다.
 | --- | ---: | --- |
 | Idle | 4 | Adopted |
 | Walking | 4 | Adopted |
-| Sprinting | TBD | Not adopted |
+| Sprinting | 4 | Adopted |
 | Jumping | TBD | Not adopted |
 | Falling | TBD | Not adopted |
 | AirDashing | TBD | Not adopted |
@@ -173,7 +173,9 @@ Project Slit에서는 이동 자체가 핵심 재미 중 하나다.
 | SlowFalling | TBD | Not adopted |
 | FastFalling | TBD | Not adopted |
 
-`Idle = 4`는 proto_one에서 실제로 채택해 런타임에서 재생 중인 값이다. `Walking = 4`는 2026-09-10, proto_one에 실제로 제공된 raw Walking 프레임이 정확히 4장이고 앞의 "프레임 수 후보" 표의 Walk 범위(약 3~4)와도 맞아 채택했다. 두 값은 proto_one 만의 값이 아니라 앞으로 만들 모든 캐릭터가 따라야 하는 공통 프레임 수다. 나머지는 아직 정하지 않았으며 근거 없이 숫자를 채워 넣지 않는다.
+`Idle = 4`, `Walking = 4`, `Sprinting = 4` 는 proto_one 에서 실제로 채택해 런타임에서 재생 중인 값이다. Walking 과 Sprinting 은 제공된 원본 프레임이 각각 정확히 4장이었고 앞의 "프레임 수 후보" 표의 범위와도 맞아 채택했다. 세 값은 proto_one 만의 값이 아니라 앞으로 만들 모든 캐릭터가 따라야 하는 공통 프레임 수다. 나머지는 아직 정하지 않았으며 근거 없이 숫자를 채워 넣지 않는다.
+
+프레임 수가 같아도 재생 속도까지 같아야 하는 것은 아니다. 이 계약이 정하는 것은 프레임 수이며, fps 는 동작마다 다를 수 있다. 실제로 Idle 과 Walking 은 4fps, Sprinting 은 8fps 로 재생한다. 같은 4프레임을 두 배 속도로 넘겨 달리는 느낌을 만든다. fps 값은 캐릭터별 매니페스트가 가지므로, 같은 동작이라도 캐릭터마다 다른 fps 를 쓸 수 있는지는 아직 정하지 않았다.
 
 #### 이 표의 역할
 
@@ -471,7 +473,7 @@ sprite image의 실제 크기와 player physics는 독립적으로 관리한다.
 1. 임시 geometry 또는 placeholder로 이동 기능 검증
 2. 테스트 캐릭터 1종 적용
 3. Idle (2026-09-10 proto_one 적용 완료)
-4. Walk / Run (2026-09-10 Walk 적용 완료, Run 미착수)
+4. Walk / Run (2026-09-10 둘 다 적용 완료. Run 은 코드의 Sprinting 상태에 연결했다)
 5. Start / Stop / Turn
 6. Jump Start / Airborne / Land
 7. Air Dash

@@ -114,7 +114,7 @@
 
 1. 임시 사각형으로 이동 시스템 검증 (2026-09-09 완료, 위 진행 상황 참고)
 2. 고정 크기 프레임을 가진 테스트 아바타 한 종 적용 (2026-09-10 proto_one 적용 완료)
-3. Idle, Walk와 Run 애니메이션 전환 (2026-09-10 Idle과 Walk 전환까지 적용, Run 미착수)
+3. Idle, Walk와 Run 애니메이션 전환 (2026-09-10 완료. Run 은 코드의 Sprinting 상태에 연결)
 4. Jump와 Air Dash 적용
 5. 공통 pivot의 시각적 흔들림 검증
 6. collider와 sprite 분리 검증
