@@ -20,6 +20,7 @@ public:
     int frames() const { return frames_; }
     double fps() const { return fps_; }
     bool loops() const { return loop_; }
+    bool finished() const { return !loop_ && elapsed_ >= frames_ / fps_; }
 
 private:
     sf::Vector2i canvas_{};

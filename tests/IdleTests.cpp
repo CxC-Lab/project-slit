@@ -1,4 +1,6 @@
 #include "AnimationClip.hpp"
+#include "TurnVisual.hpp"
+#include <SFML/Graphics/Transformable.hpp>
 
 #include <SFML/Graphics/Image.hpp>
 #include <iostream>
@@ -84,6 +86,47 @@ int main() try
     check(sprinting.frameIndex() == 1, "Sprinting advances at 8 fps, not Idle 4 fps");
     sprinting.reset();
     check(sprinting.frameIndex() == 0, "Sprinting transition resets frame");
+    AnimationClip turn(manifest, "Turn");
+    sf::Image turnImage;
+    check(turnImage.loadFromFile(turn.atlasPath()), "Turn atlas loads");
+    turn.validateAtlas(turnImage.getSize());
+    check(turn.frames() == 3 && turn.fps() == 10. && !turn.loops(), "Turn manifest contract");
+    check(turn.pivot() == idle.pivot() && turn.frameRect().size == idle.frameRect().size, "Turn shared canvas and pivot");
+    for (int i = 0; i < turn.frames(); ++i)
+    {
+        check(!turn.finished() && turn.frameIndex() == i, "Turn plays every frame before completion");
+        const auto rect = turn.frameRect();
+        check(rect.position.x == i * rect.size.x && rect.position.y == 0 &&
+              rect.position.x + rect.size.x <= static_cast<int>(turnImage.getSize().x) &&
+              rect.size.y <= static_cast<int>(turnImage.getSize().y), "Turn rect inside atlas");
+        turn.advance(1. / turn.fps());
+    }
+    check(turn.finished() && turn.frameIndex() == 2, "Turn finishes and holds last frame after 0.3 seconds");
+    turn.advance(1.);
+    check(turn.finished() && turn.frameIndex() == 2, "non-looping Turn never wraps");
+    turn.reset();
+    check(!turn.finished() && turn.frameIndex() == 0 && !idle.finished(), "reset clears finish; loop clips never finish");
+    TurnVisual facing;
+    check(!facing.update(0.f, 0.01, turn) && !facing.facingLeft, "neutral preserves initial right facing");
+    check(facing.update(-1.f, 0.01, turn) && facing.turning && facing.facingLeft, "right to left starts mirrored Turn");
+    for (int i = 0; i < 5; ++i)
+    {
+        check(!facing.update(i % 2 ? -1.f : 1.f, 0.05, turn), "rapid reversal cannot restart active Turn");
+        check(facing.facingLeft && !turn.finished(), "facing is locked during current Turn");
+    }
+    check(turn.frameIndex() == 2, "rapid reversal progresses beyond frame zero");
+    check(facing.update(1.f, 0.051, turn) && !facing.facingLeft && facing.turning,
+          "latest intent starts opposite Turn only after completion");
+    facing.update(0.f, turn.frames() / turn.fps(), turn);
+    check(!facing.turning && !facing.facingLeft, "neutral retains direction and completed override ends");
+    sf::Transformable visual;
+    visual.setOrigin(turn.pivot());
+    visual.setPosition({123.f, 456.f});
+    for (float sign : {-1.f, 1.f})
+    {
+        visual.setScale({sign * 0.5f, 0.5f});
+        check(visual.getTransform().transformPoint(turn.pivot()) == visual.getPosition(), "flip leaves pivot at exact world anchor");
+    }
     std::cout << "PASS: manifest, atlas, paths, rectangles, timing and wrap\n";
 }
 catch (const std::exception& error)

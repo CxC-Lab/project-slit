@@ -3,6 +3,7 @@
 #include "Input.hpp"
 #include "AnimationClip.hpp"
 #include "Player.hpp"
+#include "TurnVisual.hpp"
 #include "levels/PracticeRoom.hpp"
 
 #include <SFML/Graphics.hpp>
@@ -48,9 +49,13 @@ int main() try
     ClipVisual idle(manifest, "Idle");
     ClipVisual walking(manifest, "Walking");
     ClipVisual sprinting(manifest, "Sprinting");
-    for (const auto* visual : {&walking, &sprinting})
+    ClipVisual turn(manifest, "Turn");
+    TurnVisual facing;
+    if (turn.clip.loops())
+        throw std::runtime_error("Turn must be a non-looping clip");
+    for (const auto* visual : {&walking, &sprinting, &turn})
         if (idle.clip.pivot() != visual->clip.pivot() || idle.clip.frameRect().size != visual->clip.frameRect().size)
-            throw std::runtime_error("Idle, Walking and Sprinting must share canvas and pivot");
+            throw std::runtime_error("Idle, Walking, Sprinting and Turn must share canvas and pivot");
     ClipVisual* activeVisual = &idle;
     sf::Sprite playerSprite(idle.texture, idle.clip.frameRect());
     playerSprite.setOrigin(idle.clip.pivot());
@@ -87,7 +92,8 @@ int main() try
 
         // Discard long stalls; double-tap timing uses an independent, uncapped clock.
         const float deltaTime = std::min(frameClock.restart().asSeconds(), 0.05f);
-        player.update(input.consume(), deltaTime, room.solids(), room.bounds().size.x);
+        const InputIntent intent = input.consume();
+        player.update(intent, deltaTime, room.solids(), room.bounds().size.x);
         const auto playerBounds = player.collisionBounds();
         playerShape.setPosition(playerBounds.position);
         ClipVisual* nextVisual = &idle;
@@ -97,17 +103,27 @@ int main() try
         case MovementState::Sprinting: nextVisual = &sprinting; break;
         default: break;
         }
+        const int previousTurnFrame = turn.clip.frameIndex();
+        facing.update(intent.direction.x, deltaTime, turn.clip);
+        turn.frameChanges += turn.clip.frameIndex() != previousTurnFrame;
+        if (facing.turning)
+            nextVisual = &turn;
         const bool changedClip = nextVisual != activeVisual;
         if (changedClip)
         {
             activeVisual = nextVisual;
-            activeVisual->clip.reset();
+            if (activeVisual != &turn) // TurnVisual owns the one-shot timer.
+                activeVisual->clip.reset();
             playerSprite.setTexture(activeVisual->texture);
         }
         const int previousFrame = activeVisual->clip.frameIndex();
-        if (!changedClip)
-            activeVisual->clip.advance(deltaTime);
-        activeVisual->frameChanges += activeVisual->clip.frameIndex() != previousFrame;
+        if (activeVisual != &turn)
+        {
+            if (!changedClip)
+                activeVisual->clip.advance(deltaTime);
+            activeVisual->frameChanges += activeVisual->clip.frameIndex() != previousFrame;
+        }
+        playerSprite.setScale({facing.facingLeft ? -visualScale : visualScale, visualScale});
         playerSprite.setTextureRect(activeVisual->clip.frameRect());
         playerSprite.setPosition({playerBounds.position.x + playerBounds.size.x / 2.f,
                                   playerBounds.position.y + playerBounds.size.y});
@@ -129,7 +145,7 @@ int main() try
         window.display();
     }
     std::cout << "Animation frame changes: Idle=" << idle.frameChanges
-              << " Walking=" << walking.frameChanges << " Sprinting=" << sprinting.frameChanges << std::endl;
+              << " Walking=" << walking.frameChanges << " Sprinting=" << sprinting.frameChanges << " Turn=" << turn.frameChanges << std::endl;
 }
 catch (const std::exception& error)
 {
