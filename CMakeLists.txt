@@ -13,10 +13,19 @@ FetchContent_Declare(SFML
 )
 FetchContent_MakeAvailable(SFML)
 
-add_executable(project_slit src/main.cpp src/Player.cpp src/Input.cpp src/Camera.cpp src/levels/PracticeRoom.cpp)
+set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
+set(JSON_MultipleHeaders OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+    GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
+add_executable(project_slit src/IdleAnimation.cpp src/main.cpp src/Player.cpp src/Input.cpp src/Camera.cpp src/levels/PracticeRoom.cpp)
 target_compile_features(project_slit PRIVATE cxx_std_20)
 set_target_properties(project_slit PROPERTIES CXX_EXTENSIONS OFF)
-target_link_libraries(project_slit PRIVATE SFML::Graphics)
+target_link_libraries(project_slit PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
 
 include(CTest)
 if(BUILD_TESTING)
@@ -33,4 +42,10 @@ if(BUILD_TESTING)
     set_target_properties(run_camera_tests PROPERTIES CXX_EXTENSIONS OFF)
     target_link_libraries(run_camera_tests PRIVATE SFML::Graphics)
     add_test(NAME run_camera_tests COMMAND run_camera_tests)
+    add_executable(idle_tests tests/IdleTests.cpp src/IdleAnimation.cpp)
+    target_include_directories(idle_tests PRIVATE src)
+    target_compile_features(idle_tests PRIVATE cxx_std_20)
+    set_target_properties(idle_tests PROPERTIES CXX_EXTENSIONS OFF)
+    target_link_libraries(idle_tests PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
+    add_test(NAME idle_tests COMMAND idle_tests)
 endif()

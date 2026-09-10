@@ -1,14 +1,17 @@
 #include "Camera.hpp"
 #include "Input.hpp"
+#include "IdleAnimation.hpp"
 #include "Player.hpp"
 #include "levels/PracticeRoom.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <optional>
+#include <iostream>
+#include <stdexcept>
 #include <string>
 
-int main()
+int main() try
 {
     constexpr unsigned int windowWidth = 800;
     constexpr unsigned int windowHeight = 600;
@@ -23,6 +26,21 @@ int main()
     Player player(room.spawn());
     sf::RectangleShape playerShape(Movement::collisionSize);
     playerShape.setFillColor(sf::Color(240, 200, 100));
+    constexpr bool showPlayerCollider = false;
+    constexpr float visualScale = 0.5f; // Rendering-only playtest candidate.
+    IdleAnimation idle(IdleAnimation::findManifest());
+    sf::Texture idleTexture;
+    if (!idleTexture.loadFromFile(idle.atlasPath()))
+        throw std::runtime_error("Cannot load Idle texture: " + idle.atlasPath().string());
+    idle.validateAtlas(idleTexture.getSize());
+    idleTexture.setSmooth(false);
+    sf::Sprite playerSprite(idleTexture, idle.frameRect());
+    playerSprite.setOrigin(idle.pivot());
+    playerSprite.setScale({visualScale, visualScale});
+    std::cout << "Idle loaded: " << idle.atlasPath() << " frames=" << idle.frames()
+              << " fps=" << idle.fps() << " atlas=" << idleTexture.getSize().x
+              << 'x' << idleTexture.getSize().y << std::endl;
+    unsigned int frameChanges = 0;
     Input input;
     sf::Clock frameClock;
     sf::Clock inputClock;
@@ -49,6 +67,12 @@ int main()
         player.update(input.consume(), deltaTime, room.solids(), room.bounds().size.x);
         const auto playerBounds = player.collisionBounds();
         playerShape.setPosition(playerBounds.position);
+        const int previousFrame = idle.frameIndex();
+        idle.advance(deltaTime);
+        frameChanges += idle.frameIndex() != previousFrame;
+        playerSprite.setTextureRect(idle.frameRect());
+        playerSprite.setPosition({playerBounds.position.x + playerBounds.size.x / 2.f,
+                                  playerBounds.position.y + playerBounds.size.y});
         const bool catchUp = player.state() == MovementState::FastFalling ||
                              player.velocity().y >= Camera::catchUpFallSpeed;
         Camera::follow(camera, playerBounds.position + playerBounds.size / 2.f, room.bounds(), deltaTime,
@@ -57,7 +81,15 @@ int main()
         window.setView(camera);
         window.clear(sf::Color(25, 30, 45));
         room.render(window);
-        window.draw(playerShape);
+        window.draw(playerSprite);
+        if (showPlayerCollider)
+            window.draw(playerShape);
         window.display();
     }
+    std::cout << "Idle frame changes: " << frameChanges << std::endl;
+}
+catch (const std::exception& error)
+{
+    std::cerr << "Project Slit startup/runtime error: " << error.what() << std::endl;
+    return 1;
 }
