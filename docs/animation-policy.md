@@ -1,6 +1,6 @@
 # Project Slit 플레이어 스프라이트 및 이동 애니메이션 정책
 
-이 문서는 Project Slit 플레이어 스프라이트 제작과 이동 애니메이션에 대한 현재 기준 문서다. [`project-brief.md`](project-brief.md)의 "작은 실험으로 먼저 검증하고, 살아남은 결과만 확정한다"는 원칙을 따르며, 최종 확정 사양이 아니라 대부분 검증되지 않은 가설과 후보로 남는다. 캐릭터 종수, 정확한 프레임 수, canvas 크기 등은 확정된 production requirement가 아니며 실제 프로토타입 검증에 따라 달라질 수 있다.
+이 문서는 Project Slit 플레이어 스프라이트 제작과 이동 애니메이션에 대한 현재 기준 문서다. [`project-brief.md`](project-brief.md)의 "작은 실험으로 먼저 검증하고, 살아남은 결과만 확정한다"는 원칙을 따르며, 최종 확정 사양이 아니라 대부분 검증되지 않은 가설과 후보로 남는다. 캐릭터 종수, 정확한 프레임 수, canvas 크기 등은 확정된 production requirement가 아니며 실제 프로토타입 검증에 따라 달라질 수 있다. 다만 프레임 수의 구체적인 값과 별개로, 모든 캐릭터가 같은 상태에서 같은 프레임 수를 사용한다는 규칙 자체는 확정 사항이다. 아래 "공통 애니메이션 프레임 계약"을 참고한다.
 
 아바타의 시각적 방향(SD 로봇형 컨셉, 실루엣과 체형의 개성 등)은 [`visual-direction.md`](visual-direction.md)에서 다룬다. 이 문서는 그 위에서 실제 스프라이트 제작 규격과 이동 애니메이션 정책을 다룬다.
 
@@ -115,9 +115,124 @@ Project Slit에서는 이동 자체가 핵심 재미 중 하나다.
 | Ground Slide | 약 1~2 |
 | Music | 약 2 |
 
-중요: 이 수치는 확정된 production requirement가 아니다. 실제 테스트 후 늘어나거나 줄어들 수 있다.
+중요: 위 표의 수치는 확정된 production requirement가 아니다. 실제 테스트 후 늘어나거나 줄어들 수 있다.
 
 특히 Run, Turn, Jump Start, Land, Air Dash는 이동감을 살리는 데 중요한 상태로 취급한다.
+
+### 공통 애니메이션 프레임 계약
+
+2026-09-10 확정. 위 표의 숫자와 달리 이 규칙은 후보가 아니다.
+
+**모든 아바타는 동일한 animation state에 대해 동일한 frame count를 사용한다.**
+
+- 어떤 상태의 프레임 수가 N으로 정해지면, 모든 캐릭터가 그 상태에서 N 프레임을 사용한다.
+- 캐릭터별로 같은 상태에 서로 다른 프레임 수를 허용하지 않는다.
+- 프레임 수를 바꿔야 한다면 한 캐릭터만 바꾸지 않고 모든 캐릭터에 함께 적용한다.
+
+예를 들어 Idle이 4프레임이면 모든 캐릭터의 Idle이 4프레임이고, Jumping이 2프레임이면 모든 캐릭터의 Jumping이 2프레임이다.
+
+달라도 되는 것과 달라서는 안 되는 것을 구분한다.
+
+| 구분 | 항목 |
+| --- | --- |
+| 캐릭터마다 달라도 된다 | 실루엣, 체형, 포즈 해석, 프레임 내부의 시각적 표현, 색과 장식 |
+| 모든 캐릭터가 같아야 한다 | 상태별 프레임 수, 프레임 순서, 상태 이름, canvas 크기, pivot 규칙, atlas 배치 규칙 |
+
+한 문장으로 정리하면 "같은 state, 같은 frame count, 다른 visual interpretation"이다.
+
+이 규칙이 필요한 이유는 다음과 같다.
+
+- 모든 캐릭터가 같은 animation state 체계를 그대로 쓸 수 있다.
+- 캐릭터를 교체해도 런타임 재생 로직을 바꿀 필요가 없다.
+- atlas와 manifest 규격을 캐릭터마다 다시 해석하지 않아도 된다.
+- QA를 캐릭터별 예외 없이 같은 절차로 돌릴 수 있다.
+- 멀티플레이에서 아바타마다 다른 재생 규칙을 두지 않아도 된다.
+- 캐릭터별 예외 처리가 코드에 쌓이는 것을 막는다.
+
+숫자와 규칙의 관계는 다음과 같다.
+
+- 각 상태의 N 값은 아직 후보이며 프로토타입 검증으로 정한다.
+- 한 번 정해진 N은 모든 캐릭터에 공통으로 적용한다.
+- 현재 채택된 값은 아래 "Current Animation Contract"에 기록한다.
+
+향후 Music, PlantFlag, Emote 같은 비이동 action이 추가되어도 같은 규칙을 적용한다. 아직 존재하지 않는 action의 프레임 수를 지금 정하지는 않는다.
+
+### Current Animation Contract
+
+제작과 런타임에 실제로 적용되는 현재 계약값이다. 상태 이름은 코드의 `MovementState`를 기준으로 쓴다.
+
+| Animation State | Frame Count | Status |
+| --- | ---: | --- |
+| Idle | 4 | Adopted |
+| Walking | TBD | Not adopted |
+| Sprinting | TBD | Not adopted |
+| Jumping | TBD | Not adopted |
+| Falling | TBD | Not adopted |
+| AirDashing | TBD | Not adopted |
+| WallSliding | TBD | Not adopted |
+| SlowFalling | TBD | Not adopted |
+| FastFalling | TBD | Not adopted |
+
+`Idle = 4`는 proto_one에서 실제로 채택해 런타임에서 재생 중인 값이다. 나머지는 아직 정하지 않았으며 근거 없이 숫자를 채워 넣지 않는다.
+
+#### 이 표의 역할
+
+이 표는 참고 자료가 아니라 다음 작업 전체의 기준이다.
+
+- raw frame 이미지 생성
+- 정규화
+- atlas 생성
+- manifest 생성
+- 런타임 애니메이션 연결
+- QA 자동화
+- 다른 캐릭터 제작
+
+따라서 어떤 상태의 asset을 만들기 전에 그 상태의 frame count를 이 표에서 먼저 확인한다. `TBD`이면 다음 순서를 지킨다.
+
+1. 해당 상태의 frame count를 정한다.
+2. 이 표에 `Adopted`로 기록한다.
+3. 그 다음에 실제 asset을 만든다.
+
+정하지 않은 채로 asset을 먼저 만들면 캐릭터마다 다른 값이 굳어져 되돌리기 어려워진다.
+
+`Adopted`로 기록된 값은 모든 캐릭터에 강제된다. 예를 들어 Walking이 4프레임으로 채택되면 proto_one, hodak_k8을 포함한 모든 캐릭터의 Walking이 4프레임이다. 캐릭터별로 같은 상태에 서로 다른 frame count를 두지 않는다.
+
+계약값 자체를 바꾸려면 한 캐릭터만 고치는 것으로는 부족하다. 해당 상태의 모든 캐릭터 asset을 함께 바꾸고 이 표를 갱신한다.
+
+Turn, JumpStart, Land, RunStart, RunStop, Music, Emote, PlantFlag처럼 더 세분화된 애니메이션이 나중에 필요해질 수 있다. 지금 이 표에 억지로 넣지 않는다. 실제 제작 필요가 생겼을 때 같은 원칙으로 행을 추가한다. 원칙은 하나다. 같은 animation id면 모든 캐릭터가 같은 frame count를 쓴다.
+
+#### 후보 범위 표와의 관계
+
+앞의 "프레임 수 후보" 표와 이 계약표는 역할이 다르며 서로 충돌하지 않는다.
+
+| | 후보 범위 표 | Current Animation Contract |
+| --- | --- | --- |
+| 역할 | 설계 참고용 | 제작과 런타임에 적용되는 현재 채택값 |
+| 대상 | 아직 채택 전인 상태의 검토 범위 | 채택이 끝난 값 |
+| 구속력 | 없음. 검토 중 바뀔 수 있다 | 있음. 모든 캐릭터에 강제된다 |
+| 상태 이름 | 애니메이션 관점 용어 (Walk, Run, Jump Start 등) | 코드의 `MovementState` 이름 |
+
+어떤 상태가 `Adopted`가 되면 그 상태에 대해서는 계약표가 기준이고 후보 범위는 참고로만 남는다. 예를 들어 후보 범위 표에 Idle이 "약 3~4"로 적혀 있어도, 계약표에서 Idle이 4로 채택되었으므로 실제 제작 기준은 4다.
+
+### 코드의 MovementState와 문서 용어의 대응
+
+위 상태 목록은 애니메이션 관점의 분류이고, 코드의 `MovementState`는 이동 로직 관점의 분류라서 이름이 정확히 겹치지 않는다. 용어가 서로 어긋나지 않도록 현재 대응을 기록한다.
+
+| 코드의 MovementState | 이 문서의 상태 |
+| --- | --- |
+| `Idle` | Idle |
+| `Walking` | Walk |
+| `Sprinting` | Run |
+| `Jumping` | Jump Start, Airborne |
+| `Falling` | Airborne |
+| `AirDashing` | Air Dash |
+| `WallSliding` | Wall-related motion |
+| `SlowFalling` | Hover |
+| `FastFalling` | Fast Fall / Dive |
+
+코드에 대응이 없는 문서 상태는 Turn, Land, Hang, Ground Slide, Music이다. 이들은 아직 이동 로직에 없거나 별도 판정이 필요하다.
+
+이 대응표는 현재 상태를 기록한 것이며 어느 쪽을 다른 쪽에 맞춰 바꾸라는 뜻이 아니다. 한쪽이 바뀌면 이 표를 갱신한다.
 
 ## 5. Idle 정책
 
@@ -336,7 +451,7 @@ sprite image의 실제 크기와 player physics는 독립적으로 관리한다.
 
 1. 대표 캐릭터 1종
 2. 체형이 크게 다른 대표 캐릭터 추가
-3. 동일 animation state 체계가 서로 다른 실루엣에서도 성립하는지 검증
+3. 동일 animation state 체계와 공통 프레임 계약이 서로 다른 실루엣에서도 성립하는지 검증
 4. pivot / canvas / transform 정책 검증
 5. 이후 캐릭터 수 확대 여부 결정
 
@@ -363,7 +478,7 @@ sprite image의 실제 크기와 player physics는 독립적으로 관리한다.
 8. Hover / Fast Fall
 9. Wall / Hang / Slide
 10. Music
-11. 체형이 크게 다른 두 번째 캐릭터에 동일 규격 적용
+11. 체형이 크게 다른 두 번째 캐릭터에 동일 규격 적용. 이때 상태별 프레임 수는 첫 캐릭터와 같아야 한다
 12. 두 캐릭터 모두에서 pivot 흔들림과 이동감 검증
 13. 규격이 안정된 뒤에만 캐릭터 수 확대
 
@@ -379,6 +494,8 @@ sprite image의 실제 크기와 player physics는 독립적으로 관리한다.
 - Air Dash가 일반 공중 이동과 명확히 구분되는가
 - frame 변경 시 발 위치가 흔들리지 않는가
 - 서로 다른 체형에서도 animation state가 자연스럽게 읽히는가
+- 같은 상태에서 두 캐릭터의 프레임 수가 동일한가
+- 같은 프레임 수로도 두 캐릭터의 동작이 각각 자연스럽게 읽히는가
 - sprite와 collider가 독립적으로 동작하는가
 
 이 항목들은 automated test만으로 충분하지 않으며 실제 플레이 화면을 통한 visual playtest가 필요하다는 점을 기록한다.

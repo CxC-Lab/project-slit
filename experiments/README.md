@@ -121,4 +121,4 @@
 7. 2프레임 Music 애니메이션 적용
 8. 다른 2~4종 아바타를 같은 규격으로 교체할 수 있는지 검증
 
-성공 조건 후보는 모든 프레임의 캔버스와 pivot이 일관되고, `visualOffset`이 물리 상태를 바꾸지 않으며, 아바타 교체 시 animation state나 atlas 해석 코드를 변경하지 않는 것이다.
+성공 조건 후보는 모든 프레임의 캔버스와 pivot이 일관되고, `visualOffset`이 물리 상태를 바꾸지 않으며, 아바타 교체 시 animation state나 atlas 해석 코드를 변경하지 않는 것이다. 여기에 더해 같은 상태에서 아바타 간 프레임 수가 동일해야 한다. 이는 실험으로 판단할 후보가 아니라 지켜야 할 규칙이며 [`docs/animation-policy.md`](../docs/animation-policy.md)의 공통 애니메이션 프레임 계약을 따른다. 상태별 채택값은 같은 문서의 Current Animation Contract에서 확인한다. asset을 만들기 전에 그 표부터 본다.
