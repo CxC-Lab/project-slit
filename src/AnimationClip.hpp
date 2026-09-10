@@ -2,15 +2,17 @@
 
 #include <SFML/Graphics/Rect.hpp>
 #include <filesystem>
+#include <string>
 
-// Only the proto_one Idle clip; no movement-state mapping or resource ownership.
-class IdleAnimation
+// A manifest clip; no movement-state mapping or texture ownership.
+class AnimationClip
 {
 public:
-    explicit IdleAnimation(const std::filesystem::path& manifest);
+    explicit AnimationClip(const std::filesystem::path& manifest, const std::string& clipName = "Idle");
     static std::filesystem::path findManifest(std::filesystem::path directory = std::filesystem::current_path());
     void validateAtlas(sf::Vector2u size) const;
     void advance(double deltaTime);
+    void reset() { elapsed_ = 0.; }
     int frameIndex() const;
     sf::IntRect frameRect() const;
     sf::Vector2f pivot() const { return pivot_; }

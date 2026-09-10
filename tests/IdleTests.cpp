@@ -1,4 +1,4 @@
-#include "IdleAnimation.hpp"
+#include "AnimationClip.hpp"
 
 #include <SFML/Graphics/Image.hpp>
 #include <iostream>
@@ -11,11 +11,11 @@ void check(bool condition, const char* message)
 
 int main() try
 {
-    const auto manifest = IdleAnimation::findManifest();
+    const auto manifest = AnimationClip::findManifest();
     const auto root = manifest.parent_path().parent_path().parent_path().parent_path();
-    check(IdleAnimation::findManifest(root) == manifest, "repo root path lookup");
-    check(IdleAnimation::findManifest(root / "build" / "Release") == manifest, "Release directory path lookup");
-    IdleAnimation idle(manifest);
+    check(AnimationClip::findManifest(root) == manifest, "repo root path lookup");
+    check(AnimationClip::findManifest(root / "build" / "Release") == manifest, "Release directory path lookup");
+    AnimationClip idle(manifest);
     sf::Image image;
     check(image.loadFromFile(idle.atlasPath()), "atlas image loads without GL");
     idle.validateAtlas(image.getSize());
@@ -36,12 +36,33 @@ int main() try
     check(idle.frameIndex() == 2, "one long update skips frames correctly");
     idle.advance(10. * idle.frames() / idle.fps());
     check(idle.frameIndex() == 2, "long delta wraps multiple cycles");
-    IdleAnimation smallSteps(manifest);
+    AnimationClip smallSteps(manifest);
     for (int i = 0; i < 75; ++i) smallSteps.advance(0.01);
     check(smallSteps.frameIndex() == 3, "small deltas accumulate by elapsed time");
     bool rejected = false;
     try { idle.validateAtlas({511, 128}); } catch (const std::exception&) { rejected = true; }
     check(rejected, "atlas mismatch is rejected");
+    AnimationClip walking(manifest, "Walking");
+    sf::Image walkingImage;
+    check(walkingImage.loadFromFile(walking.atlasPath()), "Walking atlas loads");
+    walking.validateAtlas(walkingImage.getSize());
+    check(walking.frames() == 4 && walking.fps() == 4. && walking.loops(), "Walking manifest contract");
+    check(walking.pivot() == idle.pivot() && walking.frameRect().size == idle.frameRect().size, "shared canvas and pivot");
+    for (int i = 0; i < walking.frames(); ++i)
+    {
+        const auto rect = walking.frameRect();
+        check(walking.frameIndex() == i && rect.position.x == i * rect.size.x && rect.position.y == 0,
+              "Walking left-to-right frame slicing");
+        check(rect.position.x + rect.size.x <= static_cast<int>(walkingImage.getSize().x) &&
+              rect.position.y + rect.size.y <= static_cast<int>(walkingImage.getSize().y), "Walking rect in atlas");
+        walking.advance(1. / walking.fps());
+    }
+    check(walking.frameIndex() == 0, "Walking loop wrap");
+    walking.advance(1.5 / walking.fps());
+    walking.reset();
+    check(walking.frameIndex() == 0, "clip change resets frame");
+    walking.advance(0.75 / walking.fps());
+    check(walking.frameIndex() == 0, "clip change resets fractional timer");
     std::cout << "PASS: manifest, atlas, paths, rectangles, timing and wrap\n";
 }
 catch (const std::exception& error)

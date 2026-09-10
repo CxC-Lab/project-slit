@@ -1,5 +1,5 @@
 #include "Display.hpp"
-#include "IdleAnimation.hpp"
+#include "AnimationClip.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <algorithm>
@@ -59,7 +59,7 @@ void gui()
     const auto center = view.getCenter();
     const auto windowedSize = window.getSize();
     const auto windowedPosition = window.getPosition();
-    IdleAnimation idle(IdleAnimation::findManifest());
+    AnimationClip idle(AnimationClip::findManifest());
     sf::Texture texture(idle.atlasPath());
     idle.validateAtlas(texture.getSize());
     texture.setSmooth(false);
