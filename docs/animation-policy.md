@@ -166,6 +166,7 @@ Project Slit에서는 이동 자체가 핵심 재미 중 하나다.
 | Idle | 4 | Adopted |
 | Walking | 4 | Adopted |
 | Sprinting | 4 | Adopted |
+| Turn | 3 | Adopted |
 | Jumping | TBD | Not adopted |
 | Falling | TBD | Not adopted |
 | AirDashing | TBD | Not adopted |
@@ -173,9 +174,25 @@ Project Slit에서는 이동 자체가 핵심 재미 중 하나다.
 | SlowFalling | TBD | Not adopted |
 | FastFalling | TBD | Not adopted |
 
-`Idle = 4`, `Walking = 4`, `Sprinting = 4` 는 proto_one 에서 실제로 채택해 런타임에서 재생 중인 값이다. Walking 과 Sprinting 은 제공된 원본 프레임이 각각 정확히 4장이었고 앞의 "프레임 수 후보" 표의 범위와도 맞아 채택했다. 세 값은 proto_one 만의 값이 아니라 앞으로 만들 모든 캐릭터가 따라야 하는 공통 프레임 수다. 나머지는 아직 정하지 않았으며 근거 없이 숫자를 채워 넣지 않는다.
+`Idle = 4`, `Walking = 4`, `Sprinting = 4` 는 proto_one 에서 실제로 채택해 런타임에서 재생 중인 값이다. Walking 과 Sprinting 은 제공된 원본 프레임이 각각 정확히 4장이었고 앞의 "프레임 수 후보" 표의 범위와도 맞아 채택했다. `Turn = 3`은 2026-09-10, proto_one에 제공된 raw Turn 프레임이 정확히 3장이라 채택했다. 이 값은 앞의 "프레임 수 후보" 표에 적힌 Turn의 범위(약 1~2)보다 많은데, 그 표는 "구속력 없음. 검토 중 바뀔 수 있다"고 명시된 참고용 후보 범위이지 강제 값이 아니므로, 실제 제공된 자산 기준으로 3을 채택했다. Turn은 코드의 `MovementState`에 대응하는 상태가 없다. 이는 미구현이라서가 아니라 의도한 설계다. 자세한 내용은 아래 "이동 상태가 아닌 애니메이션"을 참고한다. 네 값 모두 proto_one 만의 값이 아니라 앞으로 만들 모든 캐릭터가 따라야 하는 공통 프레임 수다. 나머지는 아직 정하지 않았으며 근거 없이 숫자를 채워 넣지 않는다.
 
 프레임 수가 같아도 재생 속도까지 같아야 하는 것은 아니다. 이 계약이 정하는 것은 프레임 수이며, fps 는 동작마다 다를 수 있다. 실제로 Idle 과 Walking 은 4fps, Sprinting 은 8fps 로 재생한다. 같은 4프레임을 두 배 속도로 넘겨 달리는 느낌을 만든다. fps 값은 캐릭터별 매니페스트가 가지므로, 같은 동작이라도 캐릭터마다 다른 fps 를 쓸 수 있는지는 아직 정하지 않았다.
+
+#### 이동 상태가 아닌 애니메이션
+
+계약표의 모든 항목이 이동 상태에 대응하는 것은 아니다. Turn 이 첫 사례다.
+
+Turn 은 좌우 방향이 바뀌는 순간 잠깐 재생되고 끝나는 애니메이션이다. 플레이어가 "Turn 상태"에 있는 것이 아니라, 걷거나 달리거나 떨어지는 도중에 방향이 바뀐 것뿐이다. 그래서 `MovementState` 에 `Turning` 을 추가하지 않고, 현재 상태의 애니메이션을 잠시 덮어쓰는 방식으로 두었다.
+
+- Turn 이 재생되는 동안에도 이동, 점프, 대쉬, 벽 이동은 그대로 진행된다.
+- Turn 이 끝나면 그 시점의 `MovementState` 를 다시 조회해 해당 애니메이션으로 돌아간다. 이전 상태를 기억했다가 되돌리지 않는다.
+- 따라서 나중에 Jumping 이나 Falling 애니메이션이 붙어도 Turn 쪽 코드는 손대지 않는다.
+
+Turn 은 방향이 있는 애니메이션이지만 에셋은 한 벌만 둔다. 반대 방향은 실행 중에 좌우로 뒤집어 쓴다. pivot 의 x 가 캔버스 가로 정중앙이라 뒤집어도 캐릭터가 좌우로 밀리지 않는다. 방향마다 별도 에셋을 만들지 않는다.
+
+Turn 은 반복 재생하지 않는다. 계약표의 다른 항목과 달리 한 번 재생하고 멈춘다. 매니페스트의 `loop` 값이 이를 구분한다.
+
+앞으로 추가될 Music, PlantFlag, Emote 같은 동작도 이동 상태가 아니다. 같은 프레임 수 규칙을 따르되 이동 상태로 만들지 않는다.
 
 #### 이 표의 역할
 
@@ -232,7 +249,7 @@ Turn, JumpStart, Land, RunStart, RunStop, Music, Emote, PlantFlag처럼 더 세�
 | `SlowFalling` | Hover |
 | `FastFalling` | Fast Fall / Dive |
 
-코드에 대응이 없는 문서 상태는 Turn, Land, Hang, Ground Slide, Music이다. 이들은 아직 이동 로직에 없거나 별도 판정이 필요하다.
+코드에 대응이 없는 문서 상태는 Turn, Land, Hang, Ground Slide, Music이다. Turn 은 위 "이동 상태가 아닌 애니메이션"에서 설명한 대로 의도적으로 이동 상태를 두지 않았고 이미 구현되어 있다. 나머지는 아직 이동 로직에 없거나 별도 판정이 필요하다.
 
 이 대응표는 현재 상태를 기록한 것이며 어느 쪽을 다른 쪽에 맞춰 바꾸라는 뜻이 아니다. 한쪽이 바뀌면 이 표를 갱신한다.
 
@@ -474,7 +491,7 @@ sprite image의 실제 크기와 player physics는 독립적으로 관리한다.
 2. 테스트 캐릭터 1종 적용
 3. Idle (2026-09-10 proto_one 적용 완료)
 4. Walk / Run (2026-09-10 둘 다 적용 완료. Run 은 코드의 Sprinting 상태에 연결했다)
-5. Start / Stop / Turn
+5. Start / Stop / Turn (2026-09-10 Turn 적용 완료. Start 와 Stop 은 미착수)
 6. Jump Start / Airborne / Land
 7. Air Dash
 8. Hover / Fast Fall
