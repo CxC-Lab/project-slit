@@ -1,0 +1,29 @@
+{
+  "character": "proto_one",
+  "status": "prototype - not a final production spec, see docs/animation-policy.md",
+  "canvas": [128, 128],
+  "pivot": {
+    "x": 64,
+    "y": 123,
+    "basis": "fixed across all frames; horizontal = shared silhouette center, vertical = lowest observed hover-pod position among the adopted Idle frames (virtual ground line). proto_one is a hover-type character with no literal foot contact."
+  },
+  "atlas": {
+    "idle": "atlas/proto_one_idle.png"
+  },
+  "animations": {
+    "Idle": {
+      "atlas": "idle",
+      "row": 0,
+      "frames": 4,
+      "frame_files": [
+        "normalized/idle/proto_one_idle_00.png",
+        "normalized/idle/proto_one_idle_01.png",
+        "normalized/idle/proto_one_idle_02.png",
+        "normalized/idle/proto_one_idle_03.png"
+      ],
+      "fps": 4,
+      "loop": true
+    }
+  },
+  "notes": "2026-09-10: frames/idle raw source PNGs were fully replaced by the user and re-normalized from scratch (previous values backed up at proto_one.manifest.json.bak-oldframes). Schema unchanged; canvas stayed 128x128; pivot.y shifted 124->123 due to the new source's tighter bbox. New source set has visibly less body-scale jitter than the previous one (bbox width varies by only ~3px across all 4 frames vs ~85px before)."
+}

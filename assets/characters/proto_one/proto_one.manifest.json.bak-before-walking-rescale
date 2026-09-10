@@ -1,0 +1,43 @@
+{
+  "character": "proto_one",
+  "status": "prototype - not a final production spec, see docs/animation-policy.md",
+  "canvas": [128, 128],
+  "pivot": {
+    "x": 64,
+    "y": 123,
+    "basis": "fixed across all animations/frames of this character; horizontal = shared silhouette center, vertical = lowest observed hover-pod position among the adopted Idle frames (virtual ground line). proto_one is a hover-type character with no literal foot contact. Walking reuses this exact pivot (not independently re-fit) so switching between Idle and Walking in-game does not pop the character's position or scale."
+  },
+  "atlas": {
+    "idle": "atlas/proto_one_idle.png",
+    "walking": "atlas/proto_one_walking.png"
+  },
+  "animations": {
+    "Idle": {
+      "atlas": "idle",
+      "row": 0,
+      "frames": 4,
+      "frame_files": [
+        "normalized/idle/proto_one_idle_00.png",
+        "normalized/idle/proto_one_idle_01.png",
+        "normalized/idle/proto_one_idle_02.png",
+        "normalized/idle/proto_one_idle_03.png"
+      ],
+      "fps": 4,
+      "loop": true
+    },
+    "Walking": {
+      "atlas": "walking",
+      "row": 0,
+      "frames": 4,
+      "frame_files": [
+        "normalized/walking/proto_one_walking_00.png",
+        "normalized/walking/proto_one_walking_01.png",
+        "normalized/walking/proto_one_walking_02.png",
+        "normalized/walking/proto_one_walking_03.png"
+      ],
+      "fps": 4,
+      "loop": true
+    }
+  },
+  "notes": "2026-09-10: frames/idle raw source PNGs were fully replaced by the user and re-normalized from scratch (previous values backed up at proto_one.manifest.json.bak-oldframes). Schema unchanged; canvas stayed 128x128; pivot.y shifted 124->123 due to the new source's tighter bbox. New source set has visibly less body-scale jitter than the previous one (bbox width varies by only ~3px across all 4 frames vs ~85px before). Same day: Walking animation added (previous manifest backed up at proto_one.manifest.json.bak-before-walking). Walking=4 frames was adopted in animation-policy.md's Current Animation Contract (source had exactly 4 raw frames, within the existing 3-4 candidate range). Walking's normalized frames were scaled independently (0.1329 vs Idle's 0.1429, since Walking's raw union bbox is larger) but deliberately mapped onto the SAME fixed pivot (64,123) as Idle so the two animations share a stable ground line and center when swapped at runtime."
+}
