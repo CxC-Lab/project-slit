@@ -167,14 +167,14 @@ Project Slit에서는 이동 자체가 핵심 재미 중 하나다.
 | Walking | 4 | Adopted |
 | Sprinting | 4 | Adopted |
 | Turn | 3 | Adopted |
-| Jumping | TBD | Not adopted |
-| Falling | TBD | Not adopted |
+| Jumping | 3 | Adopted |
+| Falling | 3 | Adopted |
 | AirDashing | TBD | Not adopted |
 | WallSliding | TBD | Not adopted |
 | SlowFalling | TBD | Not adopted |
 | FastFalling | TBD | Not adopted |
 
-`Idle = 4`, `Walking = 4`, `Sprinting = 4` 는 proto_one 에서 실제로 채택해 런타임에서 재생 중인 값이다. Walking 과 Sprinting 은 제공된 원본 프레임이 각각 정확히 4장이었고 앞의 "프레임 수 후보" 표의 범위와도 맞아 채택했다. `Turn = 3`은 2026-09-10, proto_one에 제공된 raw Turn 프레임이 정확히 3장이라 채택했다. 이 값은 앞의 "프레임 수 후보" 표에 적힌 Turn의 범위(약 1~2)보다 많은데, 그 표는 "구속력 없음. 검토 중 바뀔 수 있다"고 명시된 참고용 후보 범위이지 강제 값이 아니므로, 실제 제공된 자산 기준으로 3을 채택했다. Turn은 코드의 `MovementState`에 대응하는 상태가 없다. 이는 미구현이라서가 아니라 의도한 설계다. 자세한 내용은 아래 "이동 상태가 아닌 애니메이션"을 참고한다. 네 값 모두 proto_one 만의 값이 아니라 앞으로 만들 모든 캐릭터가 따라야 하는 공통 프레임 수다. 나머지는 아직 정하지 않았으며 근거 없이 숫자를 채워 넣지 않는다.
+`Idle = 4`, `Walking = 4`, `Sprinting = 4` 는 proto_one 에서 실제로 채택해 런타임에서 재생 중인 값이다. Walking 과 Sprinting 은 제공된 원본 프레임이 각각 정확히 4장이었고 앞의 "프레임 수 후보" 표의 범위와도 맞아 채택했다. `Turn = 3`은 2026-09-10, proto_one에 제공된 raw Turn 프레임이 정확히 3장이라 채택했다. 이 값은 앞의 "프레임 수 후보" 표에 적힌 Turn의 범위(약 1~2)보다 많은데, 그 표는 "구속력 없음. 검토 중 바뀔 수 있다"고 명시된 참고용 후보 범위이지 강제 값이 아니므로, 실제 제공된 자산 기준으로 3을 채택했다. Turn은 코드의 `MovementState`에 대응하는 상태가 없다. 이는 미구현이라서가 아니라 의도한 설계다. 자세한 내용은 아래 "이동 상태가 아닌 애니메이션"을 참고한다. `Jumping = 3`은 2026-09-10, proto_one에 제공된 raw Jumping 프레임이 정확히 3장이라 채택했다. 코드의 `Jumping` MovementState는 이 문서 용어의 Jump Start(약 1)와 Airborne(약 1~2)를 함께 아우르므로, 두 후보 범위를 합친 상한(약 3)과 일치한다. `Falling = 3`은 같은 날, proto_one에 제공된 raw Falling 프레임이 정확히 3장이라 채택했다. 코드의 `Falling` MovementState는 이 문서 용어의 Airborne(약 1~2)에 대응하는데, 제공량 3은 그 범위보다 많다 — 다만 후보 범위 표는 "구속력 없음"이라 명시되어 있으므로 실제 제공된 자산 기준으로 3을 채택했다. 여섯 값 모두 proto_one 만의 값이 아니라 앞으로 만들 모든 캐릭터가 따라야 하는 공통 프레임 수다. 나머지는 아직 정하지 않았으며 근거 없이 숫자를 채워 넣지 않는다.
 
 프레임 수가 같아도 재생 속도까지 같아야 하는 것은 아니다. 이 계약이 정하는 것은 프레임 수이며, fps 는 동작마다 다를 수 있다. 실제로 Idle 과 Walking 은 4fps, Sprinting 은 8fps 로 재생한다. 같은 4프레임을 두 배 속도로 넘겨 달리는 느낌을 만든다. fps 값은 캐릭터별 매니페스트가 가지므로, 같은 동작이라도 캐릭터마다 다른 fps 를 쓸 수 있는지는 아직 정하지 않았다.
 
@@ -193,6 +193,14 @@ Turn 은 방향이 있는 애니메이션이지만 에셋은 한 벌만 둔다. 
 Turn 은 반복 재생하지 않는다. 계약표의 다른 항목과 달리 한 번 재생하고 멈춘다. 매니페스트의 `loop` 값이 이를 구분한다.
 
 앞으로 추가될 Music, PlantFlag, Emote 같은 동작도 이동 상태가 아니다. 같은 프레임 수 규칙을 따르되 이동 상태로 만들지 않는다.
+
+#### 하나의 애니메이션이 여러 원인을 덮는 경우
+
+이동 상태는 "무엇 때문에 그렇게 되었는가"가 아니라 "지금 어떤 상태인가"만 나타낸다. 따라서 원인이 달라도 같은 상태면 같은 애니메이션을 쓴다.
+
+Jumping 이 그 예다. 점프 입력으로 올라갈 때와 위쪽 공중 대쉬의 관성으로 올라갈 때 모두 Jumping 이고, 둘 다 Jumping 애니메이션이 재생된다. 이는 설계한 것이 아니라 규칙이 만나 생긴 결과지만 플레이에서 더 자연스러워 그대로 두기로 했다. 배경과 되돌릴 조건은 [`decisions/0006-upward-motion-is-jumping.md`](decisions/0006-upward-motion-is-jumping.md)에 있다.
+
+원인별로 애니메이션을 나누고 싶어지면 상태 판정을 고치기 전에 애니메이션 쪽에서 구분할 수 있는지 먼저 확인한다. 이동 로직은 애니메이션 사정으로 바꾸지 않는다.
 
 #### 이 표의 역할
 
