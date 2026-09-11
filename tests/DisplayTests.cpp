@@ -57,6 +57,23 @@ void gui()
     view.setCenter({1000.f, -300.f});
     Display::apply(view, window.getSize());
     const auto center = view.getCenter();
+#ifdef _WIN32
+    check((GetWindowLongPtr(window.getNativeHandle(), GWL_STYLE) & (WS_CAPTION | WS_THICKFRAME)) == 0,
+          "startup borderless style");
+    const auto verifyCursor = [&] {
+        display.handleEvent(sf::Event::FocusGained{}, window, view);
+        check(GetCursor() == nullptr, "focused cursor hidden");
+        display.handleEvent(sf::Event::FocusLost{}, window, view);
+        check(GetCursor() != nullptr, "unfocused cursor restored");
+        display.handleEvent(sf::Event::FocusGained{}, window, view);
+    };
+    verifyCursor();
+#endif
+    check(display.fullscreen(), "starts borderless");
+    check(window.getSize() == sf::VideoMode::getDesktopMode().size, "startup native size");
+    const sf::Event startupToggle = sf::Event::KeyPressed{.code = sf::Keyboard::Key::Enter, .alt = true};
+    display.handleEvent(startupToggle, window, view);
+    check(!display.fullscreen(), "startup can recover to windowed");
     const auto windowedSize = window.getSize();
     const auto windowedPosition = window.getPosition();
     AnimationClip idle(AnimationClip::findManifest());
@@ -75,6 +92,10 @@ void gui()
         check(display.handleEvent(pressed, window, view), "Alt Enter consumed by display");
         check(display.fullscreen() == (i == 0), "mode toggles");
         check(view.getCenter() == center, "toggle preserves camera center");
+#ifdef _WIN32
+        check((GetCursor() == nullptr) == window.hasFocus(), "recreated window cursor matches focus");
+        verifyCursor();
+#endif
         display.handleEvent(released, window, view);
         if (i == 0)
         {
@@ -115,6 +136,9 @@ void gui()
     check(closedEvent, "native close event preserved");
 #endif
     window.close();
+#ifdef _WIN32
+    check(GetCursor() != nullptr, "cursor restored after close");
+#endif
 }
 
 int main(int argc, char** argv) try

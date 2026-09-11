@@ -26,9 +26,15 @@ void Display::apply(sf::View& view, sf::Vector2u physicalSize)
 
 void Display::open(sf::RenderWindow& window)
 {
-    window.create(sf::VideoMode(windowedSize_), "Project Slit Prototype", sf::Style::Default);
+    const auto desktop = sf::VideoMode::getDesktopMode();
+    windowedPosition_ = {static_cast<int>((desktop.size.x - std::min(desktop.size.x, windowedSize_.x)) / 2),
+                         static_cast<int>((desktop.size.y - std::min(desktop.size.y, windowedSize_.y)) / 2)};
+    window.create(desktop, "Project Slit Prototype", sf::Style::None, sf::State::Windowed);
+    window.setPosition({0, 0});
+    fullscreen_ = true;
     window.setFramerateLimit(60);
     window.setKeyRepeatEnabled(false);
+    window.setMouseCursorVisible(!window.hasFocus());
 }
 
 void Display::toggle(sf::RenderWindow& window, sf::View& worldView)
@@ -50,6 +56,7 @@ void Display::toggle(sf::RenderWindow& window, sf::View& worldView)
     fullscreen_ = !fullscreen_;
     window.setFramerateLimit(60);
     window.setKeyRepeatEnabled(false);
+    window.setMouseCursorVisible(!window.hasFocus());
     apply(worldView, window.getSize());
     window.setView(worldView);
     window.requestFocus();
@@ -59,6 +66,9 @@ void Display::toggle(sf::RenderWindow& window, sf::View& worldView)
 
 bool Display::handleEvent(const sf::Event& event, sf::RenderWindow& window, sf::View& worldView)
 {
+    if (event.is<sf::Event::FocusLost>()) window.setMouseCursorVisible(true);
+    if (event.is<sf::Event::FocusGained>()) window.setMouseCursorVisible(false);
+    if (event.is<sf::Event::Closed>()) window.setMouseCursorVisible(true);
     if (const auto* key = event.getIf<sf::Event::KeyReleased>(); key && key->code == sf::Keyboard::Key::Enter)
     {
         return true;

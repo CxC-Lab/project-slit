@@ -1,3 +1,5 @@
+#include <fstream>
+#include <nlohmann/json.hpp>
 #include "Camera.hpp"
 #include "Input.hpp"
 #include "Player.hpp"
@@ -207,8 +209,31 @@ void climbingRoute()
     check(p.grounded() && near(p.collisionBounds().position.y, -1128.f), "highest platform reachable and landable");
 }
 }
+void regionData()
+{
+    const auto path = Region::findFile("practice_room");
+    check(Region::findFile("practice_room", path.parent_path()) == path, "ancestor path search");
+    Region large(Region::findFile("greybox"));
+    check(large.bounds() == sf::FloatRect({0.f,-4800.f},{9600.f,5400.f}), "greybox twelve by twelve screens");
+    check(large.solids().size() > 16, "greybox geometry loaded");
+    nlohmann::json data;
+    std::ifstream(path) >> data;
+    const auto temporary = std::filesystem::temp_directory_path() / "project_slit_region_test.json";
+    for (int i = 0; i < 4; ++i) {
+        auto invalid = data;
+        if (i == 0) invalid.erase("spawn");
+        if (i == 1) invalid["bounds"][2] = "wide";
+        if (i == 2) invalid["solids"][0][2] = -1;
+        if (i == 3) invalid["bounds"][2] = 100;
+        { std::ofstream output(temporary); output << invalid; }
+        bool rejected = false;
+        try { Region bad(temporary); } catch (const std::exception&) { rejected = true; }
+        std::filesystem::remove(temporary);
+        check(rejected, "missing/type/geometry/camera-size errors rejected");
+    }
+}
 int main()
 {
-    try { runs(); fallAndMomentum(); cameras(); climbingRoute(); practiceRoom(); std::cout << "PASS: running, vertical camera, climbing route\n"; }
+    try { regionData(); runs(); fallAndMomentum(); cameras(); climbingRoute(); practiceRoom(); std::cout << "PASS: running, vertical camera, climbing route\n"; }
     catch (const std::exception& e) { std::cerr << "FAIL: " << e.what() << '\n'; return 1; }
 }

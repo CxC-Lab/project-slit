@@ -31,7 +31,7 @@ struct ClipVisual
 };
 }
 
-int main() try
+int main(int argc, char** argv) try
 {
     Display display;
     sf::RenderWindow window;
@@ -39,7 +39,8 @@ int main() try
     sf::View camera(sf::FloatRect({0.f, 0.f}, Display::referenceViewSize));
     Display::apply(camera, window.getSize());
 
-    const PracticeRoom room;
+    if (argc > 2) throw std::runtime_error("Usage: project_slit.exe [practice_room|greybox]");
+    const Region room(Region::findFile(argc == 2 ? argv[1] : "practice_room"));
     Player player(room.spawn());
     sf::RectangleShape playerShape(Movement::collisionSize);
     playerShape.setFillColor(sf::Color(240, 200, 100));
@@ -84,6 +85,7 @@ int main() try
         {
             if (event->is<sf::Event::Closed>())
             {
+                window.setMouseCursorVisible(true);
                 window.close();
                 break;
             }
