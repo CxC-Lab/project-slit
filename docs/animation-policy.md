@@ -169,12 +169,12 @@ Project Slit에서는 이동 자체가 핵심 재미 중 하나다.
 | Turn | 3 | Adopted |
 | Jumping | 3 | Adopted |
 | Falling | 3 | Adopted |
-| AirDashing | TBD | Not adopted |
+| AirDashing | 3 | Adopted |
 | WallSliding | TBD | Not adopted |
 | SlowFalling | TBD | Not adopted |
-| FastFalling | TBD | Not adopted |
+| FastFalling | 2 | Adopted |
 
-`Idle = 4`, `Walking = 4`, `Sprinting = 4` 는 proto_one 에서 실제로 채택해 런타임에서 재생 중인 값이다. Walking 과 Sprinting 은 제공된 원본 프레임이 각각 정확히 4장이었고 앞의 "프레임 수 후보" 표의 범위와도 맞아 채택했다. `Turn = 3`은 2026-09-10, proto_one에 제공된 raw Turn 프레임이 정확히 3장이라 채택했다. 이 값은 앞의 "프레임 수 후보" 표에 적힌 Turn의 범위(약 1~2)보다 많은데, 그 표는 "구속력 없음. 검토 중 바뀔 수 있다"고 명시된 참고용 후보 범위이지 강제 값이 아니므로, 실제 제공된 자산 기준으로 3을 채택했다. Turn은 코드의 `MovementState`에 대응하는 상태가 없다. 이는 미구현이라서가 아니라 의도한 설계다. 자세한 내용은 아래 "이동 상태가 아닌 애니메이션"을 참고한다. `Jumping = 3`은 2026-09-10, proto_one에 제공된 raw Jumping 프레임이 정확히 3장이라 채택했다. 코드의 `Jumping` MovementState는 이 문서 용어의 Jump Start(약 1)와 Airborne(약 1~2)를 함께 아우르므로, 두 후보 범위를 합친 상한(약 3)과 일치한다. `Falling = 3`은 같은 날, proto_one에 제공된 raw Falling 프레임이 정확히 3장이라 채택했다. 코드의 `Falling` MovementState는 이 문서 용어의 Airborne(약 1~2)에 대응하는데, 제공량 3은 그 범위보다 많다 — 다만 후보 범위 표는 "구속력 없음"이라 명시되어 있으므로 실제 제공된 자산 기준으로 3을 채택했다. 여섯 값 모두 proto_one 만의 값이 아니라 앞으로 만들 모든 캐릭터가 따라야 하는 공통 프레임 수다. 나머지는 아직 정하지 않았으며 근거 없이 숫자를 채워 넣지 않는다.
+`Idle = 4`, `Walking = 4`, `Sprinting = 4` 는 proto_one 에서 실제로 채택해 런타임에서 재생 중인 값이다. Walking 과 Sprinting 은 제공된 원본 프레임이 각각 정확히 4장이었고 앞의 "프레임 수 후보" 표의 범위와도 맞아 채택했다. `Turn = 3`은 2026-09-10, proto_one에 제공된 raw Turn 프레임이 정확히 3장이라 채택했다. 이 값은 앞의 "프레임 수 후보" 표에 적힌 Turn의 범위(약 1~2)보다 많은데, 그 표는 "구속력 없음. 검토 중 바뀔 수 있다"고 명시된 참고용 후보 범위이지 강제 값이 아니므로, 실제 제공된 자산 기준으로 3을 채택했다. Turn은 코드의 `MovementState`에 대응하는 상태가 없다. 이는 미구현이라서가 아니라 의도한 설계다. 자세한 내용은 아래 "이동 상태가 아닌 애니메이션"을 참고한다. `Jumping = 3`은 2026-09-10, proto_one에 제공된 raw Jumping 프레임이 정확히 3장이라 채택했다. 코드의 `Jumping` MovementState는 이 문서 용어의 Jump Start(약 1)와 Airborne(약 1~2)를 함께 아우르므로, 두 후보 범위를 합친 상한(약 3)과 일치한다. `Falling = 3`은 같은 날, proto_one에 제공된 raw Falling 프레임이 정확히 3장이라 채택했다. 코드의 `Falling` MovementState는 이 문서 용어의 Airborne(약 1~2)에 대응하는데, 제공량 3은 그 범위보다 많다 — 다만 후보 범위 표는 "구속력 없음"이라 명시되어 있으므로 실제 제공된 자산 기준으로 3을 채택했다. `FastFalling = 2`는 같은 날, proto_one에 제공된 raw FastFalling 프레임이 정확히 2장이고 앞의 "프레임 수 후보" 표의 Fast Fall / Dive 범위(약 1~2)와도 정확히 맞아 채택했다. 2026-09-11에 raw FastFalling 원본이 4장으로 늘었다(가로세로비 실측상 앞 2장은 약 1.01~1.03, 뒤 2장은 약 1.15~1.21로 뒤 2장은 몸체 실루엣 자체가 눈물방울형으로 재구성되는 별개 카테고리). 이후 사용자가 의도를 명확히 했다 — FastFalling은 원래부터 "더 극단적인 낙하"를 표현하는 별도 상태이고, 뒤 2장(fast_falling03/04)은 실제 플레이에서 약하게 느껴졌던 앞 2장(01/02)의 대체 후보로 제작된 것이었다. 이에 따라 계약값(2)은 유지하되 실제 채택 원본을 01+02에서 03+04로 교체했다. 자세한 판단 근거는 `proto_one.manifest.json`의 FastFalling 항목과 상단 notes에 기록했다. `AirDashing = 3`은 2026-09-11, proto_one에 제공된 raw AirDashing 프레임이 정확히 3장이라 채택했다. 앞의 "프레임 수 후보" 표에 적힌 Air Dash 범위(약 2)보다 많은데, 그 표는 구속력이 없으므로 실제 제공된 자산 기준으로 3을 채택했다. 여덟 값 모두 proto_one 만의 값이 아니라 앞으로 만들 모든 캐릭터가 따라야 하는 공통 프레임 수다. 나머지는 아직 정하지 않았으며 근거 없이 숫자를 채워 넣지 않는다.
 
 프레임 수가 같아도 재생 속도까지 같아야 하는 것은 아니다. 이 계약이 정하는 것은 프레임 수이며, fps 는 동작마다 다를 수 있다. 실제로 Idle 과 Walking 은 4fps, Sprinting 은 8fps 로 재생한다. 같은 4프레임을 두 배 속도로 넘겨 달리는 느낌을 만든다. fps 값은 캐릭터별 매니페스트가 가지므로, 같은 동작이라도 캐릭터마다 다른 fps 를 쓸 수 있는지는 아직 정하지 않았다.
 
@@ -500,9 +500,9 @@ sprite image의 실제 크기와 player physics는 독립적으로 관리한다.
 3. Idle (2026-09-10 proto_one 적용 완료)
 4. Walk / Run (2026-09-10 둘 다 적용 완료. Run 은 코드의 Sprinting 상태에 연결했다)
 5. Start / Stop / Turn (2026-09-10 Turn 적용 완료. Start 와 Stop 은 미착수)
-6. Jump Start / Airborne / Land
-7. Air Dash
-8. Hover / Fast Fall
+6. Jump Start / Airborne / Land (2026-09-10 코드의 Jumping 과 Falling 에 적용 완료. Land 는 미착수)
+7. Air Dash (2026-09-11 적용 완료)
+8. Hover / Fast Fall (2026-09-11 Fast Fall 적용 완료. Hover 는 코드의 SlowFalling 이며 미착수)
 9. Wall / Hang / Slide
 10. Music
 11. 체형이 크게 다른 두 번째 캐릭터에 동일 규격 적용. 이때 상태별 프레임 수는 첫 캐릭터와 같아야 한다
