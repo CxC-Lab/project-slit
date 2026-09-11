@@ -1,0 +1,126 @@
+{
+  "character": "proto_one",
+  "status": "prototype - not a final production spec, see docs/animation-policy.md",
+  "canvas": [128, 128],
+  "pivot": {
+    "x": 64,
+    "y": 123,
+    "basis": "fixed across all animations/frames of this character; horizontal = shared silhouette center, vertical = lowest observed hover-pod position among the adopted Idle frames (virtual ground line). proto_one is a hover-type character with no literal foot contact. Walking and Sprinting both reuse this exact pivot (not independently re-fit) so switching between animations in-game does not pop the character's position or scale."
+  },
+  "atlas": {
+    "idle": "atlas/proto_one_idle.png",
+    "walking": "atlas/proto_one_walking.png",
+    "sprinting": "atlas/proto_one_sprinting.png",
+    "turn": "atlas/proto_one_turn.png",
+    "jumping": "atlas/proto_one_jumping.png",
+    "falling": "atlas/proto_one_falling.png",
+    "fast_falling": "atlas/proto_one_fast_falling.png",
+    "air_dashing": "atlas/proto_one_air_dashing.png"
+  },
+  "animations": {
+    "Idle": {
+      "atlas": "idle",
+      "row": 0,
+      "frames": 4,
+      "frame_files": [
+        "normalized/idle/proto_one_idle_00.png",
+        "normalized/idle/proto_one_idle_01.png",
+        "normalized/idle/proto_one_idle_02.png",
+        "normalized/idle/proto_one_idle_03.png"
+      ],
+      "fps": 4,
+      "loop": true
+    },
+    "Walking": {
+      "atlas": "walking",
+      "row": 0,
+      "frames": 4,
+      "frame_files": [
+        "normalized/walking/proto_one_walking_00.png",
+        "normalized/walking/proto_one_walking_01.png",
+        "normalized/walking/proto_one_walking_02.png",
+        "normalized/walking/proto_one_walking_03.png"
+      ],
+      "fps": 4,
+      "loop": true
+    },
+    "Sprinting": {
+      "atlas": "sprinting",
+      "row": 0,
+      "frames": 4,
+      "frame_files": [
+        "normalized/sprinting/proto_one_sprinting_00.png",
+        "normalized/sprinting/proto_one_sprinting_01.png",
+        "normalized/sprinting/proto_one_sprinting_02.png",
+        "normalized/sprinting/proto_one_sprinting_03.png"
+      ],
+      "fps": 8,
+      "loop": true
+    },
+    "Turn": {
+      "atlas": "turn",
+      "row": 0,
+      "frames": 3,
+      "frame_files": [
+        "normalized/turn/proto_one_turn_00.png",
+        "normalized/turn/proto_one_turn_01.png",
+        "normalized/turn/proto_one_turn_02.png"
+      ],
+      "fps": 10,
+      "loop": false,
+      "notes": "One-shot direction-change transition, not a looping locomotion cycle: frame 00 = facing left, frame 01 = stylized spin/twist motion-blur effect, frame 02 = facing right. No corresponding code MovementState exists yet (see animation-policy.md); this is asset-only preparation ahead of movement-logic wiring."
+    },
+    "Jumping": {
+      "atlas": "jumping",
+      "row": 0,
+      "frames": 3,
+      "frame_files": [
+        "normalized/jumping/proto_one_jumping_00.png",
+        "normalized/jumping/proto_one_jumping_01.png",
+        "normalized/jumping/proto_one_jumping_02.png"
+      ],
+      "fps": 8,
+      "loop": false,
+      "notes": "One-shot takeoff sequence (matches code MovementState Jumping, which the doc's animation vocabulary calls Jump Start + Airborne combined), not a repeating cycle - frame 00 = ready/crouch pose, frame 01 = thrust launch with visible downward propulsion trail from all 3 hover pods, frame 02 = airborne pose. fps/loop are independent candidates, not part of the Current Animation Contract."
+    },
+    "Falling": {
+      "atlas": "falling",
+      "row": 0,
+      "frames": 3,
+      "frame_files": [
+        "normalized/falling/proto_one_falling_00.png",
+        "normalized/falling/proto_one_falling_01.png",
+        "normalized/falling/proto_one_falling_02.png"
+      ],
+      "fps": 6,
+      "loop": true,
+      "notes": "Unlike Turn/Jumping, Falling loops: descent duration is variable (depends on fall height/state), not a fixed one-shot burst, so it is treated as a sustained state like Idle/Walking/Sprinting rather than a bounded transition. fps=6 is an unconfirmed independent candidate, not part of the Current Animation Contract."
+    },
+    "FastFalling": {
+      "atlas": "fast_falling",
+      "row": 0,
+      "frames": 2,
+      "frame_files": [
+        "normalized/fast_falling/proto_one_fast_falling_00.png",
+        "normalized/fast_falling/proto_one_fast_falling_01.png"
+      ],
+      "fps": 10,
+      "loop": true,
+      "notes": "Like Falling, FastFalling is a sustained state of variable duration (held until the dive input/state ends), not a one-shot burst, so loop=true. fps=10 (vs Falling's 6) is an unconfirmed independent candidate chosen to read faster/more urgent. Both raw frames show motion-streak speed lines on the antenna and body stripes to sell velocity. 2026-09-11: raw frames/fast_falling was expanded from 2 to 4 candidate frames; evaluated and deliberately kept at 2 (fast_falling01+02) - see top-level notes for the reasoning. frames/fast_falling03.png and 04.png exist on disk but are NOT used by this animation."
+    },
+    "AirDashing": {
+      "atlas": "air_dashing",
+      "row": 0,
+      "frames": 3,
+      "frame_files": [
+        "normalized/air_dashing/proto_one_air_dashing_00.png",
+        "normalized/air_dashing/proto_one_air_dashing_01.png",
+        "normalized/air_dashing/proto_one_air_dashing_02.png"
+      ],
+      "fps": 20,
+      "loop": false,
+      "notes": "One-shot burst matching the ~0.14s air dash duration from the movement prototype (project-brief.md), re-triggered fresh on each new dash rather than held/looped - 3 frames at 20fps play out in 0.15s, close to that duration. All 3 raw frames use the same dash-stretch + cyan afterimage/speed-particle visual language per animation-policy.md section 8. Body-silhouette measurement (glow/streak pixels excluded via the blue-channel filter, verified against a debug mask) found frame 1 (air_dashing_02) a uniform-scale outlier - 102x91px on the 128 canvas vs 109x97 and 103x103 for the other two - so it alone was corrected via pivot-anchored rescale (x1.069 about the fixed pivot (64,123)), landing at 110x98px, in range with the others. fps/loop are independent candidates, not part of the Current Animation Contract."
+    }
+  },
+  "notes": "2026-09-10: frames/idle raw source PNGs were fully replaced by the user and re-normalized from scratch (previous values backed up at proto_one.manifest.json.bak-oldframes). Schema unchanged; canvas stayed 128x128; pivot.y shifted 124->123 due to the new source's tighter bbox. New source set has visibly less body-scale jitter than the previous one (bbox width varies by only ~3px across all 4 frames vs ~85px before). Same day: Walking animation added (previous manifest backed up at proto_one.manifest.json.bak-before-walking). Walking=4 frames was adopted in animation-policy.md's Current Animation Contract (source had exactly 4 raw frames, within the existing 3-4 candidate range). Walking's normalized frames were scaled independently (0.1329 vs Idle's 0.1429, since Walking's raw union bbox is larger) but deliberately mapped onto the SAME fixed pivot (64,123) as Idle so the two animations share a stable ground line and center when swapped at runtime. 2026-09-10 (later same day): proto_one_walking_01 (from raw walking02.png) measured as a body-silhouette outlier (antenna tip and cyan glow excluded from the measurement) - body bbox 103x102px on the 128 canvas vs 93-97x96px for the other three. Corrected by rescaling that single frame 0.933x around the fixed pivot (64,123) only, with no change to crop/scale of the other three frames and no per-frame re-centering. Post-fix body bbox is 96x95px, within the other frames' range. Previous manifest backed up at proto_one.manifest.json.bak-before-walking-rescale. 2026-09-10 (later same day): Sprinting animation added (previous manifest backed up at proto_one.manifest.json.bak-before-sprinting). Sprinting=4 frames was adopted in animation-policy.md's Current Animation Contract (source had exactly 4 raw frames, within the existing 4-6 candidate range for Run). Same body-silhouette-outlier check as Walking was run proactively before normalizing (antenna tip and cyan/white glow-trail pixels excluded via a blue-channel filter, verified against a debug mask overlay) - the largest frame (sprinting02) was only ~2-3% larger than the other three, well under the threshold that triggered Walking's correction, so no per-frame rescale was applied here. All 4 frames share the same crop/scale and the same fixed pivot (64,123) as Idle/Walking; Sprinting's raw union bbox (840x978) is the largest of the three states so far, giving the smallest per-state scale (0.1196) - expected and correct, not an error. fps set to 8 (vs Idle/Walking's 4) as a candidate value to match Sprint's higher-energy read; this fps choice is NOT part of the Current Animation Contract (which only governs frame count) and remains an independent, unconfirmed candidate. 2026-09-10 (later same day): Turn animation added (previous manifest backed up at proto_one.manifest.json.bak-before-turn). Turn=3 frames was adopted in animation-policy.md's Current Animation Contract as a NEW row (Turn did not previously exist in the contract table) - the raw source had exactly 3 frames, which exceeds the old non-binding candidate range of ~1-2 but the candidate table is explicitly advisory, not binding, so the actual provided asset count was adopted. Turn's 3 raw frames are not simply pose variations of one category: frame 1 and frame 3 are mirrored static facing poses (left vs right), while frame 2 is a categorically different stylized spin/twist motion-blur effect frame. The body-silhouette-outlier check was applied ONLY between frame 1 and frame 3 (the two comparable static poses) - they measured 101x99 vs 111x105 on the 128 canvas (~9% mismatch), so both were corrected toward their shared average via pivot-anchored rescale (frame 1 x1.040, frame 3 x0.963, both anchored at the fixed pivot (64,123)), landing at 106x104 vs 107x101 after correction. Frame 2 (the spin-blur) was deliberately left unmeasured/uncorrected: the row-profiling body-silhouette method is not meaningful for it (most of its pixels are the excluded cyan/white glow trail, not opaque body material), and its larger, more dynamic footprint is treated as an intentional effect (comparable to how Air Dash is expected to use stretch/afterimage per animation-policy.md section 8), not a jitter bug to fix. All 3 frames still share the same crop/scale and the same fixed pivot (64,123) as the other animations. loop is false (unlike Idle/Walking/Sprinting) since Turn is a one-shot transition, not a repeating cycle. 2026-09-10 (later same day): Jumping animation added (previous manifest backed up at proto_one.manifest.json.bak-before-jumping). Jumping=3 frames was adopted in animation-policy.md's Current Animation Contract (raw source had exactly 3 frames; code MovementState Jumping maps to this doc's Jump Start (~1) + Airborne (~1-2) combined, whose candidate ranges sum to ~3, so no conflict). All 3 raw frames are the same pose category (unlike Turn) - no mirrored or effect-only frame here, though frame 2 (jumping02) does carry a bright downward thrust-trail effect on its hover pods. Body-silhouette measurement (same blue-channel glow exclusion, re-verified against a debug mask) showed width very consistent across all 3 (90-94px on the 128 canvas, ~4%) but frame 2's body height measured shorter (86px vs 94px for the other two, ~8.5%). This was deliberately NOT corrected with a pivot-anchored rescale: visual inspection of the contact sheet shows the head/dome - the dominant silhouette element - is the same size in all 3 frames, and the height gap is concentrated in the hover-pod region only, consistent with pods being drawn tucked closer to the body during active thrust versus hanging relaxed at rest. A uniform rescale would incorrectly shrink the already-correct head to chase a pose difference, not a scale error, so no correction was applied - unlike Walking/Turn where the same tool WAS the right fix because the discrepancy there was a uniform whole-body scale inflation. fps=8/loop=false are independent candidates (Jumping is treated as a bounded one-shot takeoff, not a repeating cycle), not part of the Current Animation Contract. 2026-09-10 (later same day): Falling animation added (previous manifest backed up at proto_one.manifest.json.bak-before-falling). Falling=3 frames was adopted in animation-policy.md's Current Animation Contract (raw source had exactly 3 frames; code MovementState Falling maps to this doc's Airborne (~1-2), so the provided count exceeds that non-binding candidate range - documented as such rather than silently ignored). All 3 raw frames are the same pose category, no mirrored or effect-only frame. Body-silhouette measurement showed width tight across all 3 (95-96px on the 128 canvas) but frame 0 (falling01) measured notably shorter (95px height vs 102-104px for the other two, ~8% gap) while frames 1 and 2 already agreed closely with each other (102 vs 104, ~2%). This pattern - one frame off, the other two mutually consistent - matches the Walking-type uniform-scale-error case rather than the Jumping-type intentional-pose-difference case, so frame 0 alone was corrected via pivot-anchored rescale (x1.047 about the fixed pivot (64,123)), landing at 100x98px, in range with the other two. Falling is set to loop=true (unlike Turn/Jumping) since a fall's duration varies with height and isn't a fixed one-shot burst; fps=6 is an unconfirmed independent candidate. Not part of the Current Animation Contract, which governs frame count only. 2026-09-11: FastFalling animation added (previous manifest backed up at proto_one.manifest.json.bak-before-fastfalling). FastFalling=2 was adopted in animation-policy.md's Current Animation Contract (raw source had exactly 2 frames, matching the existing Fast Fall / Dive candidate range of ~1-2 exactly - no discrepancy to flag this time). Both raw frames render with a visible checkerboard pattern when previewed directly (fast_falling01 especially), which looked like the generator failing to produce real transparency. Verified this was NOT a real defect: pixel inspection showed alpha was already correct (0 in the background), and compositing the untouched raw file with true SourceOver alpha blending onto a solid test background produced a perfectly clean result with no checkerboard bleed - the checkerboard was a preview-only rendering quirk of the raw RGB values sitting under fully-transparent pixels, not a compositing defect. As a precaution against a separate real risk (bicubic interpolation sampling checkerboard-tinted RGB from adjacent transparent pixels into the resize, causing edge fringing), both raw frames were still sanitized before normalization: any pixel with 0<alpha<128 was snapped to fully transparent (RGB zeroed), and any pixel with 128<=alpha<255 was snapped to fully opaque, eliminating the genuinely semi-transparent edge-noise pixels (744 in fast_falling01, ~10000 in fast_falling02) that did carry checkerboard-contaminated RGB. Raw source files on disk were NOT modified; sanitized copies were used only as the input to the normalization pipeline. Both frames' full bbox was pixel-identical (X[271,967] Y[253,1072]) and body-silhouette bbox was very close (98x100 vs 98x102 on the 128 canvas, ~2%), so no per-frame outlier correction was needed. Both frames share the same crop/scale and the same fixed pivot (64,123) as every other animation. FastFalling is set to loop=true (like Falling, unlike Turn/Jumping) since dive duration is state-held, not a fixed burst; fps=10 is an unconfirmed independent candidate. 2026-09-11 (later same day): AirDashing animation added (previous manifest backed up at proto_one.manifest.json.bak-before-airdashing). AirDashing=3 was adopted in animation-policy.md's Current Animation Contract (raw source had exactly 3 frames, exceeding the non-binding Air Dash candidate range of ~2 - documented as such). All 3 raw frames are the same dash-pose category (unlike Turn, no mirrored/categorically-different frame), each carrying dash-stretch and cyan afterimage/speed-particle effects of varying intensity. Body-silhouette measurement (blue-channel glow/streak exclusion, re-verified with a debug mask) found air_dashing_02 (-> normalized frame 01) as a genuine uniform-scale outlier, not a pose difference: both width and height were proportionally smaller than the other two (102x91 vs 109x97 and 103x103 on the 128 canvas), unlike Jumping's case where only the pod region differed while the head stayed consistent. Corrected with a pivot-anchored rescale (x1.069 about the fixed pivot (64,123)) on that single frame only; the other two were left untouched. Post-fix the three frames read as consistently sized on the contact sheet. loop=false and fps=20 (much faster than any other animation) reflect that air dash is a short, fixed-duration burst (~0.14s per the movement prototype's dashDuration constant) re-triggered fresh each activation, not a held/looping state - closer in nature to Turn/Jumping than to Falling/FastFalling. 2026-09-11 (later same day): user expanded raw frames/fast_falling from 2 to 4 candidate frames (fast_falling03.png, 04.png added) and asked Claude to judge whether all 4 should be used. Measured: fast_falling01/02 have near-identical body aspect ratio (H/W 1.01 and 1.03, body ~696x701 and ~697x716) - the body silhouette itself stays round/compact, only streak-line intensity differs. fast_falling03/04 are a categorically different silhouette (H/W 1.21 and 1.15, body ~647x782 and ~656x757) - the stretch effect there reshapes the actual body silhouette into an elongated teardrop, not just added glow/streak decoration around an unchanged body (unlike Jumping's thrust trail or AirDashing's afterimage, which sit outside the body-silhouette measurement). Decision: kept FastFalling at 2 frames (01+02 only), for two reasons - (1) folding 03/04 into the same shared-pivot/shared-scale group would force 01/02's compact body to shrink further than necessary to accommodate 03/04's taller extent, and (2) with loop=true and a simple forward frame cycle (no ping-pong support in this manifest schema), looping 01->02->03->04->01 would snap abruptly back to the compact silhouette every cycle - a visible pop at the loop seam, which is the same category of flaw animation-policy.md's quality bar warns against. fast_falling03.png and 04.png remain on disk, untouched and unused; they are reasonable raw material for a possible future separate state (e.g. a distinct high-intensity dive variant or a one-shot entry transition) but were not force-fit into this loop. This was a judgment call made on the user's explicit request ('네가 판단해줘'), not dictated by fixed criteria - open to revision if the intended design was actually a one-way transition rather than a loop. Contract value for FastFalling remains 2 (unchanged); no animation-policy.md table edit was needed, only this note. Previous manifest backed up at proto_one.manifest.json.bak-before-fastfalling-4frame-review."
+}
