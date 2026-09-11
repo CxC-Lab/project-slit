@@ -4,6 +4,8 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <nlohmann/json.hpp>
 #include <cmath>
+#include <algorithm>
+#include <SFML/Graphics/VertexArray.hpp>
 #include <fstream>
 #include <stdexcept>
 
@@ -63,11 +65,72 @@ catch (const std::exception& error) {
 
 void Region::render(sf::RenderTarget& target) const
 {
+    const auto& view = target.getView();
+    const auto visible = bounds_.findIntersection({view.getCenter() - view.getSize()/2.f, view.getSize()});
+    if (!visible) return;
+    const auto lo = visible->position;
+    const auto hi = lo + visible->size;
+    sf::VertexArray guides(sf::PrimitiveType::Lines);
+    const auto line = [&](sf::Vector2f a, sf::Vector2f b, sf::Color color) {
+        guides.append(sf::Vertex{a, color});
+        guides.append(sf::Vertex{b, color});
+    };
+    // One major cell is the established 16:9 composition; four subdivisions per axis.
+    constexpr sf::Vector2f cell{800.f, 450.f};
+    constexpr sf::Color minor(30,36,51), major(39,46,61), marker(43,55,66);
+    const auto grid = [&](bool vertical) {
+        const float origin = vertical ? bounds_.position.x : bounds_.position.y;
+        const float start = vertical ? lo.x : lo.y;
+        const float end = vertical ? hi.x : hi.y;
+        const float step = (vertical ? cell.x : cell.y) / 4.f;
+        for (int i = static_cast<int>(std::ceil((start-origin)/step)); origin+i*step <= end; ++i) {
+            const float at = origin+i*step;
+            line(vertical ? sf::Vector2f{at,lo.y} : sf::Vector2f{lo.x,at},
+                 vertical ? sf::Vector2f{at,hi.y} : sf::Vector2f{hi.x,at}, i%4 == 0 ? major : minor);
+        }
+    };
+    grid(true);
+    grid(false);
+    // Hollow diamond beacons have no horizontal ledge or solid fill: never terrain.
+    // Bound-relative quarter points work in both regions, without extra JSON geometry.
+    for (int column = 1; column <= 3; ++column) {
+        const sf::Vector2f center = bounds_.position + sf::Vector2f{
+            bounds_.size.x * column / 4.f, bounds_.size.y / 3.f};
+        const sf::Vector2f radius{80.f, 150.f + 50.f*column};
+        if (!visible->findIntersection({center-radius, radius*2.f})) continue;
+        line(center-sf::Vector2f{0,radius.y}, center+sf::Vector2f{radius.x,0}, marker);
+        line(center+sf::Vector2f{radius.x,0}, center+sf::Vector2f{0,radius.y}, marker);
+        line(center+sf::Vector2f{0,radius.y}, center-sf::Vector2f{radius.x,0}, marker);
+        line(center-sf::Vector2f{radius.x,0}, center-sf::Vector2f{0,radius.y}, marker);
+        for (int i=0; i<column; ++i) {
+            const float y = center.y + (i-(column-1)/2.f)*24.f;
+            line({center.x-10.f,y-8.f},{center.x+10.f,y+8.f},marker);
+            line({center.x-10.f,y+8.f},{center.x+10.f,y-8.f},marker);
+        }
+    }
+    target.draw(guides);
+    guides.clear();
     sf::RectangleShape terrain;
     terrain.setFillColor(sf::Color(70,80,90));
     for (const auto& solid : solids_) {
+        const auto part = solid.findIntersection(*visible);
+        if (!part) continue;
         terrain.setPosition(solid.position);
         terrain.setSize(solid.size);
         target.draw(terrain);
+        const auto end = solid.position + solid.size;
+        // Inset notches stay within filled terrain, rather than suggesting new platforms.
+        for (float x = bounds_.position.x + std::ceil((part->position.x-bounds_.position.x)/100.f)*100.f;
+             x <= part->position.x+part->size.x; x += 100.f) {
+            if (solid.position.y >= lo.y && solid.position.y <= hi.y)
+                line({x,solid.position.y},{x,solid.position.y+std::min(8.f,solid.size.y)},minor);
+        }
+        for (float y = bounds_.position.y + std::ceil((part->position.y-bounds_.position.y)/75.f)*75.f;
+             y <= part->position.y+part->size.y; y += 75.f) {
+            for (const float x : {solid.position.x,end.x})
+                if (x >= lo.x && x <= hi.x)
+                    line({x,y},{x+(x == end.x ? -1.f : 1.f)*std::min(8.f,solid.size.x),y},minor);
+        }
     }
+    target.draw(guides);
 }
