@@ -20,6 +20,7 @@ inline constexpr float wallSlideSpeed = 90.f;
 inline constexpr float slowFallMaxSpeed = 120.f;
 inline constexpr float fastFallAcceleration = 3000.f; // Added to ordinary gravity while descending.
 inline constexpr float fastFallMaxSpeed = 1200.f;
+inline constexpr float landImpactSpeed = 700.f; // Above ordinary jump landing speed (~520).
 inline constexpr sf::Vector2f collisionSize{32.f, 48.f};
 }
 
@@ -44,6 +45,7 @@ public:
                 const std::vector<sf::FloatRect>& solids, float roomWidth);
     sf::FloatRect collisionBounds() const;
     sf::Vector2f velocity() const { return velocity_; }
+    bool landImpact() const { return landImpact_; }
     bool grounded() const { return grounded_; }
     bool touchingWall() const { return touchingWall_; }
     MovementState state() const { return state_; }
@@ -56,6 +58,7 @@ private:
     sf::Vector2f position_;
     sf::Vector2f velocity_{};
     bool grounded_ = false;
+    bool landImpact_ = false;
     bool touchingWall_ = false;
     float dashRemaining_ = 0.f;
     float runDirection_ = 0.f;

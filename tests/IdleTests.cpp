@@ -193,6 +193,16 @@ int main() try
         airDashing.advance(1. / airDashing.fps());
     }
     check(airDashing.finished(), "AirDashing completes without looping");
+    for (const auto* name : {"SlowFalling", "WallSliding", "Landing"})
+    {
+        AnimationClip clip(manifest, name);
+        sf::Image atlas;
+        check(atlas.loadFromFile(clip.atlasPath()), "new visual atlas loads");
+        clip.validateAtlas(atlas.getSize());
+        check(clip.pivot() == idle.pivot() && clip.frameRect().size == idle.frameRect().size, "new visual shared pivot and canvas");
+        clip.advance(clip.frames() / clip.fps());
+        check(clip.finished() == (std::string(name) == "Landing"), "Landing finishes; slow fall and wall slide loop");
+    }
     std::cout << "PASS: manifest, atlas, paths, rectangles, timing and wrap\n";
 }
 catch (const std::exception& error)

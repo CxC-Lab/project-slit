@@ -54,6 +54,12 @@ int main() try
     ClipVisual falling(manifest, "Falling");
     ClipVisual fastFalling(manifest, "FastFalling");
     ClipVisual airDashing(manifest, "AirDashing");
+    ClipVisual slowFalling(manifest, "SlowFalling");
+    ClipVisual wallSliding(manifest, "WallSliding");
+    ClipVisual landing(manifest, "Landing");
+    bool landingPlaying = false;
+    if (landing.clip.loops())
+        throw std::runtime_error("Landing must be non-looping");
     bool jumpPlaying = false;
     MovementState previousMovementState = player.state();
     TurnVisual facing;
@@ -61,9 +67,9 @@ int main() try
         throw std::runtime_error("Turn must be a non-looping clip");
     if (jumping.clip.loops() || !falling.clip.loops())
         throw std::runtime_error("Jumping must be one-shot and Falling must loop");
-    for (const auto* visual : {&walking, &sprinting, &turn, &jumping, &falling, &fastFalling, &airDashing})
+    for (const auto* visual : {&walking, &sprinting, &turn, &jumping, &falling, &fastFalling, &airDashing, &slowFalling, &wallSliding, &landing})
         if (idle.clip.pivot() != visual->clip.pivot() || idle.clip.frameRect().size != visual->clip.frameRect().size)
-            throw std::runtime_error("All eight animation clips must share canvas and pivot");
+            throw std::runtime_error("All eleven animation clips must share canvas and pivot");
     ClipVisual* activeVisual = &idle;
     sf::Sprite playerSprite(idle.texture, idle.clip.frameRect());
     playerSprite.setOrigin(idle.clip.pivot());
@@ -128,6 +134,8 @@ int main() try
         case MovementState::Falling: nextVisual = &falling; break;
         case MovementState::FastFalling: nextVisual = &fastFalling; break;
         case MovementState::AirDashing: nextVisual = &airDashing; break;
+        case MovementState::SlowFalling: nextVisual = &slowFalling; break;
+        case MovementState::WallSliding: nextVisual = &wallSliding; break;
         default: break;
         }
         if (jumpPlaying)
@@ -135,18 +143,36 @@ int main() try
         const int previousTurnFrame = turn.clip.frameIndex();
         facing.update(intent.direction.x, deltaTime, turn.clip);
         turn.frameChanges += turn.clip.frameIndex() != previousTurnFrame;
+        if (player.landImpact())
+        {
+            landing.clip.reset();
+            landingPlaying = true;
+        }
+        // Landing yields immediately to locomotion and existing one-shot overrides.
+        if (movementState != MovementState::Idle || jumpPlaying || facing.turning)
+            landingPlaying = false;
+        if (landingPlaying)
+        {
+            const int previousLandingFrame = landing.clip.frameIndex();
+            if (!player.landImpact())
+                landing.clip.advance(deltaTime);
+            landing.frameChanges += landing.clip.frameIndex() != previousLandingFrame;
+            landingPlaying = !landing.clip.finished();
+            if (landingPlaying)
+                nextVisual = &landing;
+        }
         if (facing.turning)
             nextVisual = &turn;
         const bool changedClip = nextVisual != activeVisual;
         if (changedClip)
         {
             activeVisual = nextVisual;
-            if (activeVisual != &turn && activeVisual != &jumping) // One-shot timers are managed above.
+            if (activeVisual != &turn && activeVisual != &jumping && activeVisual != &landing) // One-shot timers are managed above.
                 activeVisual->clip.reset();
             playerSprite.setTexture(activeVisual->texture);
         }
         const int previousFrame = activeVisual->clip.frameIndex();
-        if (activeVisual != &turn && activeVisual != &jumping)
+        if (activeVisual != &turn && activeVisual != &jumping && activeVisual != &landing)
         {
             if (!changedClip)
                 activeVisual->clip.advance(deltaTime);

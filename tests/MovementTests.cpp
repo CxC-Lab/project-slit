@@ -186,11 +186,45 @@ void inputs()
 }
 }
 
+void landImpacts()
+{
+    auto land = [](Player& p, const InputIntent& intent, bool expected) {
+        bool impact = false;
+        for (int i = 0; i < 1000; ++i)
+        {
+            p.update(intent, 0.05f, floorOnly, 800.f);
+            impact |= p.landImpact();
+            if (p.grounded()) break;
+        }
+        check(p.grounded() && impact == expected, "landing impact qualification");
+        for (int i = 0; i < 10; ++i)
+        {
+            p.update({}, 0.05f, floorOnly, 800.f);
+            check(!p.landImpact(), "no repeated impact while grounded");
+        }
+    };
+    Player normal;
+    normal.update({{}, true}, 1.f / 60.f, floorOnly, 800.f);
+    land(normal, {}, false);
+    Player high({100.f, -500.f});
+    land(high, {}, true);
+    Player fast({100.f, 460.f}); // Low-speed FastFalling still qualifies.
+    land(fast, {{0.f, 1.f}}, true);
+    Player slowed({100.f, -500.f});
+    for (int i = 0; i < 30; ++i) slowed.update({}, 1.f / 60.f, floorOnly, 800.f);
+    check(slowed.velocity().y > Movement::landImpactSpeed, "fall was fast before slowing");
+    land(slowed, {{0.f, -1.f}}, false);
+    Player dashed({100.f, -500.f});
+    for (int i = 0; i < 30; ++i) dashed.update({}, 1.f / 60.f, floorOnly, 800.f);
+    dashed.update({{}, false, {1.f, 0.f}}, 0.01f, floorOnly, 800.f);
+    land(dashed, {{0.f, -1.f}}, false);
+}
+
 int main()
 {
     try
     {
-        baseline(); terrain(); dash(); walls(); inputs();
+        baseline(); terrain(); dash(); walls(); inputs(); landImpacts();
         std::cout << "PASS: baseline, terrain, eight-way/repeated dash, wall jumps, input\n";
     }
     catch (const std::exception& error)

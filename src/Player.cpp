@@ -70,6 +70,7 @@ void Player::moveAxis(float distance, bool horizontal, const std::vector<sf::Flo
 void Player::update(const InputIntent& intent, float deltaTime,
                     const std::vector<sf::FloatRect>& solids, float roomWidth)
 {
+    landImpact_ = false; // One read-only pulse per outer update, retained across substeps.
     refreshContacts(solids);
     if (grounded_)
         sprintMomentum_ = false;
@@ -141,8 +142,14 @@ void Player::update(const InputIntent& intent, float deltaTime,
         refreshContacts(solids);
         updateState(intent);
         limitFallSpeed();
+        const bool wasGrounded = grounded_;
+        const float impactSpeed = velocity_.y;
+        const auto impactState = state_;
         moveAxis(velocity_.y * step, false, solids);
         refreshContacts(solids);
+        if (!wasGrounded && grounded_ &&
+            (impactState == MovementState::FastFalling || impactSpeed > Movement::landImpactSpeed))
+            landImpact_ = true;
         if (dashing)
             dashRemaining_ = std::max(0.f, dashRemaining_ - step);
         if (grounded_)
