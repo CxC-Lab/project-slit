@@ -22,7 +22,7 @@ FetchContent_Declare(nlohmann_json
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
-add_executable(project_slit src/Display.cpp src/AnimationClip.cpp src/main.cpp src/Player.cpp src/Input.cpp src/Camera.cpp src/levels/PracticeRoom.cpp src/levels/Region.cpp)
+add_executable(project_slit src/Background.cpp src/Display.cpp src/AnimationClip.cpp src/main.cpp src/Player.cpp src/Input.cpp src/Camera.cpp src/levels/PracticeRoom.cpp src/levels/Region.cpp)
 target_compile_features(project_slit PRIVATE cxx_std_20)
 set_target_properties(project_slit PROPERTIES CXX_EXTENSIONS OFF)
 target_link_libraries(project_slit PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
@@ -54,3 +54,16 @@ if(BUILD_TESTING)
     target_link_libraries(display_tests PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
     add_test(NAME display_tests COMMAND display_tests)
 endif()
+
+if(BUILD_TESTING)
+    add_executable(background_tests src/AnimationClip.cpp tests/BackgroundTests.cpp src/Background.cpp src/levels/Region.cpp)
+    target_include_directories(background_tests PRIVATE src)
+    target_compile_features(background_tests PRIVATE cxx_std_20)
+    target_link_libraries(background_tests PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
+    add_test(NAME background_tests COMMAND background_tests)
+endif()
+
+# Build on request; writing PNGs requires an explicit invocation of this executable.
+add_executable(bg_generator EXCLUDE_FROM_ALL tools/generate_background.cpp)
+target_compile_features(bg_generator PRIVATE cxx_std_20)
+target_link_libraries(bg_generator PRIVATE SFML::Graphics)

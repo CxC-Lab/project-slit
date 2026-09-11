@@ -1,4 +1,5 @@
 #include "Camera.hpp"
+#include "Background.hpp"
 #include "Display.hpp"
 #include "Input.hpp"
 #include "AnimationClip.hpp"
@@ -40,7 +41,9 @@ int main(int argc, char** argv) try
     Display::apply(camera, window.getSize());
 
     if (argc > 2) throw std::runtime_error("Usage: project_slit.exe [practice_room|greybox]");
-    const Region room(Region::findFile(argc == 2 ? argv[1] : "practice_room"));
+    const auto regionFile = Region::findFile(argc == 2 ? argv[1] : "practice_room");
+    const Region room(regionFile);
+    const Background background(regionFile.parent_path().parent_path()/"backgrounds"/regionFile.filename());
     Player player(room.spawn());
     sf::RectangleShape playerShape(Movement::collisionSize);
     playerShape.setFillColor(sf::Color(240, 200, 100));
@@ -195,6 +198,7 @@ int main(int argc, char** argv) try
         viewBackground.setPosition(camera.getCenter() - camera.getSize() / 2.f);
         viewBackground.setFillColor(sf::Color(25, 30, 45));
         window.draw(viewBackground);
+        background.render(window);
         room.render(window);
         window.draw(playerSprite);
         if (showPlayerCollider)

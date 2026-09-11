@@ -54,6 +54,16 @@ Windows에서 빌드하고 실행할 수 있는 첫 이동 프로토타입을 �
 
 이동 수치는 모두 플레이 테스트용 후보값이며 확정 사양이 아닙니다. 자세한 내용은 [`docs/project-brief.md`](docs/project-brief.md)의 이동과 공중 행동 가설 항목과 [`experiments/`](experiments/README.md)의 진행 상황을 참고하세요.
 
+### 2026-09-12: 첫 월드의 배경이 붙었습니다
+
+첫 번째 월드의 테마를 Avatar Lake 로 정했습니다. 기아나 고지를 모티브로 한 거대한 사각 테푸이 절벽, 가늘고 긴 폭포, 커다란 구름이 떠 있는 밝은 하늘, 절벽을 비추는 잔잔한 호수입니다.
+
+탐험용 회색 상자 공간에 월드 좌표에 고정된 격자와 기준선을 넣어 넓은 공간에서 거리와 높이를 읽을 수 있게 했고, 그 위에 시차 배경 레이어를 붙였습니다. 카메라가 움직이면 하늘, 먼 절벽, 가까운 절벽과 호수가 서로 다른 속도로 흘러갑니다.
+
+배경은 지역 파일과 같은 이름의 별도 데이터 파일에 있습니다. 고친 뒤 다시 실행하면 바로 반영되며, 다시 빌드하지 않습니다. 배경을 그리는 코드는 하늘이나 호수 같은 역할 이름도 레이어 개수도 알지 못합니다.
+
+현재 이미지는 구도와 움직임을 확인하기 위한 임시 그림이며 최종 아트가 아닙니다. 시차 속도와 레이어 개수도 아직 확정하지 않았습니다.
+
 ### 빌드와 실행
 
 Windows x64에서 Visual Studio 2022의 C++ 개발 도구, CMake 3.28 이상, Git이 필요합니다. 최초 구성 시 SFML을 내려받으므로 인터넷 연결이 필요합니다.
@@ -68,6 +78,12 @@ cmake --build build --config Release
 
 ```
 .\build\Release\project_slit.exe greybox
+```
+
+개발 중에는 같은 일을 하는 스크립트를 써도 됩니다. 기본 지역은 계속 연습실입니다.
+
+```
+.\tools\run_greybox.bat
 ```
 
 회귀 테스트는 CTest로 실행합니다.
@@ -87,9 +103,12 @@ ctest --test-dir build -C Release
 - [`docs/project-brief.md`](docs/project-brief.md): 프로젝트의 방향, 기술적 가설과 열린 질문
 - [`docs/visual-direction.md`](docs/visual-direction.md): 콘셉트 아트에서 읽을 수 있는 비주얼 방향과 검증 질문
 - [`docs/animation-policy.md`](docs/animation-policy.md): 플레이어 스프라이트 제작과 이동 애니메이션 정책
+- [`docs/background-asset-contract.md`](docs/background-asset-contract.md): 시차 배경 레이어 이미지의 제작 규격
 - [`docs/decisions/`](docs/decisions/README.md): 중요한 기술 결정의 ADR 기록 방식
 - [`experiments/`](experiments/README.md): 독립적인 기술 실험의 계획과 결과
 - [`src/`](src): 현재 이동 프로토타입 구현
 - [`assets/regions/`](assets/regions): 지역의 경계와 발판 배치. 고친 뒤 다시 실행하면 바로 반영됩니다
+- [`assets/backgrounds/`](assets/backgrounds): 지역별 시차 배경 레이어. 지역 파일과 같은 이름을 씁니다
+- [`tools/`](tools): 검증용 배경 이미지 생성기와 개발용 실행 스크립트
 - [`tests/`](tests): 이동과 카메라의 회귀 테스트
 - [`AGENTS.md`](AGENTS.md): 저장소에서 작업할 때 적용할 최소 원칙

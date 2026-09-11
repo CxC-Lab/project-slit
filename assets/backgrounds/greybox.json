@@ -1,0 +1,7 @@
+{
+  "layers": [
+    {"image":"avatar_lake/sky.png", "parallax":[0.02,0.02], "anchor":[0,-390], "repeatX":true},
+    {"image":"avatar_lake/distant.png", "parallax":[0.08,0.06], "anchor":[0,-570], "repeatX":true},
+    {"image":"avatar_lake/middle.png", "parallax":[0.18,0.12], "anchor":[0,-840], "repeatX":true}
+  ]
+}
