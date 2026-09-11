@@ -177,6 +177,22 @@ int main() try
         fastFalling.advance(1. / fastFalling.fps());
     }
     check(fastFalling.frameIndex() == 0 && !fastFalling.finished(), "FastFalling wraps and stays active");
+    AnimationClip airDashing(manifest, "AirDashing");
+    sf::Image airDashingImage;
+    check(airDashingImage.loadFromFile(airDashing.atlasPath()), "AirDashing atlas loads");
+    airDashing.validateAtlas(airDashingImage.getSize());
+    check(!airDashing.loops(), "AirDashing is non-looping");
+    check(airDashing.pivot() == idle.pivot() && airDashing.frameRect().size == idle.frameRect().size,
+          "AirDashing shared canvas and pivot");
+    for (int i = 0; i < airDashing.frames(); ++i)
+    {
+        const auto rect = airDashing.frameRect();
+        check(airDashing.frameIndex() == i && rect.position.x == i * rect.size.x && rect.position.y == 0 &&
+              rect.position.x + rect.size.x <= static_cast<int>(airDashingImage.getSize().x) &&
+              rect.size.y <= static_cast<int>(airDashingImage.getSize().y), "AirDashing rect range");
+        airDashing.advance(1. / airDashing.fps());
+    }
+    check(airDashing.finished(), "AirDashing completes without looping");
     std::cout << "PASS: manifest, atlas, paths, rectangles, timing and wrap\n";
 }
 catch (const std::exception& error)
