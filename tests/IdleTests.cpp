@@ -161,6 +161,22 @@ int main() try
     falling.reset();
     falling.advance(2. * falling.frames() / falling.fps());
     check(falling.frameIndex() == 0 && !falling.finished(), "Falling remains looping over multiple cycles");
+    AnimationClip fastFalling(manifest, "FastFalling");
+    sf::Image fastFallingImage;
+    check(fastFallingImage.loadFromFile(fastFalling.atlasPath()), "FastFalling atlas loads");
+    fastFalling.validateAtlas(fastFallingImage.getSize());
+    check(fastFalling.loops(), "FastFalling loops from manifest");
+    check(fastFalling.pivot() == idle.pivot() && fastFalling.frameRect().size == idle.frameRect().size,
+          "FastFalling shares canvas and pivot");
+    for (int i = 0; i < fastFalling.frames(); ++i)
+    {
+        const auto rect = fastFalling.frameRect();
+        check(fastFalling.frameIndex() == i && rect.position.x == i * rect.size.x && rect.position.y == 0 &&
+              rect.position.x + rect.size.x <= static_cast<int>(fastFallingImage.getSize().x) &&
+              rect.size.y <= static_cast<int>(fastFallingImage.getSize().y), "FastFalling frame rect range");
+        fastFalling.advance(1. / fastFalling.fps());
+    }
+    check(fastFalling.frameIndex() == 0 && !fastFalling.finished(), "FastFalling wraps and stays active");
     std::cout << "PASS: manifest, atlas, paths, rectangles, timing and wrap\n";
 }
 catch (const std::exception& error)

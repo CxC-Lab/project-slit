@@ -52,6 +52,7 @@ int main() try
     ClipVisual turn(manifest, "Turn");
     ClipVisual jumping(manifest, "Jumping");
     ClipVisual falling(manifest, "Falling");
+    ClipVisual fastFalling(manifest, "FastFalling");
     bool jumpPlaying = false;
     MovementState previousMovementState = player.state();
     TurnVisual facing;
@@ -59,9 +60,9 @@ int main() try
         throw std::runtime_error("Turn must be a non-looping clip");
     if (jumping.clip.loops() || !falling.clip.loops())
         throw std::runtime_error("Jumping must be one-shot and Falling must loop");
-    for (const auto* visual : {&walking, &sprinting, &turn, &jumping, &falling})
+    for (const auto* visual : {&walking, &sprinting, &turn, &jumping, &falling, &fastFalling})
         if (idle.clip.pivot() != visual->clip.pivot() || idle.clip.frameRect().size != visual->clip.frameRect().size)
-            throw std::runtime_error("All six animation clips must share canvas and pivot");
+            throw std::runtime_error("All seven animation clips must share canvas and pivot");
     ClipVisual* activeVisual = &idle;
     sf::Sprite playerSprite(idle.texture, idle.clip.frameRect());
     playerSprite.setOrigin(idle.clip.pivot());
@@ -124,6 +125,7 @@ int main() try
         case MovementState::Sprinting: nextVisual = &sprinting; break;
         case MovementState::Jumping: nextVisual = &jumping; break;
         case MovementState::Falling: nextVisual = &falling; break;
+        case MovementState::FastFalling: nextVisual = &fastFalling; break;
         default: break;
         }
         if (jumpPlaying)
@@ -171,7 +173,8 @@ int main() try
     }
     std::cout << "Animation frame changes: Idle=" << idle.frameChanges
               << " Walking=" << walking.frameChanges << " Sprinting=" << sprinting.frameChanges << " Turn=" << turn.frameChanges
-              << " Jumping=" << jumping.frameChanges << " Falling=" << falling.frameChanges << std::endl;
+              << " Jumping=" << jumping.frameChanges << " Falling=" << falling.frameChanges
+              << " FastFalling=" << fastFalling.frameChanges << std::endl;
 }
 catch (const std::exception& error)
 {
