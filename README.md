@@ -64,6 +64,12 @@ cmake --build build --config Release
 .\build\Release\project_slit.exe
 ```
 
+인자 없이 실행하면 연습실에서 시작합니다. 넓은 탐험용 회색 상자 공간을 보려면 지역 이름을 넘깁니다.
+
+```
+.\build\Release\project_slit.exe greybox
+```
+
 회귀 테스트는 CTest로 실행합니다.
 
 ```
@@ -72,7 +78,7 @@ ctest --test-dir build -C Release
 
 조작은 이동 `A` `D` 또는 `←` `→`, 점프 `Space`이며, 같은 방향을 빠르게 두 번 누르면 지상에서는 달리기, 공중에서는 대쉬가 발동합니다. 공중 대쉬의 세로 입력은 `W` `S` 또는 `↑` `↓`를 함께 사용합니다. 위아래를 두 번 누르지 않고 계속 누르고 있으면 대쉬 대신 낙하 속도가 바뀝니다.
 
-`Alt` + `Enter`로 창 모드와 전체 화면을 오갑니다. 전체 화면은 모니터 해상도를 그대로 쓰고 검은 여백 없이 화면을 채웁니다. 기준 구도를 균일하게 확대하므로 그림이 늘어나지 않고, 화면비가 기준과 다르면 넘치는 부분이 잘립니다. 화면이 커져도 캐릭터가 작아지지 않습니다. 자세한 내용은 [`docs/decisions/0005-display-and-view-policy.md`](docs/decisions/0005-display-and-view-policy.md)에 있습니다.
+실행하면 곧바로 전체 화면으로 시작하고 마우스 커서를 숨깁니다. 다른 창으로 넘어가면 커서가 돌아옵니다. `Alt` + `Enter`로 창 모드와 전체 화면을 오갈 수 있습니다. 전체 화면은 모니터 해상도를 그대로 쓰고 검은 여백 없이 화면을 채웁니다. 기준 구도를 균일하게 확대하므로 그림이 늘어나지 않고, 화면비가 기준과 다르면 넘치는 부분이 잘립니다. 화면이 커져도 캐릭터가 작아지지 않습니다. 자세한 내용은 [`docs/decisions/0005-display-and-view-policy.md`](docs/decisions/0005-display-and-view-policy.md)에 있습니다.
 
 현재 이동 상태는 창 제목에 실시간으로 표시되므로 별도 디버그 도구 없이 확인할 수 있습니다.
 
@@ -84,5 +90,6 @@ ctest --test-dir build -C Release
 - [`docs/decisions/`](docs/decisions/README.md): 중요한 기술 결정의 ADR 기록 방식
 - [`experiments/`](experiments/README.md): 독립적인 기술 실험의 계획과 결과
 - [`src/`](src): 현재 이동 프로토타입 구현
+- [`assets/regions/`](assets/regions): 지역의 경계와 발판 배치. 고친 뒤 다시 실행하면 바로 반영됩니다
 - [`tests/`](tests): 이동과 카메라의 회귀 테스트
 - [`AGENTS.md`](AGENTS.md): 저장소에서 작업할 때 적용할 최소 원칙
