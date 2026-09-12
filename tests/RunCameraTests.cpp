@@ -213,9 +213,9 @@ void regionData()
 {
     const auto path = Region::findFile("practice_room");
     check(Region::findFile("practice_room", path.parent_path()) == path, "ancestor path search");
-    Region large(Region::findFile("greybox"));
-    check(large.bounds() == sf::FloatRect({0.f,-4800.f},{9600.f,5400.f}), "greybox twelve by twelve screens");
-    check(large.solids().size() > 16, "greybox geometry loaded");
+    Region large(Region::findFile("avatar_lake"));
+    check(large.bounds() == sf::FloatRect({0.f,-4800.f},{9600.f,5400.f}), "avatar_lake twelve by twelve screens");
+    check(large.solids().size() > 16, "avatar_lake geometry loaded");
     nlohmann::json data;
     std::ifstream(path) >> data;
     const auto temporary = std::filesystem::temp_directory_path() / "project_slit_region_test.json";

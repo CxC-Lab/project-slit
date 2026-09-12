@@ -10,10 +10,10 @@
 #include <stdexcept>
 void check(bool condition,const char* message) { if(!condition) throw std::runtime_error(message); }
 int main(int argc, char** argv) try {
-    const auto region = Region::findFile("greybox");
+    const auto region = Region::findFile("avatar_lake");
     const auto file = region.parent_path().parent_path()/"backgrounds"/region.filename();
     const auto layers = Background::readLayers(file);
-    check(layers.size()==3,"greybox data composition");
+    check(layers.size()==3,"avatar_lake data composition");
     check(Background::readLayers(file.parent_path()/"practice_room.json").empty(),"absent data uses flat background");
     for(std::size_t i=0;i<layers.size();++i) {
         const auto& layer=layers[i];

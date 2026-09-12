@@ -40,7 +40,7 @@ int main(int argc, char** argv) try
     sf::View camera(sf::FloatRect({0.f, 0.f}, Display::referenceViewSize));
     Display::apply(camera, window.getSize());
 
-    if (argc > 2) throw std::runtime_error("Usage: project_slit.exe [practice_room|greybox]");
+    if (argc > 2) throw std::runtime_error("Usage: project_slit.exe [practice_room|avatar_lake]");
     const auto regionFile = Region::findFile(argc == 2 ? argv[1] : "practice_room");
     const Region room(regionFile);
     const Background background(regionFile.parent_path().parent_path()/"backgrounds"/regionFile.filename());
