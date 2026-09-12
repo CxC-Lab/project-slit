@@ -72,3 +72,11 @@ add_executable(preview tools/preview.cpp src/Display.cpp src/Background.cpp src/
 target_include_directories(preview PRIVATE src)
 target_compile_features(preview PRIVATE cxx_std_20)
 target_link_libraries(preview PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
+
+if(BUILD_TESTING)
+    add_executable(region_tests tests/RegionTests.cpp src/levels/Region.cpp src/Player.cpp)
+    target_include_directories(region_tests PRIVATE src)
+    target_compile_features(region_tests PRIVATE cxx_std_20)
+    target_link_libraries(region_tests PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
+    add_test(NAME region_tests COMMAND region_tests)
+endif()
