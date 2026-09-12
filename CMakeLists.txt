@@ -67,3 +67,8 @@ endif()
 add_executable(bg_generator EXCLUDE_FROM_ALL tools/generate_background.cpp)
 target_compile_features(bg_generator PRIVATE cxx_std_20)
 target_link_libraries(bg_generator PRIVATE SFML::Graphics)
+
+add_executable(preview tools/preview.cpp src/Display.cpp src/Background.cpp src/levels/Region.cpp)
+target_include_directories(preview PRIVATE src)
+target_compile_features(preview PRIVATE cxx_std_20)
+target_link_libraries(preview PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)

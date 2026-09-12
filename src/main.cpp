@@ -13,9 +13,51 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+#include <cstdint>
+#include <nlohmann/json.hpp>
 
 namespace
 {
+void captureFrame(sf::RenderWindow& window, const sf::View& view,
+                  sf::Vector2f playerCenter, const std::string& region,
+                  const std::filesystem::path& directory, std::uint64_t frame)
+{
+    try {
+        std::filesystem::create_directories(directory);
+        std::filesystem::path png, json;
+        for (std::uint64_t number = 1;; ++number) {
+            std::ostringstream name;
+            name << "captured_" << std::setfill('0') << std::setw(4) << number;
+            png = directory / (name.str() + ".png");
+            json = directory / (name.str() + ".json");
+            if (!std::filesystem::exists(png) && !std::filesystem::exists(json)) break;
+        }
+        const auto center = view.getCenter();
+        const auto size = view.getSize();
+        const auto topLeft = center - size / 2.f;
+        const auto pixels = window.getSize();
+        const nlohmann::json metadata = {
+            {"region", region}, {"playerPosition", {playerCenter.x, playerCenter.y}},
+            {"cameraCenter", {center.x, center.y}},
+            {"viewRect", {{"left", topLeft.x}, {"top", topLeft.y}, {"width", size.x}, {"height", size.y}}},
+            {"windowSize", {pixels.x, pixels.y}}, {"frame", frame}
+        };
+        sf::Texture capture(pixels);
+        capture.update(window); // Back buffer: this frame, before display swaps buffers.
+        if (!capture.copyToImage().saveToFile(png)) throw std::runtime_error("PNG save failed: " + png.string());
+        std::ofstream output(json);
+        output << metadata.dump(2) << '\n';
+        output.close();
+        if (!output) throw std::runtime_error("JSON save failed: " + json.string());
+        std::cout << "Captured " << png.string() << " and " << json.string() << '\n';
+    } catch (const std::exception& error) {
+        std::cerr << "Screenshot failed: " << error.what() << '\n';
+    }
+}
+
 struct ClipVisual
 {
     AnimationClip clip;
@@ -81,6 +123,9 @@ int main(int argc, char** argv) try
     Input input;
     sf::Clock frameClock;
     sf::Clock inputClock;
+    bool captureRequested = false;
+    std::uint64_t renderedFrames = 0;
+    const auto captureDirectory = regionFile.parent_path().parent_path().parent_path() / "build" / "preview";
 
     while (window.isOpen())
     {
@@ -98,6 +143,13 @@ int main(int argc, char** argv) try
                     input.reset();
                 continue;
             }
+            if (const auto* key = event->getIf<sf::Event::KeyPressed>(); key && key->code == sf::Keyboard::Key::F12)
+            {
+                if (window.hasFocus()) captureRequested = true;
+                continue;
+            }
+            if (const auto* key = event->getIf<sf::Event::KeyReleased>(); key && key->code == sf::Keyboard::Key::F12)
+                continue;
             if (event->is<sf::Event::FocusLost>())
                 input.reset();
             if (const auto* key = event->getIf<sf::Event::KeyReleased>())
@@ -201,6 +253,14 @@ int main(int argc, char** argv) try
         window.draw(playerSprite);
         if (showPlayerCollider)
             window.draw(playerShape);
+        ++renderedFrames;
+        if (captureRequested)
+        {
+            captureRequested = false;
+            captureFrame(window, camera, playerBounds.position + playerBounds.size / 2.f,
+                         regionFile.stem().string(), captureDirectory, renderedFrames);
+            (void)frameClock.restart(); // Exclude screenshot I/O pause from the next physics step.
+        }
         window.display();
     }
     std::cout << "Animation frame changes: Idle=" << idle.frameChanges
