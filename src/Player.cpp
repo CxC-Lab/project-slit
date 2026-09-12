@@ -189,6 +189,8 @@ void Player::limitFallSpeed()
         velocity_.y = std::min(velocity_.y, Movement::wallSlideSpeed); break;
     case MovementState::SlowFalling:
         velocity_.y = std::min(velocity_.y, Movement::slowFallMaxSpeed); break;
+    case MovementState::Falling:
+        velocity_.y = std::min(velocity_.y, Movement::fallMaxSpeed); break;
     case MovementState::FastFalling:
         velocity_.y = std::min(velocity_.y, Movement::fastFallMaxSpeed); break;
     default: break;

@@ -187,10 +187,8 @@ int main(int argc, char** argv) try
         playerSprite.setTextureRect(activeVisual->clip.frameRect());
         playerSprite.setPosition({playerBounds.position.x + playerBounds.size.x / 2.f,
                                   playerBounds.position.y + playerBounds.size.y});
-        const bool catchUp = player.state() == MovementState::FastFalling ||
-                             player.velocity().y >= Camera::catchUpFallSpeed;
         Camera::follow(camera, playerBounds.position + playerBounds.size / 2.f, room.bounds(), deltaTime,
-                       catchUp ? Camera::catchUpMultiplier : 1.f);
+                       Camera::speedMultiplier(player.velocity().y));
         window.setTitle(std::string("Project Slit Prototype - ") + toString(player.state()));
         window.setView(camera);
         window.clear(sf::Color::Black);

@@ -20,6 +20,7 @@ inline constexpr float wallSlideSpeed = 90.f;
 inline constexpr float slowFallMaxSpeed = 120.f;
 inline constexpr float fastFallAcceleration = 3000.f; // Added to ordinary gravity while descending.
 inline constexpr float fastFallMaxSpeed = 1200.f;
+inline constexpr float fallMaxSpeed = 1000.f;
 inline constexpr float landImpactSpeed = 700.f; // Above ordinary jump landing speed (~520).
 inline constexpr sf::Vector2f collisionSize{32.f, 48.f};
 }

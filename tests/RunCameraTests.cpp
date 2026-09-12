@@ -232,8 +232,58 @@ void regionData()
         check(rejected, "missing/type/geometry/camera-size errors rejected");
     }
 }
+void sustainedCamera(float speed)
+{
+    const sf::FloatRect world({0,-100000},{3200,200000});
+    for(float height : {450.f,600.f}) for(int fps : {30,60,144}) {
+        sf::View view(sf::FloatRect({0,0},{800,height}));
+        view.setCenter({500,0});
+        float y=0;
+        for(int frame=0;frame<fps*5;++frame) {
+            y+=speed/fps;
+            Camera::follow(view,{500,y},world,1.f/fps,Camera::speedMultiplier(speed));
+            check(std::abs(y-view.getCenter().y)+Movement::collisionSize.y/2 < height/2,
+                  "sustained vertical movement keeps full collider inside view");
+        }
+    }
+}
+void terminalFalls()
+{
+    const std::vector<sf::FloatRect> solids{{{0,90000},{800,80}}};
+    Player normal({100,0}), fast({100,0});
+    float normalPeak=0,fastPeak=0;
+    for(int i=0;i<600;++i) {
+        normal.update({},1.f/60,solids,800);
+        fast.update({{0,1}},1.f/60,solids,800);
+        normalPeak=std::max(normalPeak,normal.velocity().y);
+        fastPeak=std::max(fastPeak,fast.velocity().y);
+    }
+    check(near(normalPeak,Movement::fallMaxSpeed) && near(fastPeak,Movement::fastFallMaxSpeed) && normalPeak<fastPeak,
+          "actual normal and fast falls reach ordered terminal speeds");
+    check(normalPeak>Movement::landImpactSpeed,"normal terminal fall can trigger Landing");
+}
+void continuousCamera()
+{
+    const sf::FloatRect world({0,-100000},{3200,200000});
+    float previous=Camera::speedMultiplier(-1200),previousY=0;
+    for(int i=-12000;i<=12000;++i) {
+        const float speed=i/10.f;
+        const float multiplier=Camera::speedMultiplier(speed);
+        sf::View view(sf::FloatRect({0,0},{800,450}));
+        view.setCenter({500,0});
+        Camera::follow(view,{500,200},world,1.f/60,multiplier);
+        check(std::abs(multiplier-previous)<.001f,"speed sweep has no multiplier step");
+        if(i>-12000) check(std::abs(view.getCenter().y-previousY)<.01f,"speed sweep has no camera displacement step");
+        previous=multiplier; previousY=view.getCenter().y;
+    }
+    check(near(Camera::speedMultiplier(0),1) && Camera::speedMultiplier(-520)<=1.031f,
+          "walking and single jump preserve gentle tracking");
+    const float normalLag=Movement::fallMaxSpeed/(6*Camera::speedMultiplier(Movement::fallMaxSpeed));
+    const float fastLag=Movement::fastFallMaxSpeed/(6*Camera::speedMultiplier(Movement::fastFallMaxSpeed));
+    check(normalLag<=fastLag,"normal fall camera lag does not exceed fast fall");
+}
 int main()
 {
-    try { regionData(); runs(); fallAndMomentum(); cameras(); climbingRoute(); practiceRoom(); std::cout << "PASS: running, vertical camera, climbing route\n"; }
+    try { sustainedCamera(-700); sustainedCamera(Movement::fallMaxSpeed); terminalFalls(); continuousCamera(); regionData(); runs(); fallAndMomentum(); cameras(); climbingRoute(); practiceRoom(); std::cout << "PASS: running, vertical camera, climbing route\n"; }
     catch (const std::exception& e) { std::cerr << "FAIL: " << e.what() << '\n'; return 1; }
 }
