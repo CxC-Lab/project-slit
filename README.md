@@ -1,7 +1,7 @@
 # Project Slit
 
 ![Project Slit 최초 게임플레이 콘셉트](assets/concept-art/project-slit-gameplay-concept-v001.png)
-![개발 중 이미지 01](captured_0003.png)
+![타일 진단색으로 그린 Avatar Lake, 2026-09-12](assets/screenshots/avatar_lake-tile-greybox-2026-09-12.png)
 
 Project Slit은 CxC Lab에서 진행하는 1인 연구개발 프로젝트입니다.
 
