@@ -26,6 +26,10 @@ Debug/
 Release/
 *.tmp
 
+# Hand-made backups of tracked data files. Git history already keeps every revision.
+*.bak-*
+*_bk.*
+
 # Caches and test artifacts
 .cache/
 .pytest_cache/
