@@ -1,0 +1,6 @@
+{
+  "image": "avatar_lake.png",
+  "tileSize": 20,
+  "roles": {"inner":4,"top":3,"bottom":2,"left":2,"right":2,
+            "top_left":1,"top_right":1,"bottom_left":1,"bottom_right":1,"slab":2}
+}

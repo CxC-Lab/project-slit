@@ -1,6 +1,7 @@
 # Project Slit
 
 ![Project Slit 최초 게임플레이 콘셉트](assets/concept-art/project-slit-gameplay-concept-v001.png)
+![개발 중 이미지 01](captured_0003.png)
 
 Project Slit은 CxC Lab에서 진행하는 1인 연구개발 프로젝트입니다.
 

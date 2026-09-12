@@ -58,6 +58,19 @@ Region::Region(const std::filesystem::path& file) try
             throw std::runtime_error("Solid has invalid size or exceeds region");
         solids_.push_back({{r[0],r[1]}, {r[2],r[3]}});
     }
+    if(data.contains("tileset")) {
+        const auto name=data.at("tileset").get<std::string>();
+        if(name.empty() || name.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_")!=std::string::npos)
+            throw std::runtime_error("Invalid tileset name");
+        auto seed=Terrain::hashId(data.at("id").get<std::string>());
+        if(data.contains("seed")) {
+            if(!data.at("seed").is_number_integer()) throw std::runtime_error("Region seed must be integer");
+            seed=data.at("seed").is_number_unsigned() ? data.at("seed").get<std::uint64_t>() :
+                static_cast<std::uint64_t>(data.at("seed").get<std::int64_t>());
+        }
+        tiles_.emplace(solids_,file.parent_path().parent_path()/"tilesets"/(name+".json"),seed);
+    }
+
 }
 catch (const std::exception& error) {
     throw std::runtime_error("Region " + file.string() + ": " + error.what());
@@ -68,6 +81,7 @@ void Region::render(sf::RenderTarget& target) const
     const auto& view = target.getView();
     const auto visible = bounds_.findIntersection({view.getCenter() - view.getSize()/2.f, view.getSize()});
     if (!visible) return;
+    if (tiles_) { tiles_->render(target,*visible); return; }
     const auto lo = visible->position;
     const auto hi = lo + visible->size;
     sf::VertexArray guides(sf::PrimitiveType::Lines);

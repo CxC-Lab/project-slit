@@ -2,6 +2,7 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <filesystem>
 #include <vector>
+#include "../TerrainTiles.hpp"
 namespace sf { class RenderTarget; }
 
 // Region geometry only; player and camera lifetimes belong to the caller.
@@ -19,4 +20,5 @@ private:
     sf::FloatRect bounds_;
     sf::Vector2f spawn_;
     std::vector<sf::FloatRect> solids_;
+    std::optional<TerrainTiles> tiles_;
 };
