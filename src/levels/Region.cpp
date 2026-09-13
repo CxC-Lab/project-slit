@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <SFML/Graphics/VertexArray.hpp>
 #include <fstream>
+#include <iomanip>
+#include <sstream>
 #include <stdexcept>
 
 std::filesystem::path Region::findFile(const std::string& name, std::filesystem::path directory)
@@ -25,7 +27,7 @@ std::filesystem::path Region::findFile(const std::string& name, std::filesystem:
     throw std::runtime_error("Region JSON not found: " + name);
 }
 
-Region::Region(const std::filesystem::path& file) try
+Region::Region(const std::filesystem::path& file, const std::string& tilesetOverride) try
 {
     std::ifstream input(file);
     if (!input) throw std::runtime_error("Cannot open file");
@@ -58,8 +60,8 @@ Region::Region(const std::filesystem::path& file) try
             throw std::runtime_error("Solid has invalid size or exceeds region");
         solids_.push_back({{r[0],r[1]}, {r[2],r[3]}});
     }
-    if(data.contains("tileset")) {
-        const auto name=data.at("tileset").get<std::string>();
+    if(!tilesetOverride.empty() || data.contains("tileset")) {
+        const auto name=tilesetOverride.empty() ? data.at("tileset").get<std::string>() : tilesetOverride;
         if(name.empty() || name.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_")!=std::string::npos)
             throw std::runtime_error("Invalid tileset name");
         auto seed=Terrain::hashId(data.at("id").get<std::string>());
@@ -69,11 +71,29 @@ Region::Region(const std::filesystem::path& file) try
                 static_cast<std::uint64_t>(data.at("seed").get<std::int64_t>());
         }
         tiles_.emplace(solids_,file.parent_path().parent_path()/"tilesets"/(name+".json"),seed);
+        tilesetName_=name;
+        tilesetOverridden_=!tilesetOverride.empty();
+        innerImage_=tiles_->innerImagePath();
     }
 
 }
 catch (const std::exception& error) {
     throw std::runtime_error("Region " + file.string() + ": " + error.what());
+}
+
+nlohmann::json Region::captureIdentity() const
+{
+    std::string hash;
+    if(innerImage_) {
+        std::ifstream input(*innerImage_,std::ios::binary);
+        if(!input) throw std::runtime_error("Cannot identify inner image: "+innerImage_->string());
+        std::uint64_t value=14695981039346656037ull;
+        for(char byte;input.get(byte);) {value^=static_cast<unsigned char>(byte);value*=1099511628211ull;}
+        std::ostringstream text;text<<std::hex<<std::setfill('0')<<std::setw(16)<<value;hash=text.str();
+    }
+    return {{"tileset",tilesetName_},{"tilesetMode",tilesetOverridden_?"override":"region_default"},
+            {"innerMacroImage",innerImage_?std::filesystem::weakly_canonical(*innerImage_).generic_string():""},
+            {"innerMacroHash",hash},{"innerMacroHashAlgorithm","fnv1a64"}};
 }
 
 void Region::render(sf::RenderTarget& target) const

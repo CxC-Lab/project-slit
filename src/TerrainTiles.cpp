@@ -19,6 +19,19 @@ Terrain::Tileset::Tileset(const std::filesystem::path& file)
         if(!n.is_number_integer() || n.get<std::int64_t>()<=0) throw std::runtime_error("Invalid tile variant count");
         variants[i]=n.get<unsigned>();
     }
+    if(data.contains("sampling")) {
+        const auto& entries=data.at("sampling");
+        if(!entries.is_object()) throw std::runtime_error("Tileset sampling must be an object");
+        for(const auto& [role,entry]:entries.items()) {
+            if(role!="inner" || entry.at("mode")!="repeat2d")
+                throw std::runtime_error("Only inner repeat2d sampling is supported");
+            const std::filesystem::path path(entry.at("image").get<std::string>());
+            if(path.empty() || path.is_absolute()) throw std::runtime_error("Macro image must be a relative path");
+            innerImage=file.parent_path()/path;
+            const auto index=std::find(roles.begin(),roles.end(),role)-roles.begin();
+            sampling[index]=Sampling::Repeat2D;
+        }
+    }
 }
 
 std::uint64_t Terrain::hashId(const std::string& id)
@@ -136,7 +149,9 @@ std::vector<Terrain::Piece> Terrain::pieces(const std::vector<Component>& groups
                     else if(bottom) role=left?7:right?8:2;
                     else if(left) role=3;
                     else if(right) role=4;
-                    const unsigned variant=static_cast<unsigned>(tileHash(cell,seed)%set.variants[role]);
+                    const auto sampling=set.sampling[role];
+                    const unsigned variant=sampling==Sampling::Repeat2D ? 0u :
+                        static_cast<unsigned>(tileHash(cell,seed)%set.variants[role]);
                     sf::Vector2f uv=piece.position-cell;
                     if(left) uv.x=piece.position.x-h.x;
                     else if(right) uv.x=t-(h.y-piece.position.x);
@@ -145,7 +160,8 @@ std::vector<Terrain::Piece> Terrain::pieces(const std::vector<Component>& groups
                     const auto draw=piece.findIntersection(visible);
                     if(!draw) continue;
                     uv+=draw->position-piece.position+sf::Vector2f{variant*t,role*t};
-                    output.push_back({*draw,{uv,draw->size},cell,role,variant});
+                    if(sampling==Sampling::Repeat2D) uv=draw->position-origin;
+                    output.push_back({*draw,{uv,draw->size},cell,role,variant,sampling});
                 }
             }
         }
@@ -157,19 +173,33 @@ TerrainTiles::TerrainTiles(const std::vector<sf::FloatRect>& solids,const std::f
 void TerrainTiles::render(sf::RenderTarget& target,const sf::FloatRect& visible) const
 {
     if(!texture_) {
-        texture_.emplace();
-        if(!texture_->loadFromFile(set_.image)) { texture_.reset(); throw std::runtime_error("Cannot load tileset image"); }
-        const auto size=texture_->getSize();
+        sf::Texture texture;
+        if(!texture.loadFromFile(set_.image)) throw std::runtime_error("Cannot load tileset image: "+set_.image.string());
+        const auto size=texture.getSize();
         if(size.x!=*std::max_element(set_.variants.begin(),set_.variants.end())*set_.size || size.y!=Terrain::roles.size()*set_.size)
             throw std::runtime_error("Tileset image dimensions mismatch");
-        texture_->setSmooth(false);
+        texture.setSmooth(false);
+        texture_=std::move(texture);
     }
-    sf::VertexArray vertices(sf::PrimitiveType::Triangles);
+    if(set_.innerImage && !innerTexture_) {
+        sf::Texture texture;
+        if(!texture.loadFromFile(*set_.innerImage))
+            throw std::runtime_error("Cannot load inner macro image: "+set_.innerImage->string());
+        texture.setSmooth(false);
+        texture.setRepeated(true); // Period comes from the actual image dimensions.
+        innerTexture_=std::move(texture);
+    }
+    sf::VertexArray atlas(sf::PrimitiveType::Triangles),macro(sf::PrimitiveType::Triangles);
     for(const auto& p:Terrain::pieces(groups_,set_,seed_,visible)) {
+        auto& vertices=p.sampling==Terrain::Sampling::Repeat2D ? macro : atlas;
         const auto a=p.bounds.position,b=a+p.bounds.size;
         for(sf::Vector2f point:{a,sf::Vector2f{b.x,a.y},b,a,b,sf::Vector2f{a.x,b.y}})
             vertices.append(sf::Vertex{point,sf::Color::White,p.uv.position+point-a});
     }
     sf::RenderStates states; states.texture=&*texture_;
-    target.draw(vertices,states);
+    if(atlas.getVertexCount()) target.draw(atlas,states);
+    if(macro.getVertexCount()) {
+        states.texture=&*innerTexture_;
+        target.draw(macro,states);
+    }
 }

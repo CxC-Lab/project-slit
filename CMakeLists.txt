@@ -125,4 +125,6 @@ if(BUILD_TESTING)
     add_test(NAME tile_pipeline_checks COMMAND ${CMAKE_COMMAND}
         -DPIPELINE_EXE=$<TARGET_FILE:tile_pipeline> -P ${CMAKE_SOURCE_DIR}/tests/TilePipelineChecks.cmake)
     set_tests_properties(tile_pipeline_checks PROPERTIES FIXTURES_REQUIRED pipeline_tool)
+    add_test(NAME macro_capture_checks COMMAND ${CMAKE_COMMAND}
+        -DBIN=$<TARGET_FILE_DIR:preview> -P ${CMAKE_SOURCE_DIR}/tests/MacroCaptureChecks.cmake)
 endif()

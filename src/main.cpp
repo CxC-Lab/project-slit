@@ -23,7 +23,8 @@ namespace
 {
 void captureFrame(sf::RenderWindow& window, const sf::View& view,
                   sf::Vector2f playerCenter, const std::string& region,
-                  const std::filesystem::path& directory, std::uint64_t frame)
+                  const std::filesystem::path& directory, std::uint64_t frame,
+                  const Region& room)
 {
     try {
         std::filesystem::create_directories(directory);
@@ -39,12 +40,13 @@ void captureFrame(sf::RenderWindow& window, const sf::View& view,
         const auto size = view.getSize();
         const auto topLeft = center - size / 2.f;
         const auto pixels = window.getSize();
-        const nlohmann::json metadata = {
+        nlohmann::json metadata = {
             {"region", region}, {"playerPosition", {playerCenter.x, playerCenter.y}},
             {"cameraCenter", {center.x, center.y}},
             {"viewRect", {{"left", topLeft.x}, {"top", topLeft.y}, {"width", size.x}, {"height", size.y}}},
             {"windowSize", {pixels.x, pixels.y}}, {"frame", frame}
         };
+        metadata.update(room.captureIdentity());
         sf::Texture capture(pixels);
         capture.update(window); // Back buffer: this frame, before display swaps buffers.
         if (!capture.copyToImage().saveToFile(png)) throw std::runtime_error("PNG save failed: " + png.string());
@@ -82,9 +84,10 @@ int main(int argc, char** argv) try
     sf::View camera(sf::FloatRect({0.f, 0.f}, Display::referenceViewSize));
     Display::apply(camera, window.getSize());
 
-    if (argc > 2) throw std::runtime_error("Usage: project_slit.exe [practice_room|avatar_lake]");
-    const auto regionFile = Region::findFile(argc == 2 ? argv[1] : "practice_room");
-    const Region room(regionFile);
+    if (argc > 2 && (argc != 4 || std::string(argv[2]) != "--tileset"))
+        throw std::runtime_error("Usage: project_slit.exe [region [--tileset name]]");
+    const auto regionFile = Region::findFile(argc >= 2 ? argv[1] : "practice_room");
+    const Region room(regionFile, argc == 4 ? argv[3] : "");
     const Background background(regionFile.parent_path().parent_path()/"backgrounds"/regionFile.filename());
     Player player(room.spawn());
     sf::RectangleShape playerShape(Movement::collisionSize);
@@ -258,7 +261,7 @@ int main(int argc, char** argv) try
         {
             captureRequested = false;
             captureFrame(window, camera, playerBounds.position + playerBounds.size / 2.f,
-                         regionFile.stem().string(), captureDirectory, renderedFrames);
+                         regionFile.stem().string(), captureDirectory, renderedFrames, room);
             (void)frameClock.restart(); // Exclude screenshot I/O pause from the next physics step.
         }
         window.display();

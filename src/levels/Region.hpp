@@ -2,6 +2,7 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <filesystem>
 #include <vector>
+#include <nlohmann/json_fwd.hpp>
 #include "../TerrainTiles.hpp"
 namespace sf { class RenderTarget; }
 
@@ -9,16 +10,22 @@ namespace sf { class RenderTarget; }
 class Region
 {
 public:
-    explicit Region(const std::filesystem::path& file);
+    explicit Region(const std::filesystem::path& file, const std::string& tilesetOverride = {});
     static std::filesystem::path findFile(const std::string& name,
         std::filesystem::path directory = std::filesystem::current_path());
     sf::FloatRect bounds() const { return bounds_; }
     sf::Vector2f spawn() const { return spawn_; }
     const std::vector<sf::FloatRect>& solids() const { return solids_; }
+    const std::string& tilesetName() const { return tilesetName_; }
+    const std::optional<std::filesystem::path>& innerImagePath() const { return innerImage_; }
+    nlohmann::json captureIdentity() const;
     void render(sf::RenderTarget& target) const;
 private:
     sf::FloatRect bounds_;
     sf::Vector2f spawn_;
     std::vector<sf::FloatRect> solids_;
     std::optional<TerrainTiles> tiles_;
+    std::string tilesetName_;
+    bool tilesetOverridden_ = false;
+    std::optional<std::filesystem::path> innerImage_;
 };

@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+
 sf::Vector2f coordinate(const std::string& text)
 {
     const auto comma=text.find(',');
@@ -77,9 +78,10 @@ std::string padded(long long value,int width)
 
 int main(int argc,char** argv) try
 {
-    if(argc<3) throw std::runtime_error("Usage: preview <region> [<x,y> ... | --cover] [--out dir] [--sheet] [--grid] [--aspect 4:3|16:9]");
+    if(argc<3) throw std::runtime_error("Usage: preview <region> [<x,y> ... | --cover] [--out dir] [--sheet] [--grid] [--aspect 4:3|16:9] [--tileset name]");
     std::vector<sf::Vector2f> points;
     std::filesystem::path out="build/preview";
+    std::string tilesetOverride;
     sf::Vector2u physical{1920,1080};
     bool sheet=false,grid=false,cover=false;
     for(int i=2;i<argc;++i) {
@@ -87,10 +89,11 @@ int main(int argc,char** argv) try
         if(arg=="--cover") cover=true;
         else if(arg=="--sheet") sheet=true;
         else if(arg=="--grid") grid=true;
-        else if(arg=="--out" || arg=="--aspect") {
+        else if(arg=="--out" || arg=="--aspect" || arg=="--tileset") {
             if(++i==argc) throw std::runtime_error("Missing value for "+arg);
             const std::string value=argv[i];
-            if(arg=="--out") { if(value.empty() || value.starts_with("--")) throw std::runtime_error("Invalid output directory: "+value); out=value; }
+            if(arg=="--tileset") { if(value.empty()) throw std::runtime_error("Empty tileset override"); tilesetOverride=value; }
+            else if(arg=="--out") { if(value.empty() || value.starts_with("--")) throw std::runtime_error("Invalid output directory: "+value); out=value; }
             else if(value=="4:3") physical={1600,1200};
             else if(value=="16:9") physical={1920,1080};
             else throw std::runtime_error("Unsupported aspect: "+value);
@@ -103,7 +106,7 @@ int main(int argc,char** argv) try
     if(cover && !points.empty()) throw std::runtime_error("--cover cannot be combined with explicit coordinates");
     if(!cover && points.empty()) throw std::runtime_error("At least one coordinate is required");
     const auto file=Region::findFile(argv[1]);
-    const Region room(file);
+    const Region room(file,tilesetOverride);
     const Background background(file.parent_path().parent_path()/"backgrounds"/file.filename());
     sf::View view;
     Display::apply(view,physical);
@@ -133,6 +136,7 @@ int main(int argc,char** argv) try
     const unsigned thumbHeight=static_cast<unsigned>(std::lround(thumbWidth*view.getSize().y/view.getSize().x));
     nlohmann::json manifest={{"region",argv[1]}, {"viewSize",{view.getSize().x,view.getSize().y}},
         {"rows",coverRows},{"columns",coverColumns},{"cells",nlohmann::json::array()}};
+    manifest.update(room.captureIdentity());
     if(cover) overview=sf::Image({coverColumns*(thumbWidth+gap)+gap,
         coverRows*(thumbHeight+header+gap)+gap},sf::Color(25,30,45));
     for(std::size_t i=0;i<points.size();++i) {
@@ -183,6 +187,10 @@ int main(int argc,char** argv) try
         }
         const auto output=out/("preview_"+std::to_string(i+1)+".png");
         if(!image.saveToFile(output)) throw std::runtime_error("Cannot save "+output.string());
+        manifest["cells"].push_back({{"file",output.filename().generic_string()},
+            {"requestedCenter",{points[i].x,points[i].y}},{"cameraCenter",{center.x,center.y}},
+            {"visibleRect",{{"left",center.x-half.x},{"top",center.y-half.y},
+                {"width",view.getSize().x},{"height",view.getSize().y}}}});
         if(sheet) {
             const unsigned x=static_cast<unsigned>(i%columns)*size.x;
             const unsigned y=static_cast<unsigned>(i/columns)*(size.y+12);
@@ -192,6 +200,11 @@ int main(int argc,char** argv) try
     }
     if(cover) {
         if(!overview.saveToFile(out/"overview.png")) throw std::runtime_error("Overview save failed");
+        std::ofstream output(out/"manifest.json");
+        output<<manifest.dump(2)<<'\n';
+        if(!output) throw std::runtime_error("Manifest save failed");
+    }
+    else {
         std::ofstream output(out/"manifest.json");
         output<<manifest.dump(2)<<'\n';
         if(!output) throw std::runtime_error("Manifest save failed");

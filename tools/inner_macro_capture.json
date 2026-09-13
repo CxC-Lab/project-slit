@@ -1,0 +1,12 @@
+{
+  "region": "avatar_lake",
+  "baseline": "diagnostic",
+  "cameraPair": [0, 3],
+  "points": ["8400,375", "895,145", "1310,375", "8407,372"],
+  "trials": [
+    {"id": "diagnostic", "tileset": "avatar_lake_debug"},
+    {"id": "region_default", "tileset": ""},
+    {"id": "e0", "tileset": "avatar_lake_inner_trial_e0"},
+    {"id": "e1", "tileset": "avatar_lake_inner_trial_e1"}
+  ]
+}
