@@ -1,0 +1,13 @@
+palette (dark to light):
+  p0 = (44,52,107)
+  p1 = (75,68,113)
+  p2 = (129,95,114)
+  p3 = (161,123,109)
+  p4 = (205,129,72)
+  p5 = (255,161,67)
+
+edge diff, avg abs channel delta 0-255 (0 = identical pixels at the seam):
+  01 -> 01: horizontal=0 vertical=11.5833
+  02 -> 02: horizontal=0 vertical=10.05
+  01 -> 02: horizontal=0 vertical=10.05
+  02 -> 01: horizontal=0 vertical=11.5833

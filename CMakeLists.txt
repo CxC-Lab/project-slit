@@ -85,10 +85,44 @@ add_executable(tileset_generator EXCLUDE_FROM_ALL tools/generate_tileset.cpp src
 target_include_directories(tileset_generator PRIVATE src)
 target_compile_features(tileset_generator PRIVATE cxx_std_20)
 target_link_libraries(tileset_generator PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
+
+# One-off asset-prep tool: normalizes the Avatar Lake rock raw references into
+# game-sized inner tiles. Not part of the default build.
+add_executable(normalize_avatar_lake_tiles EXCLUDE_FROM_ALL tools/normalize_avatar_lake_tiles.cpp)
+target_compile_features(normalize_avatar_lake_tiles PRIVATE cxx_std_20)
+set_target_properties(normalize_avatar_lake_tiles PROPERTIES CXX_EXTENSIONS OFF)
+target_link_libraries(normalize_avatar_lake_tiles PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
+
+# Offline experiment: reimports the raw references' own large-scale shape instead of
+# re-composing a new pattern from an extracted palette. Not part of the default build.
+add_executable(raw_import_experiment EXCLUDE_FROM_ALL tools/raw_import_experiment.cpp)
+target_compile_features(raw_import_experiment PRIVATE cxx_std_20)
+set_target_properties(raw_import_experiment PROPERTIES CXX_EXTENSIONS OFF)
+target_link_libraries(raw_import_experiment PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
+
+# Offline experiment: same plain-crop method as raw_import_experiment's E candidate,
+# but samples a smaller region of the raw reference so the same 80x80 output shows
+# fewer, larger rock chunks. Not part of the default build.
+add_executable(raw_import_scale_experiment EXCLUDE_FROM_ALL tools/raw_import_scale_experiment.cpp)
+target_compile_features(raw_import_scale_experiment PRIVATE cxx_std_20)
+set_target_properties(raw_import_scale_experiment PROPERTIES CXX_EXTENSIONS OFF)
+target_link_libraries(raw_import_scale_experiment PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
+
+# Manifest-driven offline regeneration; never runs as part of the default build.
+add_executable(tile_pipeline EXCLUDE_FROM_ALL tools/tile_pipeline.cpp)
+target_compile_features(tile_pipeline PRIVATE cxx_std_20)
+set_target_properties(tile_pipeline PROPERTIES CXX_EXTENSIONS OFF)
+target_link_libraries(tile_pipeline PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
 if(BUILD_TESTING)
     add_executable(terrain_tiles_tests tests/TerrainTilesTests.cpp src/TerrainTiles.cpp src/levels/Region.cpp)
     target_include_directories(terrain_tiles_tests PRIVATE src)
     target_compile_features(terrain_tiles_tests PRIVATE cxx_std_20)
     target_link_libraries(terrain_tiles_tests PRIVATE SFML::Graphics nlohmann_json::nlohmann_json)
     add_test(NAME terrain_tiles_tests COMMAND terrain_tiles_tests)
+    add_test(NAME tile_pipeline_test_tool COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}
+        --config $<CONFIG> --target tile_pipeline)
+    set_tests_properties(tile_pipeline_test_tool PROPERTIES FIXTURES_SETUP pipeline_tool)
+    add_test(NAME tile_pipeline_checks COMMAND ${CMAKE_COMMAND}
+        -DPIPELINE_EXE=$<TARGET_FILE:tile_pipeline> -P ${CMAKE_SOURCE_DIR}/tests/TilePipelineChecks.cmake)
+    set_tests_properties(tile_pipeline_checks PROPERTIES FIXTURES_REQUIRED pipeline_tool)
 endif()

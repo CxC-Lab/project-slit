@@ -1,0 +1,141 @@
+{
+  "schema": 1,
+  "id": "avatar_lake_rock_crop_v1",
+  "source": {
+    "path": "source/rock_raw_01.png",
+    "expected_size": [
+      1254,
+      1254
+    ]
+  },
+  "palette": {
+    "method": "legacy_rgb_kmeans_v1",
+    "sampling": "all_source_pixels_row_major",
+    "initialization": "brightness_sum_std_sort_percentiles",
+    "colors": 14,
+    "iterations": 10,
+    "mean": "int_truncate",
+    "distance": "squared_rgb_first_tie",
+    "sort": "brightness_sum"
+  },
+  "stages": [
+    "fixed_crop",
+    "nearest_point_center",
+    "nearest_palette_rgb",
+    "opaque_rgba"
+  ],
+  "previews": {
+    "repeat": [
+      3,
+      3
+    ],
+    "inspect_scale": 4,
+    "grid_rgba": [
+      90,
+      220,
+      120,
+      255
+    ]
+  },
+  "candidates": [
+    {
+      "id": "E0_current",
+      "crop": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "output_size": [
+        80,
+        80
+      ],
+      "reference": "candidates/desktop-2026-09-13/E0_current.png"
+    },
+    {
+      "id": "E1_medium",
+      "crop": [
+        125,
+        0,
+        941,
+        941
+      ],
+      "output_size": [
+        80,
+        80
+      ],
+      "reference": "candidates/desktop-2026-09-13/E1_medium.png"
+    },
+    {
+      "id": "E2_loose",
+      "crop": [
+        627,
+        627,
+        627,
+        627
+      ],
+      "output_size": [
+        80,
+        80
+      ],
+      "reference": "candidates/desktop-2026-09-13/E2_loose.png"
+    },
+    {
+      "id": "E0_full_120",
+      "crop": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "output_size": [
+        120,
+        120
+      ]
+    },
+    {
+      "id": "E0_full_160",
+      "crop": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "output_size": [
+        160,
+        160
+      ]
+    }
+  ],
+  "provenance": {
+    "crop_selection": "Fixed picks from candidates/desktop-2026-09-13/records/crop_search.md; no search on regeneration.",
+    "legacy": [
+      {
+        "tool": "tools/normalize_avatar_lake_tiles.cpp",
+        "outputs": [
+          "assets/tiles/avatar_lake/normalized/rock_inner_01.png",
+          "assets/tiles/avatar_lake/normalized/rock_inner_02.png",
+          "build/preview/avatar_lake/tiles/meta_experiment/"
+        ],
+        "method": "6-color tuned palette from rock_raw_01/02, procedural 20x20 and experimental 40x40. Not migrated."
+      },
+      {
+        "tool": "tools/raw_import_experiment.cpp",
+        "outputs": [
+          "build/preview/avatar_lake/tiles/raw_import_experiment/"
+        ],
+        "method": "Raw point reduction; toroidal offset, center repair, quiet base and scene mockups. Only plain crop path migrated."
+      },
+      {
+        "tool": "tools/raw_import_scale_experiment.cpp",
+        "outputs": [
+          "build/preview/avatar_lake/tiles/raw_import_scale_experiment/"
+        ],
+        "method": "E0/E1/E2 fixed picks reproduced here. Immutable reference copies in candidates/desktop-2026-09-13/."
+      }
+    ],
+    "reproduction": "Use the same MSVC STL toolchain: legacy brightness-only std::sort tie ordering is implementation dependent. Reference pixel comparison detects differences.",
+    "restore": "Retain generated report.json (manifest snapshot and palette). Reuse its manifest field with paths rebased to the original manifest directory, or retain this manifest revision; generate into a fresh output directory.",
+    "full_scale_candidates": "2026-09-13: E1's 75% crop joined unrelated interior edges, so crop-position search stopped. E0_full_120/160 keep E0's whole-source crop, palette and stages; only output_size changes. No references yet: not approved, not promoted."
+  }
+}
