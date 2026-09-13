@@ -124,7 +124,11 @@ if(BUILD_TESTING)
     set_tests_properties(tile_pipeline_test_tool PROPERTIES FIXTURES_SETUP pipeline_tool)
     add_test(NAME tile_pipeline_checks COMMAND ${CMAKE_COMMAND}
         -DPIPELINE_EXE=$<TARGET_FILE:tile_pipeline> -P ${CMAKE_SOURCE_DIR}/tests/TilePipelineChecks.cmake)
-    set_tests_properties(tile_pipeline_checks PROPERTIES FIXTURES_REQUIRED pipeline_tool)
+    add_test(NAME tile_export_checks COMMAND ${CMAKE_COMMAND}
+        -DPIPELINE_EXE=$<TARGET_FILE:tile_pipeline> -P ${CMAKE_SOURCE_DIR}/tests/TileExportChecks.cmake)
+    set_tests_properties(tile_pipeline_checks tile_export_checks PROPERTIES FIXTURES_REQUIRED pipeline_tool)
     add_test(NAME macro_capture_checks COMMAND ${CMAKE_COMMAND}
         -DBIN=$<TARGET_FILE_DIR:preview> -P ${CMAKE_SOURCE_DIR}/tests/MacroCaptureChecks.cmake)
+    add_test(NAME approved_tileset_checks COMMAND ${CMAKE_COMMAND}
+        -P ${CMAKE_SOURCE_DIR}/tests/ApprovedTilesetChecks.cmake)
 endif()

@@ -5,5 +5,5 @@ if not exist "build\Release\project_slit.exe" (
     echo Release executable missing. Build project_slit with --config Release first.
     exit /b 1
 )
-echo Avatar Lake - current approved development tileset
-"build\Release\project_slit.exe" avatar_lake
+echo Avatar Lake - diagnostic atlas
+"build\Release\project_slit.exe" avatar_lake --tileset avatar_lake_debug

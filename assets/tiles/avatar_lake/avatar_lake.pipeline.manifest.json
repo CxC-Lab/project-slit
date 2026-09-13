@@ -88,6 +88,8 @@
         1254,
         1254
       ],
+      "approved_runtime_candidate": true,
+      "runtime_file": "runtime/avatar_lake_inner_e0_full_120.png",
       "output_size": [
         120,
         120
