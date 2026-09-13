@@ -206,3 +206,5 @@ assets/tiles/avatar_lake/source/rock_raw_01.png                     불변 원�
   반복 축으로 만들지, inner 매크로의 120 주기와 경계 타일이 어떻게 맞닿을지, 경계 아트가 충돌 경계에
   붙는 규칙(ADR 0009)과 잘라내기 규칙을 정하기 전에는 top 이미지를 만들지 않는다.
 
+2026-09-14: 두 항목 모두 [`0011-terrain-boundary-assets.md`](0011-terrain-boundary-assets.md) 에서 정했다. 경계 계약을 채택했고, 일반화의 데이터 구조와 최소 구현 범위를 기록했다. 구현은 아직 하지 않았다.
+
