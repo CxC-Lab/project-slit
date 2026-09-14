@@ -1,0 +1,204 @@
+{
+  "schema": 2,
+  "kind": "boundary_overlay",
+  "id": "avatar_lake_side_raw_01",
+  "source": {
+    "path": "source/side_raw_01.png",
+    "expected_size": [
+      1024,
+      1536
+    ],
+    "expected_sha256": "44f310f6612b44dfe575f9d583477169ef7bd26d19d2543638fc190d3c29ef5d"
+  },
+  "stages": [
+    "fixed_crop",
+    "source_background_distance",
+    "optional_source_fringe",
+    "component_cleanup",
+    "nearest_color_and_mask_center",
+    "opaque_source_palette",
+    "binary_rgba"
+  ],
+  "background": {
+    "rgb": [
+      246,
+      6,
+      250
+    ],
+    "distance": "euclidean_rgb",
+    "threshold": 150
+  },
+  "mask_cleanup": {
+    "connectivity": 4,
+    "min_component_pixels": 4,
+    "min_hole_pixels": 0
+  },
+  "output_size": [
+    12,
+    200
+  ],
+  "palette": {
+    "method": "stable_rgb_kmeans_row_major_v1",
+    "sampling": "crop_opaque_source_row_major",
+    "colors": 10,
+    "iterations": 12
+  },
+  "checks": {
+    "art_hold_checks": [
+      "bright_fraction",
+      "row0_dominant",
+      "row_progression"
+    ],
+    "expected_size": [
+      12,
+      200
+    ],
+    "max_colors": 10,
+    "row0_min": 0.6,
+    "last_row_max": 0.2,
+    "row_increase_start": 6,
+    "row_increase_max": 0.05,
+    "bright_top_count": 3,
+    "bright_fraction_max": 0.35,
+    "row0_dominant_max": 0.7,
+    "color_seam_ratio_max": 1.0,
+    "alpha_seam": "at_most_internal_mean",
+    "palette_background_min_distance": 180,
+    "magenta_index_max": 45,
+    "stability_delta": 0.1,
+    "stability_change_max": 0.02
+  },
+  "previews": {
+    "removal_rgb": [
+      255,
+      60,
+      0
+    ],
+    "inspect_scale": 4,
+    "game_scale": 3,
+    "inner": "runtime/avatar_lake_inner_e0_full_120.png",
+    "above_rows": 16,
+    "rock_rows": 120,
+    "neutral_rgb": [
+      25,
+      30,
+      45
+    ],
+    "mask_rgb": [
+      255,
+      0,
+      255
+    ],
+    "checker_rgb": [
+      [
+        48,
+        48,
+        48
+      ],
+      [
+        80,
+        80,
+        80
+      ]
+    ],
+    "checker_cell": 4,
+    "repeat": [
+      1,
+      3
+    ],
+    "world_width": 600,
+    "marker_rgb": [
+      240,
+      60,
+      60
+    ],
+    "marker_rows": 3,
+    "layout": "wall",
+    "wall_width": 120
+  },
+  "search": {
+    "axis": "y",
+    "from": 0,
+    "to": 386,
+    "crop": [
+      0,
+      0,
+      69,
+      1150
+    ],
+    "fringe": {
+      "distance": "manhattan4",
+      "depth": 2,
+      "magenta_min": 30,
+      "iterations": 3,
+      "sensitivity_deltas": {
+        "depth": 1,
+        "magenta_min": 5,
+        "iterations": 1
+      }
+    }
+  },
+  "observations": [],
+  "candidates": [
+    {
+      "id": "s0",
+      "crop": [
+        0,
+        302,
+        69,
+        1150
+      ],
+      "fringe": {
+        "distance": "manhattan4",
+        "depth": 2,
+        "magenta_min": 30,
+        "iterations": 3,
+        "sensitivity_deltas": {
+          "depth": 1,
+          "magenta_min": 5,
+          "iterations": 1
+        }
+      },
+      "reason": "Search-1150 rank 1, alpha seam 0, pre-palette color ratio 0.418112. Fixed uniform crop and same fringe rule. Preferred: quantized seam ratio 0.224802 and alpha mismatch 0; first-column 70.5% dominance is an art hold for the intended straight dark border. Alternative s2 passes but its seam ratio is 0.889183.",
+      "trial_runtime_candidate": true,
+      "trial_runtime_file": "runtime/trials/avatar_lake_side_s0_trial.png"
+    },
+    {
+      "id": "s2",
+      "crop": [
+        0,
+        352,
+        69,
+        1150
+      ],
+      "fringe": {
+        "distance": "manhattan4",
+        "depth": 2,
+        "magenta_min": 30,
+        "iterations": 3,
+        "sensitivity_deltas": {
+          "depth": 1,
+          "magenta_min": 5,
+          "iterations": 1
+        }
+      },
+      "reason": "Search-1150 rank 11, alpha seam 0, pre-palette color ratio 1.105560. Fixed uniform crop and same fringe rule."
+    }
+  ],
+  "comparisons": [],
+  "provenance": {
+    "request": "requests/side_raw_01.md",
+    "contract": "../../../docs/decisions/0011-terrain-boundary-assets.md",
+    "reproduction": "Fixed crop and deterministic integer RGB means, stable brightness ordering with row-major ties. No search on regeneration. Retain this manifest and immutable source; report includes snapshot and source hashes.",
+    "approval": "Experiment only; no approved runtime candidate.",
+    "threshold_reason": "Measured background mode in first-row background x>=100 is RGB 246,6,250. Background distance threshold 150; unchanged top fringe rule (4-neighbor depth 2, magenta >=30, max 3 synchronous passes).",
+    "checks_reason": "Side exposed and inner columns use 60%/20%; brightness 35%/70% follows ADR. Row progression and first-column color dominance are art holds. Magenta index ceiling 45 distinguishes requested dark purple border (candidate palette indices 34.5..44.5) from chroma fringe; known top contamination index 50 still fails. Fringe removal itself remains >=30, depth 2, three passes."
+  },
+  "orientation": {
+    "exposure": "W",
+    "depth_axis": "x",
+    "repeat_axis": "y",
+    "seam_axis": "y",
+    "opacity_axis": "x"
+  }
+}

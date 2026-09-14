@@ -34,6 +34,19 @@ J rgb(sf::Color c) {return J::array({c.r,c.g,c.b});}
 int brightness(sf::Color c) {return 299*c.r+587*c.g+114*c.b;}
 double magenta(sf::Color c) {return (c.r+c.b)/2.0-c.g;}
 double distance2(sf::Color a,sf::Color b) {const int r=int(a.r)-b.r,g=int(a.g)-b.g,bl=int(a.b)-b.b;return r*r+g*g+bl*bl;}
+bool verticalRepeat(const J& cfg) {
+    if(!cfg.contains("orientation"))return false; // Legacy north-facing manifests stay byte-compatible.
+    const auto& o=cfg.at("orientation");const auto depth=o.at("depth_axis"),repeat=o.at("repeat_axis");
+    require((depth=="x"&&repeat=="y"&&o.at("exposure")=="W")||
+            (depth=="y"&&repeat=="x"&&o.at("exposure")=="N"),"Unsupported orientation");
+    require(o.at("seam_axis")==repeat&&o.at("opacity_axis")==depth,"Inconsistent inspection axes");
+    return repeat=="y";
+}
+sf::Image transpose(const sf::Image& image) {
+    const auto size=image.getSize();sf::Image result(sf::Vector2u{size.y,size.x});
+    for(unsigned y=0;y<size.y;++y)for(unsigned x=0;x<size.x;++x)result.setPixel({y,x},image.getPixel({x,y}));
+    return result;
+}
 std::string sha256(Bytes data) {
     require(data.size()<=std::numeric_limits<ULONG>::max(),"Hash input too large");
     BCRYPT_ALG_HANDLE algorithm{};
@@ -187,7 +200,7 @@ sf::Image quantize(const sf::Image& sampled,const std::vector<sf::Color>& palett
         for(auto c:palette)if(distance2(p,c)<distance2(p,nearest))nearest=c;nearest.a=255;out.setPixel({x,y},nearest);
     }return out;
 }
-J inspect(const sf::Image& image,const sf::Image& sampled,const J& cfg) {
+J inspectCanonical(const sf::Image& image,const sf::Image& sampled,const J& cfg) {
     const auto& limits=cfg.at("checks");const auto size=image.getSize();J stats=seams(image),checks=J::object();
     std::map<std::tuple<int,int,int>,unsigned> counts,first;unsigned opaque=0,partial=0,nearCount=0,fringe=0;
     std::vector<double> rows;const auto bg=color(cfg.at("background").at("rgb"));
@@ -229,6 +242,14 @@ J inspect(const sf::Image& image,const sf::Image& sampled,const J& cfg) {
         {"palette_rgb",colors},{"magenta_palette_colors",magentaColors},{"magenta_output_pixels",magentaPixels},{"row_opacity",rows},{"max_row_increase",maxIncrease},{"bright_fraction",brightFraction},
         {"row0_dominant_fraction",row0Fraction},{"near_background_output_samples",nearCount},{"magenta_fringe_output_samples",fringe},{"checks",checks}});return stats;
 }
+J inspect(const sf::Image& image,const sf::Image& sampled,const J& cfg) {
+    if(!verticalRepeat(cfg))return inspectCanonical(image,sampled,cfg);
+    auto canonical=cfg;const auto expected=sizeOf(cfg.at("checks").at("expected_size"));
+    canonical["checks"]["expected_size"]={expected.y,expected.x};
+    auto result=inspectCanonical(transpose(image),transpose(sampled),canonical);
+    result["size"]={image.getSize().x,image.getSize().y};result["opacity_axis"]=cfg.at("orientation").at("opacity_axis");
+    result["column_opacity"]=result.at("row_opacity");result.erase("row_opacity");return result;
+}
 sf::Image scale(const sf::Image& image,unsigned factor) {
     const auto size=image.getSize();require(factor>0&&std::uint64_t(size.x)*size.y*factor*factor<=64000000,"Preview too large");
     sf::Image out(sf::Vector2u{size.x*factor,size.y*factor});for(unsigned y=0;y<out.getSize().y;++y)for(unsigned x=0;x<out.getSize().x;++x)out.setPixel({x,y},image.getPixel({x/factor,y/factor}));return out;
@@ -249,6 +270,20 @@ sf::Image stacked(const sf::Image& before,const sf::Image& after) {
     sf::Image result(sf::Vector2u{size.x,size.y*2});require(result.copy(before,{0,0})&&result.copy(after,{0,size.y}),"Comparison copy failed");return result;
 }
 sf::Image composite(const sf::Image& top,const sf::Image& inner,unsigned width,const J& p,bool marks) {
+    if(p.value("layout","floor")=="wall"){
+        const auto wall=number(p.at("wall_width"),1),margin=number(p.at("above_rows"),1);
+        require(wall>=top.getSize().x*2,"Wall must fit both boundary overlays");
+        sf::Image out({wall+2*margin,width},color(p.at("neutral_rgb")));
+        for(unsigned y=0;y<width;++y)for(unsigned x=0;x<wall;++x){
+            auto pixel=inner.getPixel({x%inner.getSize().x,y%inner.getSize().y});
+            if(x<top.getSize().x){const auto edge=top.getPixel({x,y%top.getSize().y});if(edge.a)pixel=edge;}
+            if(wall-1-x<top.getSize().x){const auto edge=top.getPixel({wall-1-x,y%top.getSize().y});if(edge.a)pixel=edge;}
+            out.setPixel({margin+x,y},pixel);
+        }
+        if(marks)for(unsigned y=0;y<width;y+=top.getSize().y)for(unsigned n=0;n<number(p.at("marker_rows"),1)&&y+n<width;++n)
+            for(unsigned x=0;x<margin;++x){out.setPixel({x,y+n},color(p.at("marker_rgb")));out.setPixel({out.getSize().x-1-x,y+n},color(p.at("marker_rgb")));}
+        return out;
+    }
     const unsigned above=number(p.at("above_rows"),1),rock=number(p.at("rock_rows"),1),margin=marks?number(p.at("marker_rows"),1):0;
     const auto neutral=color(p.at("neutral_rgb"));sf::Image out({width,above+rock+2*margin},neutral);
     for(unsigned y=0;y<rock;++y)for(unsigned x=0;x<width;++x) {
@@ -266,7 +301,8 @@ sf::Image previews(Outputs& out,const std::string& id,const Segmented& s,const s
     auto checker=top;const auto cell=number(p.at("checker_cell"),1);
     for(unsigned y=0;y<top.getSize().y;++y)for(unsigned x=0;x<top.getSize().x;++x)if(!top.getPixel({x,y}).a)checker.setPixel({x,y},color(p.at("checker_rgb")[(x/cell+y/cell)%2]));
     png(out,id+"_checker_zoom.png",scale(checker,zoom));
-    for(const auto& repeat:p.at("repeat")){const auto n=number(repeat,1,32);for(bool marked:{false,true})png(out,id+"_repeat_"+std::to_string(n)+(marked?"_marks.png":".png"),composite(top,inner,n*top.getSize().x,p,marked));}
+    const auto period=p.value("layout","floor")=="wall"?top.getSize().y:top.getSize().x;
+    for(const auto& repeat:p.at("repeat")){const auto n=number(repeat,1,32);for(bool marked:{false,true})png(out,id+"_repeat_"+std::to_string(n)+(marked?"_marks.png":".png"),composite(top,inner,n*period,p,marked));}
     sf::Image world;for(bool marked:{false,true}){auto image=composite(top,inner,number(p.at("world_width"),1),p,marked);
         png(out,id+(marked?"_world_marks.png":"_world.png"),image);png(out,id+(marked?"_world_marks_game.png":"_world_game.png"),scale(image,game));if(!marked)world=image;}
     return world;
@@ -289,18 +325,88 @@ void selfTest(const J& cfg) {
     require(classify(J{{"art",false},{"technical",true}},limits)=="ART_HOLD","Art-only failure classification");
     require(classify(J{{"art",false},{"technical",false}},limits)=="FAIL","Technical failure classification");
     require(classify(J{{"art",true},{"technical",true}},limits)=="PASS","Passing classification");
+    if(verticalRepeat(cfg)){
+        sf::Image empty(size,sf::Color::Transparent),full(size,sf::Color(10,100,10));
+        require(!inspect(empty,empty,cfg)["checks"]["row0"].get<bool>(),"Empty exposed column must fail");
+        require(!inspect(full,full,cfg)["checks"]["last_row"].get<bool>(),"Opaque inner column must fail");
+        for(unsigned x=0;x<size.x;++x)full.setPixel({x,size.y-1},{10,10,100});
+        require(!inspect(full,full,cfg)["checks"]["color_seam"].get<bool>(),"Vertical seam violation must fail");
+        std::cout<<"PASS column opacity and vertical seam violation detection\n";
+    }
     std::cout<<"PASS synchronous fringe edge / interior retention / data-driven classification\n";
     std::cout<<"PASS synthetic magenta / partial alpha / wrong dimensions\n";
 }
+// Approved-image derivation preserves source RGB; no raw segmentation or quantization.
+sf::Image crevice(const sf::Image& source,const J& cfg,unsigned& face) {
+    const auto size=sizeOf(cfg.at("output_size")),input=source.getSize();const auto& d=cfg.at("derivation");
+    require(size.y==input.y&&size.x<=input.x,"Derived output must preserve source period");
+    require(d.at("face_rule")=="after_first_max_dark_column_wrap","Unsupported face rule");
+    const auto weights=d.at("luminance_weights").get<std::array<double,3>>();
+    for(double w:weights)require(std::isfinite(w)&&w>=0,"Invalid luminance weight");
+    const double threshold=d.at("crevice_threshold").get<double>();require(std::isfinite(threshold),"Invalid crevice threshold");
+    auto dark=[&](sf::Color p){return weights[0]*p.r+weights[1]*p.g+weights[2]*p.b<threshold;};
+    unsigned best=0,maximum=0;
+    for(unsigned x=0;x<input.x;++x){unsigned count=0;for(unsigned y=0;y<input.y;++y)count+=dark(source.getPixel({x,y}));if(count>maximum){maximum=count;best=x;}}
+    face=(best+1)%input.x;
+    const unsigned full=number(d.at("full_columns"),1,size.x-1);
+    const auto& hash=d.at("hash");
+    const auto ym=number(hash.at("y_multiplier"),1,0xffffffffu),xm=number(hash.at("x_multiplier"),1,0xffffffffu);
+    const auto mask=number(hash.at("mask"),1,0xfffffffeu),range=number(hash.at("range"),1,0xffffffffu);
+    require(range==mask+1&&(range&(range-1))==0,"Hash range must match power-of-two mask");
+    sf::Image image(size,sf::Color::Transparent);
+    for(unsigned y=0;y<size.y;++y)for(unsigned x=0;x<size.x;++x){auto p=source.getPixel({(face+x)%input.x,y});
+        const auto h=((y*ym)^((x+1)*xm))&mask;
+        const double retention=std::max(0.0,1.0-(double(x)-double(full-1))/double(size.x-(full-1)));
+        if(dark(p)&&(x<full||h<static_cast<unsigned>(range*retention))){p.a=255;image.setPixel({x,y},p);}
+    }return image;
+}
+void derivedRun(const fs::path& manifest,const J& cfg,const fs::path& out,bool fixture) {
+    require(verticalRepeat(cfg),"Derived crevice requires vertical orientation");protect(out,manifest,cfg);
+    if(fixture){
+        sf::Image image(sf::Vector2u{16u,12u});for(unsigned y=0;y<12;++y)for(unsigned x=0;x<16;++x)
+            image.setPixel({x,y},((x+2*y)%5==0||x==4)?sf::Color(30,40,50):sf::Color(160,170,180));
+        Outputs files;png(files,"inner.png",image);auto local=cfg;
+        local["source"]={{"path","inner.png"},{"expected_size",{16,12}},{"expected_sha256",sha256(files.at("inner.png"))}};
+        local["previews"]["inner"]="inner.png";local["output_size"]={12,12};local["checks"]["expected_size"]={12,12};
+        json(files,"manifest.json",local);publish(out,files);return;
+    }
+    const auto source=resolved(manifest.parent_path()/cfg.at("source").at("path").get<std::string>());
+    const auto bytes=readBytes(source);const auto hash=sha256(bytes);
+    require(hash==cfg.at("source").at("expected_sha256").get<std::string>(),"Source SHA256 mismatch before image load");
+    sf::Image inner;require(inner.loadFromMemory(bytes.data(),bytes.size()),"Cannot load derived source");
+    require(inner.getSize()==sizeOf(cfg.at("source").at("expected_size")),"Source size mismatch");
+    Outputs files;J report{{"manifest",cfg},{"manifest_path",manifest.generic_string()},{"source_sha256_before",hash},{"candidates",J::array()},
+        {"not_applicable","Raw background/fringe, palette quantization, brightness, depth opacity and threshold stability checks: approved-image derivation preserves selected source RGB."}};
+    require(cfg.at("candidates").size()==1,"Derived mode requires one fixed candidate");
+    for(const auto& candidate:cfg.at("candidates")){
+        const auto id=candidate.at("id").get<std::string>();require(!id.empty()&&id.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-")==std::string::npos,"Invalid candidate id");
+        unsigned face=0;const auto image=crevice(inner,cfg,face);auto stats=seams(transpose(image));
+        unsigned partial=0;J colors=J::array();for(unsigned y=0;y<image.getSize().y;++y)for(unsigned x=0;x<image.getSize().x;++x){auto p=image.getPixel({x,y});partial+=p.a!=0&&p.a!=255;if(p.a&&std::find(colors.begin(),colors.end(),rgb(p))==colors.end())colors.push_back(rgb(p));}
+        J checks{{"size",image.getSize()==sizeOf(cfg.at("checks").at("expected_size"))},{"binary_alpha",partial==0},
+            {"color_seam",stats.at("color_seam_ratio").get<double>()<=cfg.at("checks").at("color_seam_ratio_max").get<double>()},
+            {"alpha_seam",stats.at("alpha_edge_mismatches").get<double>()<=stats.at("alpha_internal_mean").get<double>()}};
+        require(cfg.at("checks").at("alpha_seam")=="at_most_internal_mean","Unsupported alpha seam rule");
+        stats.update({{"id",id},{"face_column",face},{"palette_rgb",colors},{"checks",checks},{"status",classify(checks,cfg.at("checks"))}});
+        report["candidates"].push_back(stats);png(files,id+".png",image);
+    }
+    require(sha256(readBytes(source))==hash,"Source changed during run");report["source_sha256_after"]=hash;
+    report["output_sha256"]=J::object();for(const auto& [name,data]:files)report["output_sha256"][name]=sha256(data);
+    json(files,"report.json",report);publish(out,files);std::cout<<"DERIVED PASS: "<<out.string()<<'\n';
+}
+
 int main(int argc,char** argv) try {
+    const bool fixture=argc==4&&std::string(argv[1])=="--derived-fixture";
     const bool search=argc==4&&std::string(argv[1])=="--search";
     const bool self=argc==3&&std::string(argv[1])=="--self-test";
-    require(argc==(search?4:3),"Usage: top_pipeline [--search] manifest new-output-dir | --self-test manifest");
-    const auto manifest=resolved(argv[(search||self)?2:1]);const auto cfgBytes=readBytes(manifest);const J cfg=J::parse(cfgBytes);
+    require(argc==((search||fixture)?4:3),"Usage: top_pipeline [--search] manifest new-output-dir | --self-test manifest");
+    const auto manifest=resolved(argv[(search||self||fixture)?2:1]);const auto cfgBytes=readBytes(manifest);const J cfg=J::parse(cfgBytes);
     require(cfg.at("schema")==2&&cfg.at("kind")=="boundary_overlay","Unsupported top pipeline schema/kind");
+    if(cfg.value("mode","")=="approved_inner_crevice") {require(!search&&!self,"Derived mode uses generation or fixture");derivedRun(manifest,cfg,resolved(argv[fixture?3:2]),fixture);return 0;}
     require(cfg.at("stages")==J::array({"fixed_crop","source_background_distance","optional_source_fringe","component_cleanup","nearest_color_and_mask_center","opaque_source_palette","binary_rgba"}),"Unsupported stage sequence");
     require(cfg.at("background").at("distance")=="euclidean_rgb"&&cfg.at("palette").at("method")=="stable_rgb_kmeans_row_major_v1"&&cfg.at("palette").at("sampling")=="crop_opaque_source_row_major","Unsupported background/palette method");
     require(cfg.at("checks").at("alpha_seam")=="at_most_internal_mean","Unsupported alpha seam rule");
+    const bool vertical=verticalRepeat(cfg);
+    require((cfg.at("previews").value("layout","floor")=="wall")==vertical,"Preview layout disagrees with orientation");
     if(self){selfTest(cfg);return 0;}
     const auto out=resolved(argv[search?3:2]);protect(out,manifest,cfg);
     const auto source=resolved(manifest.parent_path()/cfg.at("source").at("path").get<std::string>());
@@ -310,13 +416,20 @@ int main(int argc,char** argv) try {
     const double threshold=cfg.at("background").at("threshold").get<double>();require(threshold>0&&threshold<=std::sqrt(3*255.*255.),"Invalid threshold");
     Outputs files;J report{{"manifest",cfg},{"manifest_path",manifest.generic_string()},{"source_sha256_before",before}};
     if(search) {
-        const auto& bounds=cfg.at("search");const unsigned from=number(bounds.at("x_min")),to=number(bounds.at("x_max"));require(from<=to,"Invalid search range");
+        const auto& bounds=cfg.at("search");const bool explicitAxis=bounds.contains("axis");
+        const unsigned from=number(bounds.at(explicitAxis?"from":"x_min")),to=number(bounds.at(explicitAxis?"to":"x_max"));require(from<=to,"Invalid search range");
+        if(explicitAxis)require(bounds.at("axis")=="x"||bounds.at("axis")=="y","Invalid search axis");
+        J searchCfg=cfg;if(bounds.contains("fringe"))searchCfg["fringe"]=bounds.at("fringe");
         std::vector<J> ranks;
-        for(unsigned x=from;x<=to;++x){const J coordinates=J::array({x,number(bounds.at("y")),number(bounds.at("width"),1),number(bounds.at("height"),1)});
-            const auto c=cropOf(coordinates,raw.getSize(),output);const auto s=segment(raw,c,cfg,threshold);auto row=seams(s.sampled);
+        for(unsigned x=from;x<=to;++x){J coordinates;
+            if(explicitAxis){coordinates=bounds.at("crop");coordinates[bounds.at("axis")=="x"?0:1]=x;}
+            else coordinates=J::array({x,number(bounds.at("y")),number(bounds.at("width"),1),number(bounds.at("height"),1)});
+            const auto c=cropOf(coordinates,raw.getSize(),output);const auto s=segment(raw,c,searchCfg,threshold);auto row=seams(vertical?transpose(s.sampled):s.sampled);
             row["crop"]=coordinates;row["alpha_pass"]=row["alpha_edge_mismatches"].get<double>()<=row["alpha_internal_mean"].get<double>();ranks.push_back(row);}
         std::stable_sort(ranks.begin(),ranks.end(),[](const J& a,const J& b){return std::tuple(!a.at("alpha_pass").get<bool>(),a.at("color_seam_ratio").get<double>(),a.at("alpha_edge_mismatches").get<unsigned>())<std::tuple(!b.at("alpha_pass").get<bool>(),b.at("color_seam_ratio").get<double>(),b.at("alpha_edge_mismatches").get<unsigned>());});
-        report["ranking"]=ranks;report["ranking_rule"]="alpha pass first, then color ratio, then alpha mismatches; stable x ascending ties; pre-palette";
+        report["ranking"]=ranks;report["ranking_rule"]=explicitAxis?
+            "alpha pass first, then color ratio, then alpha mismatches; stable selected-axis ascending ties; pre-palette":
+            "alpha pass first, then color ratio, then alpha mismatches; stable x ascending ties; pre-palette";
     } else {
         require(cfg.at("candidates").is_array()&&!cfg.at("candidates").empty()&&cfg.at("candidates").size()<=16,"Need one to sixteen fixed candidates");
         sf::Image inner;require(inner.loadFromFile(resolved(manifest.parent_path()/cfg.at("previews").at("inner").get<std::string>())),"Cannot load preview inner");
