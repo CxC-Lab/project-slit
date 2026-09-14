@@ -1,5 +1,5 @@
 # Manual Windows GUI verification; SendKeys deliberately stays outside CTest.
-param([Parameter(Mandatory=$true)][string]$BeforeDiagnostic)
+param([string]$BeforeDiagnostic,[string]$Tileset,[string]$CaptureOutput)
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
 Set-Location $root
@@ -20,6 +20,54 @@ public static class RunEntryHash {
     }
 }
 '@
+if($Tileset) {
+    # Generic explicit-tileset capture; no candidate-specific launcher or key sequence.
+    if($Tileset -notmatch '^[a-z0-9_]+$') { throw 'Invalid tileset name' }
+    $set=Get-Content (Join-Path $tilesetDir ($Tileset+'.json')) -Raw | ConvertFrom-Json
+    if(-not $CaptureOutput) { $CaptureOutput=$work }
+    $null=New-Item -ItemType Directory -Force $CaptureOutput
+    $outputJson=Join-Path $CaptureOutput 'game_capture.json'
+    $outputPng=Join-Path $CaptureOutput 'game_capture.png'
+    if((Test-Path $outputJson) -or (Test-Path $outputPng)) { throw 'Capture destination already exists' }
+    $before=@(Get-ChildItem $captureFolder -Filter 'captured_*.json' | ForEach-Object Name)
+    $game=Start-Process "$bin/project_slit.exe" -ArgumentList @('avatar_lake','--tileset',$Tileset) -WorkingDirectory $root -PassThru
+    $null=$game.Handle
+    try {
+        Start-Sleep -Seconds 3
+        $game.Refresh()
+        if($game.HasExited) { throw 'Game crashed before capture' }
+        $shell=New-Object -ComObject WScript.Shell
+        if(-not $shell.AppActivate($game.Id)) { throw 'Game focus failed' }
+        Start-Sleep -Milliseconds 500
+        $shell.SendKeys('{F12}')
+        $new=$null
+        for($i=0;$i -lt 50;$i++) {
+            Start-Sleep -Milliseconds 100
+            $new=Get-ChildItem $captureFolder -Filter 'captured_*.json' | Where-Object { $before -notcontains $_.Name -and $_.Length -gt 0 } | Select-Object -First 1
+            if($new) { break }
+        }
+        if(-not $new) { throw 'F12 capture missing' }
+        $data=Get-Content $new.FullName -Raw | ConvertFrom-Json
+        if($data.tileset -ne $Tileset -or $data.tilesetMode -ne 'override') { throw 'Capture tileset mismatch' }
+        foreach($entry in $set.sampling.PSObject.Properties) {
+            $image=[IO.Path]::GetFullPath((Join-Path $tilesetDir $entry.Value.image))
+            $identified=@($data.samplingImages | Where-Object role -eq $entry.Name)
+            if($identified.Count -ne 1 -or $identified[0].mode -ne $entry.Value.mode -or
+               [IO.Path]::GetFullPath($identified[0].image) -ne $image -or
+               $identified[0].hashAlgorithm -ne 'fnv1a64' -or $identified[0].hash -ne [RunEntryHash]::Fnv1a64($image)) { throw 'Sampling image identity mismatch' }
+        }
+        Copy-Item $new.FullName $outputJson
+        Copy-Item ([IO.Path]::ChangeExtension($new.FullName,'.png')) $outputPng
+        if(-not $game.CloseMainWindow() -or -not $game.WaitForExit(5000) -or $game.ExitCode -ne 0) { throw 'Game did not close normally' }
+        Write-Output "CAPTURE PASS: $outputJson; aliveAfter3Seconds=True exitCode=$($game.ExitCode)"
+    } finally {
+        $game.Refresh()
+        if(-not $game.HasExited) { $game.Kill();$game.WaitForExit() }
+        $game.Dispose()
+    }
+    exit 0
+}
+if(-not $BeforeDiagnostic) { throw 'BeforeDiagnostic is required for entry regression checks' }
 $runtime=$null
 $expectedHash=''
 if($default.sampling.inner.image) {

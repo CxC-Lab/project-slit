@@ -91,7 +91,7 @@ void macroChecks(const std::filesystem::path& avatarFile,const Terrain::Tileset&
         if(corrupt) {std::ofstream bad(scratch/"macro.png");bad<<"not a PNG";}
         bool failed=false;
         try {TerrainTiles missing(solids,config,123);missing.render(target,visible);}
-        catch(const std::exception& e) {failed=std::string(e.what()).find("Cannot load inner macro image:")!=std::string::npos;}
+        catch(const std::exception& e) {failed=std::string(e.what()).find("Cannot load sampling image:")!=std::string::npos;}
         check(failed,"missing/corrupt macro reports image path");
     }
     fs::create_directories(scratch/"regions");fs::create_directories(scratch/"tilesets");
@@ -125,6 +125,64 @@ void macroChecks(const std::filesystem::path& avatarFile,const Terrain::Tileset&
 }
 
 
+void edgeChecks(const std::filesystem::path& avatarFile)
+{
+    namespace fs=std::filesystem;
+    const auto root=avatarFile.parent_path().parent_path().parent_path();
+    const auto scratch=root/"build/edge_checks"/std::to_string(std::chrono::steady_clock::now().time_since_epoch().count());
+    fs::create_directories(scratch);
+    std::ifstream input(avatarFile.parent_path().parent_path()/"tilesets/avatar_lake.json");
+    auto data=nlohmann::json::parse(input);
+    data["image"]=fs::absolute(avatarFile.parent_path().parent_path()/"tilesets"/data["image"].get<std::string>()).generic_string();
+    data["sampling"]={{"inner",{{"mode","repeat2d"},{"image","base.png"}}},
+        {"top",{{"mode","edge"},{"image","edge.png"}}},{"bottom",{{"mode","edge"},{"image","bottom.png"}}}};
+    check(sf::Image({3,3},sf::Color(10,20,30)).saveToFile(scratch/"base.png"),"base fixture");
+    check(sf::Image({5,8},sf::Color::Blue).saveToFile(scratch/"bottom.png"),"bottom fixture");
+    const auto config=scratch/"set.json";
+    const auto write=[&](const nlohmann::json& value){std::ofstream out(config);out<<value;};
+    sf::RenderTexture target({120,130});target.setView(sf::View(sf::FloatRect({0,0},{120,130})));
+    const auto draw=[&](const std::vector<sf::FloatRect>& solids){TerrainTiles tiles(solids,config,1);target.clear(sf::Color::Transparent);tiles.render(target,{{0,0},{120,130}});target.display();return target.getTexture().copyToImage();};
+    for(const sf::Vector2u dimensions:{sf::Vector2u{7,16},sf::Vector2u{11,9}}){
+        sf::Image strip(dimensions);
+        for(unsigned y=0;y<dimensions.y;++y)for(unsigned x=0;x<dimensions.x;++x)strip.setPixel({x,y},{static_cast<std::uint8_t>(60+x*9),static_cast<std::uint8_t>(80+y*7),20});
+        check(strip.saveToFile(scratch/"edge.png"),"edge fixture");
+        for(unsigned phase=0;phase<20;++phase)for(bool flip:{false,true}){
+            if(flip)data["sampling"]["top"]["flip"]="x";else data["sampling"]["top"].erase("flip");write(data);
+            const auto image=draw({{{0,0},{4,100}},{{4,static_cast<float>(phase)},{100,24}}});
+            for(unsigned y=0;y<dimensions.y;++y)for(unsigned x=25;x<80;++x){
+                const unsigned u=flip?dimensions.x-1-x%dimensions.x:x%dimensions.x;
+                check(image.getPixel({x,phase+y})==strip.getPixel({u,y}),"edge period/depth/flip independent of atlas phase");
+            }
+            check(image.getPixel({35,phase+dimensions.y})!=strip.getPixel({35%dimensions.x,0}),"depth must not repeat");
+            for(unsigned y=16;y<24;++y)check(image.getPixel({35,phase+y})==sf::Color::Blue,"24px platform bottom follows top");
+        }
+        data["sampling"]["top"].erase("flip");write(data);
+        const auto thin=draw({{{0,0},{100,6}}});
+        for(unsigned y=0;y<6;++y)check(thin.getPixel({35,y})==strip.getPixel({35%dimensions.x,y}),"overlap priority: north after south");
+    }
+    // Sides share one path, with the right side derived only by horizontal flip.
+    sf::Image side(sf::Vector2u{3,7});for(unsigned y=0;y<7;++y)for(unsigned x=0;x<3;++x)side.setPixel({x,y},{static_cast<std::uint8_t>(30+x*50),static_cast<std::uint8_t>(40+y*20),10});
+    check(side.saveToFile(scratch/"side.png"),"side fixture");
+    auto sides=data;sides["sampling"].erase("top");sides["sampling"].erase("bottom");
+    sides["sampling"]["left"]={{"mode","edge"},{"image","side.png"}};
+    sides["sampling"]["right"]={{"mode","edge"},{"image","side.png"},{"flip","x"}};write(sides);
+    const auto sideImage=draw({{{10,0},{40,100}}});
+    for(unsigned y=25;y<70;++y)for(unsigned x=0;x<3;++x){
+        check(sideImage.getPixel({10+x,y})==side.getPixel({x,y%7}),"west edge UV");
+        check(sideImage.getPixel({49-x,y})==side.getPixel({x,y%7}),"east mirrored edge UV");
+    }
+    for(const auto& [role,mode]:std::vector<std::pair<std::string,std::string>>{{"top","repeat2d"},{"inner","edge"},{"slab","edge"},{"slab","corner"},{"top_left","corner"},{"unknown","edge"}}){
+        auto bad=data;bad["sampling"][role]={{"mode",mode},{"image","edge.png"}};write(bad);
+        bool rejected=false;try{Terrain::Tileset invalid(config);}catch(const std::exception&){rejected=true;}
+        check(rejected,"invalid or unimplemented exposure/mode rejected");
+    }
+    auto bad=data;bad["sampling"]["top"]["flip"]="y";write(bad);bool rejected=false;
+    try{Terrain::Tileset invalid(config);}catch(const std::exception&){rejected=true;}check(rejected,"vertical flip rejected");
+    std::ifstream source(root/"src/TerrainTiles.cpp");std::string code((std::istreambuf_iterator<char>(source)),{});
+    for(const auto* role:Terrain::roles)check(code.find(std::string("\"")+role+"\"")==std::string::npos,"renderer has no role-name string literals");
+    std::cout<<"PASS: edge phase 0..19, dimensions, flip, layering and parser restrictions\n";
+}
+
 void macroCaptures(const std::filesystem::path& planFile,const std::filesystem::path& output)
 {
     namespace fs=std::filesystem;
@@ -154,7 +212,7 @@ void macroCaptures(const std::filesystem::path& planFile,const std::filesystem::
         const auto setFile=file.parent_path().parent_path()/"tilesets"/(applied.tilesetName()+".json");
         const Terrain::Tileset set(setFile);
         sf::Image tile;
-        if(set.innerImage) check(tile.loadFromFile(*set.innerImage),"candidate macro loads");
+        if(set.sampling[0].mode==Terrain::Sampling::Repeat2D) check(tile.loadFromFile(set.sampling[0].image),"candidate macro loads");
         std::size_t samples=0,differences=0,edgeSamples=0,edgeDifferences=0,overlap=0,shiftDifferences=0;
         for(std::size_t i=0;i<metadata.at("cells").size();++i) {
             const auto& cell=metadata.at("cells")[i];const auto& rect=cell.at("visibleRect");
@@ -194,7 +252,7 @@ void macroCaptures(const std::filesystem::path& planFile,const std::filesystem::
             }
         }
         check(differences==0 && edgeDifferences==0 && shiftDifferences==0,"candidate sampling, baseline and camera invariants");
-        if(set.innerImage) check(samples>0 && overlap>0,"macro checks have samples");
+        if(set.sampling[0].mode==Terrain::Sampling::Repeat2D) check(samples>0 && overlap>0,"macro checks have samples");
         report["trials"].push_back({{"id",id},{"macroSamples",samples},{"macroDifferences",differences},
             {"nonInnerSamples",edgeSamples},{"nonInnerDifferences",edgeDifferences},
             {"cameraOverlapSamples",overlap},{"cameraDifferences",shiftDifferences}});
@@ -206,6 +264,24 @@ void macroCaptures(const std::filesystem::path& planFile,const std::filesystem::
 
 int main(int argc,char** argv) try
 {
+    if(argc==5 && std::string(argv[1])=="--pair-captures") {
+        namespace fs=std::filesystem;
+        const fs::path before=argv[2],after=argv[3],out=argv[4];
+        std::ifstream a(before/"manifest.json"),b(after/"manifest.json");
+        const auto first=nlohmann::json::parse(a),second=nlohmann::json::parse(b);
+        check(first.at("cells")==second.at("cells"),"paired captures share cameras and composition");
+        fs::create_directories(out);sf::Image sheet;
+        for(unsigned i=0;i<first.at("cells").size();++i){
+            const auto name=first.at("cells")[i].at("file").get<std::string>();sf::Image left,right;
+            check(left.loadFromFile(before/name)&&right.loadFromFile(after/name),"paired images load");
+            const auto size=left.getSize();check(size==right.getSize(),"paired dimensions");
+            if(i==0)sheet=sf::Image(sf::Vector2u{size.x*2,size.y*static_cast<unsigned>(first.at("cells").size())});
+            sf::Image pair(sf::Vector2u{size.x*2,size.y});
+            check(pair.copy(left,{0,0})&&pair.copy(right,{size.x,0}),"pair copy");
+            check(pair.saveToFile(out/name)&&sheet.copy(pair,{0,i*size.y}),"pair saved");
+        }
+        check(sheet.saveToFile(out/"comparison_sheet.png"),"comparison sheet saved");return 0;
+    }
     if(argc==4 && std::string(argv[1])=="--macro-captures") {
         macroCaptures(argv[2],argv[3]);return 0;
     }
@@ -293,6 +369,7 @@ int main(int argc,char** argv) try
         check(count==(covered?1:0),"union has no overlaps or missing pixels");
     }
     macroChecks(avatarFile,set);
+    edgeChecks(avatarFile);
     sf::RenderTexture target({320,240});
     Region practice(Region::findFile("practice_room"));
     target.clear(); practice.render(target); target.display(); // Missing tileset keeps the old render path.

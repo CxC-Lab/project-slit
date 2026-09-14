@@ -73,7 +73,7 @@ Region::Region(const std::filesystem::path& file, const std::string& tilesetOver
         tiles_.emplace(solids_,file.parent_path().parent_path()/"tilesets"/(name+".json"),seed);
         tilesetName_=name;
         tilesetOverridden_=!tilesetOverride.empty();
-        innerImage_=tiles_->innerImagePath();
+        for(const auto& sample:tiles_->sampling())if(sample.mode==Terrain::Sampling::Repeat2D)innerImage_=sample.image;
     }
 
 }
@@ -83,17 +83,21 @@ catch (const std::exception& error) {
 
 nlohmann::json Region::captureIdentity() const
 {
-    std::string hash;
-    if(innerImage_) {
-        std::ifstream input(*innerImage_,std::ios::binary);
-        if(!input) throw std::runtime_error("Cannot identify inner image: "+innerImage_->string());
+    nlohmann::json images=nlohmann::json::array();std::string hash;
+    if(tiles_)for(unsigned i=0;i<Terrain::roles.size();++i){
+        const auto& sample=tiles_->sampling()[i];if(sample.mode==Terrain::Sampling::Atlas)continue;
+        std::ifstream input(sample.image,std::ios::binary);
+        if(!input)throw std::runtime_error("Cannot identify sampling image: "+sample.image.string());
         std::uint64_t value=14695981039346656037ull;
-        for(char byte;input.get(byte);) {value^=static_cast<unsigned char>(byte);value*=1099511628211ull;}
-        std::ostringstream text;text<<std::hex<<std::setfill('0')<<std::setw(16)<<value;hash=text.str();
+        for(char byte;input.get(byte);){value^=static_cast<unsigned char>(byte);value*=1099511628211ull;}
+        std::ostringstream text;text<<std::hex<<std::setfill('0')<<std::setw(16)<<value;
+        if(sample.mode==Terrain::Sampling::Repeat2D)hash=text.str();
+        images.push_back({{"role",Terrain::roles[i]},{"mode",sample.mode==Terrain::Sampling::Repeat2D?"repeat2d":"edge"},
+            {"image",std::filesystem::weakly_canonical(sample.image).generic_string()},{"hash",text.str()},{"hashAlgorithm","fnv1a64"}});
     }
     return {{"tileset",tilesetName_},{"tilesetMode",tilesetOverridden_?"override":"region_default"},
             {"innerMacroImage",innerImage_?std::filesystem::weakly_canonical(*innerImage_).generic_string():""},
-            {"innerMacroHash",hash},{"innerMacroHashAlgorithm","fnv1a64"}};
+            {"innerMacroHash",hash},{"innerMacroHashAlgorithm","fnv1a64"},{"samplingImages",images}};
 }
 
 void Region::render(sf::RenderTarget& target) const

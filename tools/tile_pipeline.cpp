@@ -3,6 +3,7 @@
 // Paths in the manifest are relative to its directory. References are optional;
 // when present, decoded RGBA equality is required before any output is written.
 #include <SFML/Graphics/Image.hpp>
+#include "PipelineFiles.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <cctype>
@@ -106,41 +107,11 @@ sf::Vector2u dimensions(const Json& value)
     if(std::uint64_t(size.x)*size.y>16777216) throw std::runtime_error("Image exceeds 16M pixel safety limit");
     return size;
 }
-fs::path resolved(const fs::path& path) { return fs::weakly_canonical(fs::absolute(path)); }
-std::string pathKey(const fs::path& path)
-{
-    auto key=resolved(path).generic_string();
-#ifdef _WIN32
-    std::transform(key.begin(),key.end(),key.begin(),[](unsigned char c){return static_cast<char>(std::tolower(c));});
-#endif
-    return key;
-}
-bool within(const fs::path& child,const fs::path& parent)
-{
-    auto a=pathKey(child),b=pathKey(parent);
-    if(a==b) return true;
-    if(b.back()!='/') b+='/';
-    return a.starts_with(b);
-}
-std::vector<std::uint8_t> readBytes(const fs::path& path)
-{
-    std::ifstream file(path,std::ios::binary);
-    if(!file) throw std::runtime_error("Cannot read: "+path.string());
-    return {std::istreambuf_iterator<char>(file),std::istreambuf_iterator<char>()};
-}
-// Exclusive creation also protects against a file appearing after preflight.
-void writeNew(const fs::path& path,const std::vector<std::uint8_t>& bytes)
-{
-#ifdef _WIN32
-    auto* file=_wfopen(path.c_str(),L"wbx");
-#else
-    auto* file=std::fopen(path.c_str(),"wbx");
-#endif
-    if(!file) throw std::runtime_error("Exclusive create failed: "+path.string());
-    const auto written=std::fwrite(bytes.data(),1,bytes.size(),file);
-    const auto closeResult=std::fclose(file);
-    if(written!=bytes.size() || closeResult!=0) throw std::runtime_error("Write failed: "+path.string());
-}
+using PipelineFiles::resolved;
+using PipelineFiles::within;
+using PipelineFiles::readBytes;
+using PipelineFiles::writeNew;
+using PipelineFiles::pathKey;
 struct Candidate {
     std::string id;
     unsigned x,y,w,h;
@@ -151,9 +122,11 @@ struct Candidate {
 
 int main(int argc,char** argv) try
 {
-    if(argc==4 && std::string(argv[1])=="--copy-new") {
+    if(argc==4 && (std::string(argv[1])=="--copy-new" || std::string(argv[1])=="--copy-new-trial")) {
         const auto to=resolved(argv[3]);
-        if(to.parent_path().filename()!="runtime") throw std::runtime_error("Export requires runtime/ directory");
+        const bool trial=std::string(argv[1])=="--copy-new-trial";
+        if(trial ? (to.parent_path().filename()!="trials" || to.parent_path().parent_path().filename()!="runtime") : to.parent_path().filename()!="runtime")
+            throw std::runtime_error(trial?"Trial export requires runtime/trials/ directory":"Export requires runtime/ directory");
         for(const auto& part:to) {
             auto key=part.string();
             std::transform(key.begin(),key.end(),key.begin(),[](unsigned char c){return static_cast<char>(std::tolower(c));});

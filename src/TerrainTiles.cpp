@@ -23,13 +23,21 @@ Terrain::Tileset::Tileset(const std::filesystem::path& file)
         const auto& entries=data.at("sampling");
         if(!entries.is_object()) throw std::runtime_error("Tileset sampling must be an object");
         for(const auto& [role,entry]:entries.items()) {
-            if(role!="inner" || entry.at("mode")!="repeat2d")
-                throw std::runtime_error("Only inner repeat2d sampling is supported");
+            const auto found=std::find(roles.begin(),roles.end(),role);
+            if(found==roles.end()) throw std::runtime_error("Unknown sampling role");
+            const auto index=static_cast<unsigned>(found-roles.begin()), exposure=exposures[index];
+            const auto mode=entry.at("mode").get<std::string>();
+            Sampling samplingMode;
+            if(mode=="repeat2d" && exposure==0) samplingMode=Sampling::Repeat2D;
+            else if(mode=="edge" && (exposure==N||exposure==S||exposure==W||exposure==E)) samplingMode=Sampling::Edge;
+            else if(mode=="corner" && (exposure&(N|S)) && (exposure&(W|E)))
+                throw std::runtime_error("Corner sampling is not implemented");
+            else throw std::runtime_error("Invalid sampling mode/exposure combination");
             const std::filesystem::path path(entry.at("image").get<std::string>());
-            if(path.empty() || path.is_absolute()) throw std::runtime_error("Macro image must be a relative path");
-            innerImage=file.parent_path()/path;
-            const auto index=std::find(roles.begin(),roles.end(),role)-roles.begin();
-            sampling[index]=Sampling::Repeat2D;
+            if(path.empty() || path.is_absolute()) throw std::runtime_error("Sampling image must be a relative path");
+            bool flip=false;
+            if(entry.contains("flip")) {if(entry.at("flip")!="x")throw std::runtime_error("Only horizontal flip supported");flip=true;}
+            sampling[index]={samplingMode,std::filesystem::weakly_canonical(file.parent_path()/path),flip};
         }
     }
 }
@@ -149,7 +157,7 @@ std::vector<Terrain::Piece> Terrain::pieces(const std::vector<Component>& groups
                     else if(bottom) role=left?7:right?8:2;
                     else if(left) role=3;
                     else if(right) role=4;
-                    const auto sampling=set.sampling[role];
+                    const auto sampling=set.sampling[role].mode;
                     const unsigned variant=sampling==Sampling::Repeat2D ? 0u :
                         static_cast<unsigned>(tileHash(cell,seed)%set.variants[role]);
                     sf::Vector2f uv=piece.position-cell;
@@ -181,25 +189,72 @@ void TerrainTiles::render(sf::RenderTarget& target,const sf::FloatRect& visible)
         texture.setSmooth(false);
         texture_=std::move(texture);
     }
-    if(set_.innerImage && !innerTexture_) {
+    for(const auto& sample:set_.sampling) if(sample.mode!=Terrain::Sampling::Atlas &&
+        std::none_of(images_.begin(),images_.end(),[&](const auto& t){return t.path==sample.image;})) {
         sf::Texture texture;
-        if(!texture.loadFromFile(*set_.innerImage))
-            throw std::runtime_error("Cannot load inner macro image: "+set_.innerImage->string());
-        texture.setSmooth(false);
-        texture.setRepeated(true); // Period comes from the actual image dimensions.
-        innerTexture_=std::move(texture);
+        if(!texture.loadFromFile(sample.image)) throw std::runtime_error("Cannot load sampling image: "+sample.image.string());
+        texture.setSmooth(false);texture.setRepeated(true);
+        images_.push_back({sample.image,std::move(texture)});
     }
-    sf::VertexArray atlas(sf::PrimitiveType::Triangles),macro(sf::PrimitiveType::Triangles);
-    for(const auto& p:Terrain::pieces(groups_,set_,seed_,visible)) {
-        auto& vertices=p.sampling==Terrain::Sampling::Repeat2D ? macro : atlas;
-        const auto a=p.bounds.position,b=a+p.bounds.size;
-        for(sf::Vector2f point:{a,sf::Vector2f{b.x,a.y},b,a,b,sf::Vector2f{a.x,b.y}})
-            vertices.append(sf::Vertex{point,sf::Color::White,p.uv.position+point-a});
+    // Batches retain layer order even when different roles share a texture.
+    std::array<std::vector<sf::VertexArray>,5> layers;
+    for(auto& layer:layers)for(std::size_t i=0;i<=images_.size();++i)layer.emplace_back(sf::PrimitiveType::Triangles);
+    const auto textureIndex=[&](unsigned role){
+        const auto& path=set_.sampling[role].image;
+        return static_cast<unsigned>(std::find_if(images_.begin(),images_.end(),[&](const auto& t){return t.path==path;})-images_.begin())+1;
+    };
+    const auto quad=[&](unsigned layer,unsigned texture,sf::FloatRect rect,sf::Vector2f uv,bool flip){
+        auto& vertices=layers[layer][texture];const auto a=rect.position,b=a+rect.size;
+        for(sf::Vector2f point:{a,sf::Vector2f{b.x,a.y},b,a,b,sf::Vector2f{a.x,b.y}}){
+            auto tex=uv+point-a;if(flip)tex.x=static_cast<float>(images_[texture-1].texture.getSize().x)-tex.x;
+            vertices.append(sf::Vertex{point,sf::Color::White,tex});
+        }
+    };
+    const auto mesh=Terrain::pieces(groups_,set_,seed_,visible);
+    for(const auto& p:mesh){
+        for(unsigned role=0;role<set_.sampling.size();++role)if(set_.sampling[role].mode==Terrain::Sampling::Repeat2D){
+            const auto mid=p.bounds.position+p.bounds.size/2.f;
+            const auto group=std::find_if(groups_.begin(),groups_.end(),[&](const auto& g){return std::any_of(g.solids.begin(),g.solids.end(),[&](auto r){return r.contains(mid);});});
+            quad(0,textureIndex(role),p.bounds,p.bounds.position-group->bounds.position,set_.sampling[role].flip);
+        }
+        if(p.sampling==Terrain::Sampling::Atlas)quad(1,0,p.bounds,p.uv.position,false);
     }
-    sf::RenderStates states; states.texture=&*texture_;
-    if(atlas.getVertexCount()) target.draw(atlas,states);
-    if(macro.getVertexCount()) {
-        states.texture=&*innerTexture_;
-        target.draw(macro,states);
+    // Solid-coordinate partition, independent of the diagnostic atlas grid.
+    for(const auto& group:groups_){
+        if(!group.bounds.findIntersection(visible))continue;
+        std::vector<float> xs,ys;
+        for(auto r:group.solids){xs.push_back(r.position.x);xs.push_back(r.position.x+r.size.x);ys.push_back(r.position.y);ys.push_back(r.position.y+r.size.y);}
+        sortCuts(xs);sortCuts(ys);std::vector<sf::FloatRect> atoms;
+        for(std::size_t y=1;y<ys.size();++y)for(std::size_t x=1;x<xs.size();++x){
+            sf::FloatRect atom{{xs[x-1],ys[y-1]},{xs[x]-xs[x-1],ys[y]-ys[y-1]}};
+            const auto mid=atom.position+atom.size/2.f;
+            if(std::any_of(group.solids.begin(),group.solids.end(),[&](auto r){return r.contains(mid);}))atoms.push_back(atom);
+        }
+        for(unsigned role=0;role<set_.sampling.size();++role){
+            const auto& sample=set_.sampling[role];if(sample.mode!=Terrain::Sampling::Edge)continue;
+            const auto direction=Terrain::exposures[role],index=textureIndex(role);const auto imageSize=images_[index-1].texture.getSize();
+            const bool horizontal=direction==Terrain::N||direction==Terrain::S;
+            const float depth=static_cast<float>(horizontal?imageSize.y:imageSize.x);
+            const unsigned layer=direction==Terrain::S?2:(direction==Terrain::N?4:3);
+            for(auto atom:atoms){
+                const auto mid=atom.position+atom.size/2.f;const auto range=span(group,mid,!horizontal);
+                const bool low=direction==Terrain::N||direction==Terrain::W;
+                const float face=low?range.x:range.y;
+                const float edge=horizontal?(low?atom.position.y:atom.position.y+atom.size.y):(low?atom.position.x:atom.position.x+atom.size.x);
+                if(edge!=face)continue;
+                sf::FloatRect band=atom;
+                if(horizontal){band.position.y=low?face:face-depth;band.size.y=depth;}
+                else {band.position.x=low?face:face-depth;band.size.x=depth;}
+                const auto viewBand=band.findIntersection(visible);if(!viewBand)continue;
+                for(auto occupied:atoms)if(auto clipped=occupied.findIntersection(*viewBand)){
+                    const auto uv=horizontal?sf::Vector2f{clipped->position.x-group.bounds.position.x,clipped->position.y-band.position.y}:
+                        sf::Vector2f{clipped->position.x-band.position.x,clipped->position.y-group.bounds.position.y};
+                    quad(layer,index,*clipped,uv,sample.flip);
+                }
+            }
+        }
+    }
+    for(const auto& layer:layers)for(unsigned i=0;i<layer.size();++i)if(layer[i].getVertexCount()){
+        sf::RenderStates state;state.texture=i?&images_[i-1].texture:&*texture_;target.draw(layer[i],state);
     }
 }
