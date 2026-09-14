@@ -84,15 +84,23 @@ $expectedHash=[RunEntryHash]::Fnv1a64($runtime)
 }
 $trial=$null
 $plan=Get-Content (Join-Path $PSScriptRoot 'inner_macro_capture.json') -Raw | ConvertFrom-Json
+function SamplingSignature($set) {
+    @($set.sampling.PSObject.Properties | Sort-Object Name | ForEach-Object {
+        [ordered]@{role=$_.Name;mode=$_.Value.mode;
+            image=[IO.Path]::GetFullPath((Join-Path $tilesetDir $_.Value.image)).ToLowerInvariant();
+            flip=$(if($_.Value.flip){$_.Value.flip}else{''})}
+    }) | ConvertTo-Json -Depth 4 -Compress
+}
+$defaultSampling=SamplingSignature $default
 foreach($entry in $plan.trials) {
-    if(-not $entry.tileset) { continue }
-    $data=Get-Content (Join-Path $tilesetDir ($entry.tileset+'.json')) -Raw | ConvertFrom-Json
-    if($data.sampling.inner.image -and [IO.Path]::GetFullPath((Join-Path $tilesetDir $data.sampling.inner.image)) -eq $runtime) {
-        $trial=$entry.tileset;break
+    # An empty plan override means the region default; compare it via explicit override.
+    $name=if($entry.tileset){$entry.tileset}else{$region.tileset}
+    $data=Get-Content (Join-Path $tilesetDir ($name+'.json')) -Raw | ConvertFrom-Json
+    if((SamplingSignature $data) -eq $defaultSampling) {
+        $trial=$name;break
     }
 }
-if(-not $runtime) { $trial=$region.tileset }
-if(-not $trial) { throw 'No comparison trial for approved image in capture plan' }
+if(-not $trial) { throw 'No comparison trial with identical sampling in capture plan' }
 function Preview([string]$name,[string]$tileset,[string]$point='877,355') {
     $args=@('avatar_lake',$point,'--out',(Join-Path $work $name))
     if($tileset) { $args+=@('--tileset',$tileset) }

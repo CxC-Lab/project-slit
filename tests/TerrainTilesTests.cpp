@@ -213,7 +213,19 @@ void macroCaptures(const std::filesystem::path& planFile,const std::filesystem::
         const Terrain::Tileset set(setFile);
         sf::Image tile;
         if(set.sampling[0].mode==Terrain::Sampling::Repeat2D) check(tile.loadFromFile(set.sampling[0].image),"candidate macro loads");
+        std::array<sf::Image,Terrain::roles.size()> edgeImages;
+        std::array<sf::Vector2u,Terrain::roles.size()> imageSizes{};
+        for(unsigned role=0;role<set.sampling.size();++role)if(set.sampling[role].mode==Terrain::Sampling::Edge){
+            check(edgeImages[role].loadFromFile(set.sampling[role].image),"candidate edge loads");
+            imageSizes[role]=edgeImages[role].getSize();
+        }
+        const auto texel=[](const sf::Image& texture,sf::Vector2f uv,bool flip){
+            const auto size=texture.getSize();if(flip)uv.x=static_cast<float>(size.x)-uv.x;
+            const auto wrap=[](float value,unsigned period){const int n=static_cast<int>(period),i=static_cast<int>(std::floor(value));return static_cast<unsigned>((i%n+n)%n);};
+            return texture.getPixel({wrap(uv.x,size.x),wrap(uv.y,size.y)});
+        };
         std::size_t samples=0,differences=0,edgeSamples=0,edgeDifferences=0,overlap=0,shiftDifferences=0;
+        std::size_t bandOpaqueSamples=0,bandTransparentSamples=0;
         for(std::size_t i=0;i<metadata.at("cells").size();++i) {
             const auto& cell=metadata.at("cells")[i];const auto& rect=cell.at("visibleRect");
             const sf::Vector2f lo{rect.at("left").get<float>(),rect.at("top").get<float>()};
@@ -230,18 +242,30 @@ void macroCaptures(const std::filesystem::path& planFile,const std::filesystem::
                 check(moved.loadFromFile(dir/other.at("file").get<std::string>()),"shifted capture loads");
             }
             const sf::FloatRect visible{lo,{rect.at("width").get<float>(),rect.at("height").get<float>()}};
+            auto bands=Terrain::edgeBands(groups,set,visible,imageSizes);
+            const auto priority=[](const Terrain::Band& band){const auto d=Terrain::exposures[band.role];return d==Terrain::S?0:d==Terrain::N?2:1;};
+            std::stable_sort(bands.begin(),bands.end(),[&](const auto& a,const auto& b){return priority(a)<priority(b);});
             for(const auto& piece:Terrain::pieces(groups,set,123,visible)) {
-                const bool macro=piece.sampling==Terrain::Sampling::Repeat2D;
+                const bool macro=piece.sampling!=Terrain::Sampling::Atlas && tile.getSize().x!=0;
                 for(int y=std::max(0,static_cast<int>(std::ceil(piece.bounds.position.y-lo.y-.5f)));
                     y<std::min(static_cast<int>(image.getSize().y),static_cast<int>(std::ceil(piece.bounds.position.y+piece.bounds.size.y-lo.y-.5f)));++y)
                 for(int x=std::max(0,static_cast<int>(std::ceil(piece.bounds.position.x-lo.x-.5f)));
                     x<std::min(static_cast<int>(image.getSize().x),static_cast<int>(std::ceil(piece.bounds.position.x+piece.bounds.size.x-lo.x-.5f)));++x) {
                     const sf::Vector2u pixel{static_cast<unsigned>(x),static_cast<unsigned>(y)};
-                    if(!macro) {++edgeSamples;edgeDifferences+=image.getPixel(pixel)!=base.getPixel(pixel);continue;}
-                    const auto uv=piece.uv.position+lo+sf::Vector2f{x+.5f,y+.5f}-piece.bounds.position;
-                    const sf::Vector2u at{static_cast<unsigned>(std::floor(uv.x)),static_cast<unsigned>(std::floor(uv.y))};
-                    ++samples;
-                    differences+=image.getPixel(pixel)!=tile.getPixel({at.x%tile.getSize().x,at.y%tile.getSize().y});
+                    const auto world=lo+sf::Vector2f{x+.5f,y+.5f};
+                    auto expected=base.getPixel(pixel);
+                    if(macro){
+                        const auto group=std::find_if(groups.begin(),groups.end(),[&](const auto& g){return std::any_of(g.solids.begin(),g.solids.end(),[&](auto r){return r.contains(world);});});
+                        check(group!=groups.end(),"base pixel belongs to union");
+                        expected=texel(tile,world-group->bounds.position,set.sampling[0].flip);
+                    }
+                    for(const auto& band:bands)if(band.bounds.contains(world)){
+                        const auto overlay=texel(edgeImages[band.role],band.uv.position+world-band.bounds.position,set.sampling[band.role].flip);
+                        check(overlay.a==0 || overlay.a==255,"edge capture uses binary alpha");
+                        if(overlay.a==255){expected=overlay;++bandOpaqueSamples;}else ++bandTransparentSamples;
+                    }
+                    if(macro){++samples;differences+=image.getPixel(pixel)!=expected;}
+                    else {++edgeSamples;edgeDifferences+=image.getPixel(pixel)!=expected;}
                     if(i==pair[0]) {
                         const int mx=x-static_cast<int>(std::round(delta.x)),my=y-static_cast<int>(std::round(delta.y));
                         if(mx>=0 && my>=0 && mx<static_cast<int>(moved.getSize().x) && my<static_cast<int>(moved.getSize().y)) {
@@ -255,6 +279,7 @@ void macroCaptures(const std::filesystem::path& planFile,const std::filesystem::
         if(set.sampling[0].mode==Terrain::Sampling::Repeat2D) check(samples>0 && overlap>0,"macro checks have samples");
         report["trials"].push_back({{"id",id},{"macroSamples",samples},{"macroDifferences",differences},
             {"nonInnerSamples",edgeSamples},{"nonInnerDifferences",edgeDifferences},
+            {"bandOpaqueSamples",bandOpaqueSamples},{"bandTransparentSamples",bandTransparentSamples},
             {"cameraOverlapSamples",overlap},{"cameraDifferences",shiftDifferences}});
     }
     std::ofstream out(output/"verification.json");out<<report.dump(2)<<'\n';

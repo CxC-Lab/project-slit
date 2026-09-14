@@ -176,6 +176,47 @@ std::vector<Terrain::Piece> Terrain::pieces(const std::vector<Component>& groups
     }
     return output;
 }
+std::vector<Terrain::Band> Terrain::edgeBands(const std::vector<Component>& groups,const Tileset& set,
+    const sf::FloatRect& visible,const std::array<sf::Vector2u,roles.size()>& imageSizes)
+{
+    std::vector<Band> output;
+    // Solid-coordinate partition, independent of the diagnostic atlas grid.
+    for(const auto& group:groups){
+        if(!group.bounds.findIntersection(visible))continue;
+        std::vector<float> xs,ys;
+        for(auto r:group.solids){xs.push_back(r.position.x);xs.push_back(r.position.x+r.size.x);ys.push_back(r.position.y);ys.push_back(r.position.y+r.size.y);}
+        sortCuts(xs);sortCuts(ys);std::vector<sf::FloatRect> atoms;
+        for(std::size_t y=1;y<ys.size();++y)for(std::size_t x=1;x<xs.size();++x){
+            sf::FloatRect atom{{xs[x-1],ys[y-1]},{xs[x]-xs[x-1],ys[y]-ys[y-1]}};
+            const auto mid=atom.position+atom.size/2.f;
+            if(std::any_of(group.solids.begin(),group.solids.end(),[&](auto r){return r.contains(mid);}))atoms.push_back(atom);
+        }
+        for(unsigned role=0;role<set.sampling.size();++role){
+            const auto& sample=set.sampling[role];if(sample.mode!=Terrain::Sampling::Edge)continue;
+            const auto direction=Terrain::exposures[role];const auto imageSize=imageSizes[role];
+            if(imageSize.x==0 || imageSize.y==0)throw std::runtime_error("Edge image dimensions missing");
+            const bool horizontal=direction==Terrain::N||direction==Terrain::S;
+            const float depth=static_cast<float>(horizontal?imageSize.y:imageSize.x);
+            for(auto atom:atoms){
+                const auto mid=atom.position+atom.size/2.f;const auto range=span(group,mid,!horizontal);
+                const bool low=direction==Terrain::N||direction==Terrain::W;
+                const float face=low?range.x:range.y;
+                const float edge=horizontal?(low?atom.position.y:atom.position.y+atom.size.y):(low?atom.position.x:atom.position.x+atom.size.x);
+                if(edge!=face)continue;
+                sf::FloatRect band=atom;
+                if(horizontal){band.position.y=low?face:face-depth;band.size.y=depth;}
+                else {band.position.x=low?face:face-depth;band.size.x=depth;}
+                const auto viewBand=band.findIntersection(visible);if(!viewBand)continue;
+                for(auto occupied:atoms)if(auto clipped=occupied.findIntersection(*viewBand)){
+                    const auto uv=horizontal?sf::Vector2f{clipped->position.x-group.bounds.position.x,clipped->position.y-band.position.y}:
+                        sf::Vector2f{clipped->position.x-band.position.x,clipped->position.y-group.bounds.position.y};
+                    output.push_back({*clipped,{uv,clipped->size},role});
+                }
+            }
+        }
+    }
+    return output;
+}
 TerrainTiles::TerrainTiles(const std::vector<sf::FloatRect>& solids,const std::filesystem::path& file,std::uint64_t seed)
     :set_(file),groups_(Terrain::components(solids)),seed_(seed) {}
 void TerrainTiles::render(sf::RenderTarget& target,const sf::FloatRect& visible) const
@@ -219,40 +260,13 @@ void TerrainTiles::render(sf::RenderTarget& target,const sf::FloatRect& visible)
         }
         if(p.sampling==Terrain::Sampling::Atlas)quad(1,0,p.bounds,p.uv.position,false);
     }
-    // Solid-coordinate partition, independent of the diagnostic atlas grid.
-    for(const auto& group:groups_){
-        if(!group.bounds.findIntersection(visible))continue;
-        std::vector<float> xs,ys;
-        for(auto r:group.solids){xs.push_back(r.position.x);xs.push_back(r.position.x+r.size.x);ys.push_back(r.position.y);ys.push_back(r.position.y+r.size.y);}
-        sortCuts(xs);sortCuts(ys);std::vector<sf::FloatRect> atoms;
-        for(std::size_t y=1;y<ys.size();++y)for(std::size_t x=1;x<xs.size();++x){
-            sf::FloatRect atom{{xs[x-1],ys[y-1]},{xs[x]-xs[x-1],ys[y]-ys[y-1]}};
-            const auto mid=atom.position+atom.size/2.f;
-            if(std::any_of(group.solids.begin(),group.solids.end(),[&](auto r){return r.contains(mid);}))atoms.push_back(atom);
-        }
-        for(unsigned role=0;role<set_.sampling.size();++role){
-            const auto& sample=set_.sampling[role];if(sample.mode!=Terrain::Sampling::Edge)continue;
-            const auto direction=Terrain::exposures[role],index=textureIndex(role);const auto imageSize=images_[index-1].texture.getSize();
-            const bool horizontal=direction==Terrain::N||direction==Terrain::S;
-            const float depth=static_cast<float>(horizontal?imageSize.y:imageSize.x);
-            const unsigned layer=direction==Terrain::S?2:(direction==Terrain::N?4:3);
-            for(auto atom:atoms){
-                const auto mid=atom.position+atom.size/2.f;const auto range=span(group,mid,!horizontal);
-                const bool low=direction==Terrain::N||direction==Terrain::W;
-                const float face=low?range.x:range.y;
-                const float edge=horizontal?(low?atom.position.y:atom.position.y+atom.size.y):(low?atom.position.x:atom.position.x+atom.size.x);
-                if(edge!=face)continue;
-                sf::FloatRect band=atom;
-                if(horizontal){band.position.y=low?face:face-depth;band.size.y=depth;}
-                else {band.position.x=low?face:face-depth;band.size.x=depth;}
-                const auto viewBand=band.findIntersection(visible);if(!viewBand)continue;
-                for(auto occupied:atoms)if(auto clipped=occupied.findIntersection(*viewBand)){
-                    const auto uv=horizontal?sf::Vector2f{clipped->position.x-group.bounds.position.x,clipped->position.y-band.position.y}:
-                        sf::Vector2f{clipped->position.x-band.position.x,clipped->position.y-group.bounds.position.y};
-                    quad(layer,index,*clipped,uv,sample.flip);
-                }
-            }
-        }
+    std::array<sf::Vector2u,Terrain::roles.size()> imageSizes{};
+    for(unsigned role=0;role<set_.sampling.size();++role)if(set_.sampling[role].mode==Terrain::Sampling::Edge)
+        imageSizes[role]=images_[textureIndex(role)-1].texture.getSize();
+    for(const auto& band:Terrain::edgeBands(groups_,set_,visible,imageSizes)){
+        const auto direction=Terrain::exposures[band.role];
+        const unsigned layer=direction==Terrain::S?2:(direction==Terrain::N?4:3);
+        quad(layer,textureIndex(band.role),band.bounds,band.uv.position,set_.sampling[band.role].flip);
     }
     for(const auto& layer:layers)for(unsigned i=0;i<layer.size();++i)if(layer[i].getVertexCount()){
         sf::RenderStates state;state.texture=i?&images_[i-1].texture:&*texture_;target.draw(layer[i],state);

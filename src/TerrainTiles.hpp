@@ -27,6 +27,9 @@ struct Piece {
     unsigned role, variant;
     Sampling sampling = Sampling::Atlas;
 };
+struct Band { sf::FloatRect bounds, uv; unsigned role; };
+std::vector<Band> edgeBands(const std::vector<Component>& groups,const Tileset& set,
+    const sf::FloatRect& visible,const std::array<sf::Vector2u,roles.size()>& imageSizes);
 std::uint64_t hashId(const std::string& id);
 std::vector<Component> components(const std::vector<sf::FloatRect>& solids);
 std::vector<Piece> pieces(const std::vector<Component>& groups,const Tileset& set,
