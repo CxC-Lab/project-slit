@@ -1,0 +1,70 @@
+{
+  "candidate" : "crevice_v1",
+  "classification" : "PASS",
+  "manifest" : 
+  {
+    "candidates" : 
+    [
+      {
+        "id" : "crevice_v1",
+        "trial_runtime_candidate" : true,
+        "trial_runtime_file" : "runtime/trials/avatar_lake_side_crevice_v1_trial.png"
+      }
+    ],
+    "checks" : 
+    {
+      "alpha_seam" : "at_most_internal_mean",
+      "color_seam_ratio_max" : 1.0,
+      "expected_size" : [ 12, 120 ]
+    },
+    "derivation" : 
+    {
+      "crevice_threshold" : 90,
+      "face_rule" : "after_first_max_dark_column_wrap",
+      "full_columns" : 3,
+      "hash" : 
+      {
+        "mask" : 1023,
+        "range" : 1024,
+        "x_multiplier" : 19349663,
+        "y_multiplier" : 73856093
+      },
+      "luminance_weights" : [ 0.29899999999999999, 0.58699999999999997, 0.114 ]
+    },
+    "id" : "avatar_lake_side_crevice",
+    "kind" : "boundary_overlay",
+    "mode" : "approved_inner_crevice",
+    "orientation" : 
+    {
+      "depth_axis" : "x",
+      "exposure" : "W",
+      "opacity_axis" : "x",
+      "repeat_axis" : "y",
+      "seam_axis" : "y"
+    },
+    "output_size" : [ 12, 120 ],
+    "previews" : 
+    {
+      "inner" : "runtime/avatar_lake_inner_e0_full_120.png"
+    },
+    "schema" : 2,
+    "source" : 
+    {
+      "expected_sha256" : "af248e396f70ca8852b15912bcda0fb4b46b03938724ecfce20e5ff46d2afd8d",
+      "expected_size" : [ 120, 120 ],
+      "path" : "runtime/avatar_lake_inner_e0_full_120.png"
+    }
+  },
+  "manifest_path" : "assets/tiles/avatar_lake/avatar_lake_side_crevice.pipeline.manifest.json",
+  "palette_rgb" : 
+  [
+    [ 83, 78, 116 ],
+    [ 92, 83, 119 ],
+    [ 76, 73, 113 ]
+  ],
+  "runtime_file" : "runtime/trials/avatar_lake_side_crevice_v1_trial.png",
+  "runtime_sha256" : "cb7f359fae63c082e1aa582ddf0e0c3aa6c7ff75b300e0e70b586e50660b7a6d",
+  "schema" : 2,
+  "source_sha256" : "af248e396f70ca8852b15912bcda0fb4b46b03938724ecfce20e5ff46d2afd8d",
+  "status" : "trial"
+}

@@ -5,6 +5,8 @@
             "top_left":1,"top_right":1,"bottom_left":1,"bottom_right":1,"slab":2},
   "sampling": {
     "inner": {"mode":"repeat2d","image":"../tiles/avatar_lake/runtime/avatar_lake_inner_e0_full_120.png"},
-    "top": {"mode": "edge", "image": "../tiles/avatar_lake/runtime/avatar_lake_top_t1_fringe_v1.png"}
+    "top": {"mode": "edge", "image": "../tiles/avatar_lake/runtime/avatar_lake_top_t1_fringe_v1.png"},
+    "left": {"mode": "edge", "image": "../tiles/avatar_lake/runtime/avatar_lake_side_crevice_v1.png"},
+    "right": {"mode": "edge", "image": "../tiles/avatar_lake/runtime/avatar_lake_side_crevice_v1.png", "flip": "x"}
   }
 }
