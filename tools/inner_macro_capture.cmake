@@ -40,7 +40,7 @@ foreach(index RANGE 0 ${last_trial})
   if(NOT tileset STREQUAL "")
     list(APPEND options --tileset "${tileset}")
   endif()
-  execute_process(COMMAND "${BIN}/preview.exe" "${region}" ${points} ${options} --out "${OUT}/${id}"
+  execute_process(COMMAND "${BIN}/preview.exe" "${region}" ${points} ${options} --decorations none --out "${OUT}/${id}"
       WORKING_DIRECTORY "${ROOT}" RESULT_VARIABLE code)
   if(NOT code EQUAL 0)
     message(FATAL_ERROR "Preview trial ${id} failed: ${code}")

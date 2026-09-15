@@ -13,6 +13,7 @@ public:
     explicit Region(const std::filesystem::path& file, const std::string& tilesetOverride = {});
     static std::filesystem::path findFile(const std::string& name,
         std::filesystem::path directory = std::filesystem::current_path());
+    const std::optional<std::filesystem::path>& decorationFile() const { return decorationFile_; }
     sf::FloatRect bounds() const { return bounds_; }
     sf::Vector2f spawn() const { return spawn_; }
     const std::vector<sf::FloatRect>& solids() const { return solids_; }
@@ -21,6 +22,7 @@ public:
     nlohmann::json captureIdentity() const;
     void render(sf::RenderTarget& target) const;
 private:
+    std::optional<std::filesystem::path> decorationFile_;
     sf::FloatRect bounds_;
     sf::Vector2f spawn_;
     std::vector<sf::FloatRect> solids_;

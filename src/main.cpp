@@ -1,5 +1,6 @@
 #include "Camera.hpp"
 #include "Background.hpp"
+#include "Decorations.hpp"
 #include "Display.hpp"
 #include "Input.hpp"
 #include "AnimationClip.hpp"
@@ -24,7 +25,7 @@ namespace
 void captureFrame(sf::RenderWindow& window, const sf::View& view,
                   sf::Vector2f playerCenter, const std::string& region,
                   const std::filesystem::path& directory, std::uint64_t frame,
-                  const Region& room)
+                  const Region& room, const Decorations* decorations, const char* decorationsMode)
 {
     try {
         std::filesystem::create_directories(directory);
@@ -47,6 +48,8 @@ void captureFrame(sf::RenderWindow& window, const sf::View& view,
             {"windowSize", {pixels.x, pixels.y}}, {"frame", frame}
         };
         metadata.update(room.captureIdentity());
+        metadata["decorationsMode"]=decorationsMode;
+        if(decorations)metadata.update(decorations->captureIdentity());
         sf::Texture capture(pixels);
         capture.update(window); // Back buffer: this frame, before display swaps buffers.
         if (!capture.copyToImage().saveToFile(png)) throw std::runtime_error("PNG save failed: " + png.string());
@@ -84,10 +87,24 @@ int main(int argc, char** argv) try
     sf::View camera(sf::FloatRect({0.f, 0.f}, Display::referenceViewSize));
     Display::apply(camera, window.getSize());
 
-    if (argc > 2 && (argc != 4 || std::string(argv[2]) != "--tileset"))
-        throw std::runtime_error("Usage: project_slit.exe [region [--tileset name]]");
-    const auto regionFile = Region::findFile(argc >= 2 ? argv[1] : "practice_room");
-    const Region room(regionFile, argc == 4 ? argv[3] : "");
+    std::string region="practice_room",tileset,decorationFile;
+    int first=1;
+    if(argc>1&&!std::string(argv[1]).starts_with("--")){region=argv[1];first=2;}
+    for(int i=first;i<argc;++i){
+        const std::string option=argv[i];
+        if((option!="--tileset"&&option!="--decorations")||i+1>=argc)
+            throw std::runtime_error("Usage: project_slit.exe [region] [--tileset name] [--decorations file]");
+        const std::string value=argv[++i];
+        if(value.empty()||value.starts_with("--"))throw std::runtime_error("Missing option value");
+        auto& destination=option=="--tileset"?tileset:decorationFile;
+        if(!destination.empty())throw std::runtime_error("Duplicate option: "+option);
+        destination=value;
+    }
+    const auto regionFile = Region::findFile(region);
+    const Region room(regionFile,tileset);
+    std::optional<Decorations> decorations;
+    const auto decorationSelection=selectDecorations(room.decorationFile(),decorationFile,!tileset.empty());
+    if(decorationSelection.file)decorations.emplace(*decorationSelection.file);
     const Background background(regionFile.parent_path().parent_path()/"backgrounds"/regionFile.filename());
     Player player(room.spawn());
     sf::RectangleShape playerShape(Movement::collisionSize);
@@ -252,7 +269,9 @@ int main(int argc, char** argv) try
         viewBackground.setFillColor(sf::Color(25, 30, 45));
         window.draw(viewBackground);
         background.render(window);
+        if(decorations)decorations->render(window,Decorations::Layer::Behind);
         room.render(window);
+        if(decorations)decorations->render(window,Decorations::Layer::Above);
         window.draw(playerSprite);
         if (showPlayerCollider)
             window.draw(playerShape);
@@ -261,7 +280,7 @@ int main(int argc, char** argv) try
         {
             captureRequested = false;
             captureFrame(window, camera, playerBounds.position + playerBounds.size / 2.f,
-                         regionFile.stem().string(), captureDirectory, renderedFrames, room);
+                         regionFile.stem().string(), captureDirectory, renderedFrames, room, decorations?&*decorations:nullptr, decorationSelection.mode);
             (void)frameClock.restart(); // Exclude screenshot I/O pause from the next physics step.
         }
         window.display();

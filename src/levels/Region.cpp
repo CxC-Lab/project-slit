@@ -60,6 +60,12 @@ Region::Region(const std::filesystem::path& file, const std::string& tilesetOver
             throw std::runtime_error("Solid has invalid size or exceeds region");
         solids_.push_back({{r[0],r[1]}, {r[2],r[3]}});
     }
+    if(data.contains("decorations")) {
+        const auto name=data.at("decorations").get<std::string>();
+        if(name.empty()||name.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_")!=std::string::npos)
+            throw std::runtime_error("Invalid decorations name");
+        decorationFile_=file.parent_path().parent_path()/"decorations"/(name+".json");
+    }
     if(!tilesetOverride.empty() || data.contains("tileset")) {
         const auto name=tilesetOverride.empty() ? data.at("tileset").get<std::string>() : tilesetOverride;
         if(name.empty() || name.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_")!=std::string::npos)

@@ -1,5 +1,7 @@
 #include "Display.hpp"
 #include "Background.hpp"
+#include "Decorations.hpp"
+#include <optional>
 #include "levels/Region.hpp"
 #include <SFML/Graphics.hpp>
 #include <algorithm>
@@ -78,10 +80,10 @@ std::string padded(long long value,int width)
 
 int main(int argc,char** argv) try
 {
-    if(argc<3) throw std::runtime_error("Usage: preview <region> [<x,y> ... | --cover] [--out dir] [--sheet] [--grid] [--aspect 4:3|16:9] [--tileset name]");
+    if(argc<3) throw std::runtime_error("Usage: preview <region> [<x,y> ... | --cover] [--out dir] [--sheet] [--grid] [--aspect 4:3|16:9] [--tileset name] [--decorations file]");
     std::vector<sf::Vector2f> points;
     std::filesystem::path out="build/preview";
-    std::string tilesetOverride;
+    std::string tilesetOverride,decorationFile;
     sf::Vector2u physical{1920,1080};
     bool sheet=false,grid=false,cover=false;
     for(int i=2;i<argc;++i) {
@@ -89,10 +91,11 @@ int main(int argc,char** argv) try
         if(arg=="--cover") cover=true;
         else if(arg=="--sheet") sheet=true;
         else if(arg=="--grid") grid=true;
-        else if(arg=="--out" || arg=="--aspect" || arg=="--tileset") {
+        else if(arg=="--out" || arg=="--aspect" || arg=="--tileset" || arg=="--decorations") {
             if(++i==argc) throw std::runtime_error("Missing value for "+arg);
             const std::string value=argv[i];
-            if(arg=="--tileset") { if(value.empty()) throw std::runtime_error("Empty tileset override"); tilesetOverride=value; }
+            if(arg=="--decorations") { if(value.empty()||value.starts_with("--")||!decorationFile.empty())throw std::runtime_error("Invalid decorations option");decorationFile=value; }
+            else if(arg=="--tileset") { if(value.empty()||value.starts_with("--")||!tilesetOverride.empty()) throw std::runtime_error("Invalid tileset override"); tilesetOverride=value; }
             else if(arg=="--out") { if(value.empty() || value.starts_with("--")) throw std::runtime_error("Invalid output directory: "+value); out=value; }
             else if(value=="4:3") physical={1600,1200};
             else if(value=="16:9") physical={1920,1080};
@@ -107,6 +110,9 @@ int main(int argc,char** argv) try
     if(!cover && points.empty()) throw std::runtime_error("At least one coordinate is required");
     const auto file=Region::findFile(argv[1]);
     const Region room(file,tilesetOverride);
+    std::optional<Decorations> decorations;
+    const auto decorationSelection=selectDecorations(room.decorationFile(),decorationFile,!tilesetOverride.empty());
+    if(decorationSelection.file)decorations.emplace(*decorationSelection.file);
     const Background background(file.parent_path().parent_path()/"backgrounds"/file.filename());
     sf::View view;
     Display::apply(view,physical);
@@ -137,6 +143,8 @@ int main(int argc,char** argv) try
     nlohmann::json manifest={{"region",argv[1]}, {"viewSize",{view.getSize().x,view.getSize().y}},
         {"rows",coverRows},{"columns",coverColumns},{"cells",nlohmann::json::array()}};
     manifest.update(room.captureIdentity());
+    manifest["decorationsMode"]=decorationSelection.mode;
+    if(decorations)manifest.update(decorations->captureIdentity());
     if(cover) overview=sf::Image({coverColumns*(thumbWidth+gap)+gap,
         coverRows*(thumbHeight+header+gap)+gap},sf::Color(25,30,45));
     for(std::size_t i=0;i<points.size();++i) {
@@ -157,7 +165,9 @@ int main(int argc,char** argv) try
         base.setFillColor(sf::Color(25,30,45));
         target.draw(base);
         background.render(target);
+        if(decorations)decorations->render(target,Decorations::Layer::Behind);
         room.render(target);
+        if(decorations)decorations->render(target,Decorations::Layer::Above);
         if(grid) diagnostic(target,view);
         target.display();
         auto image=target.getTexture().copyToImage();
