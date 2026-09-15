@@ -1,0 +1,40 @@
+{
+  "items": [
+    {
+      "image": "avatar_lake/runtime/trials/fossil04_trial_96x72.png",
+      "position": [
+        2400,
+        550
+      ],
+      "layer": "behind",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/trials/fossil04_blend_a_trial.png",
+      "position": [
+        2400,
+        550
+      ],
+      "layer": "above",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/trials/fossil04_trial_96x72.png",
+      "position": [
+        4400,
+        550
+      ],
+      "layer": "behind",
+      "flipX": true
+    },
+    {
+      "image": "avatar_lake/runtime/trials/fossil04_blend_b_trial.png",
+      "position": [
+        4400,
+        550
+      ],
+      "layer": "above",
+      "flipX": false
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "status": "approved",
+  "role": "raw03 파편층 매몰 전경(x=2000 전용). E0·top 을 렌더러 위상으로 파생. 지형 위상에 종속",
+  "runtime_file": "fossil03_foreground_x2000.png",
+  "sha256": "076b52dace3c502a59871d23ccdc0e26eafc23dbbd608446f2b0d1d9b6ec3c89",
+  "placements": [
+    {
+      "position": [
+        2000,
+        536
+      ],
+      "layer": "above",
+      "flipX": false
+    }
+  ],
+  "trial_file": "runtime/trials/fossil03_foreground_g2000_trial.png",
+  "trial_sha256": "076b52dace3c502a59871d23ccdc0e26eafc23dbbd608446f2b0d1d9b6ec3c89",
+  "approval": {
+    "date": "2026-09-16",
+    "capture": "build/preview/captured_0053.png",
+    "decorations_file": "assets/decorations/avatar_lake_fossils_trial.json",
+    "decorations_fnv1a64": "3d35a2b2167ec164",
+    "decided_by": "user play judgment",
+    "note": "승인 시험 세트 파일과 runtime/trials 사본은 승격 뒤 삭제했다. 정식 기본 데이터(assets/decorations/avatar_lake.json)가 같은 8개 카메라 위치에서 이 시험 세트와 픽셀 동일함을 확인했고, 이미지별 원래 시험 파일 해시는 trial_sha256 에 남긴다."
+  },
+  "normalization": {
+    "role": "burial foreground for fossil03 fragment",
+    "placement": "g2000",
+    "position": [
+      2000,
+      536
+    ],
+    "layer": "above",
+    "size": [
+      80,
+      24
+    ],
+    "surface": 520,
+    "inner_offset": [
+      0,
+      90
+    ],
+    "top_offset_x": 0,
+    "phase_match": {
+      "inner": 1.0,
+      "top": 1.0
+    },
+    "metal_span_world_x": [
+      1971,
+      2029
+    ],
+    "valid_columns": [
+      1960,
+      2039
+    ],
+    "lump_centers": [
+      1991,
+      2006,
+      2020
+    ],
+    "max_height": 7,
+    "metal_cuts": 9,
+    "spiral_center_world": [
+      1983,
+      513
+    ],
+    "spiral_clear": true,
+    "sha256": "076b52dace3c502a59871d23ccdc0e26eafc23dbbd608446f2b0d1d9b6ec3c89",
+    "sources": [
+      "assets/tiles/avatar_lake/runtime/avatar_lake_inner_e0_full_120.png",
+      "assets/tiles/avatar_lake/runtime/avatar_lake_top_t1_fringe_v1.png"
+    ],
+    "script": "build/orch/fossil_norm/dist/dist_foreground.py (from fg03/make_foreground.py)"
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "status": "approved",
+  "role": "주력 지면 암모나이트 화석(raw01). behind 만으로 top 이끼가 하단을 가린다. 전경 없음",
+  "runtime_file": "fossil01_ammonite.png",
+  "sha256": "a6c67e8a83481c84a517998f3001e8118b9ac57e56aab055ae710471377e16fc",
+  "placements": [
+    {
+      "position": [
+        275,
+        501
+      ],
+      "layer": "behind",
+      "flipX": false
+    },
+    {
+      "position": [
+        886,
+        541
+      ],
+      "layer": "behind",
+      "flipX": true
+    }
+  ],
+  "trial_file": "runtime/trials/fossil_trial_64x48.png",
+  "trial_sha256": "a6c67e8a83481c84a517998f3001e8118b9ac57e56aab055ae710471377e16fc",
+  "approval": {
+    "date": "2026-09-16",
+    "capture": "build/preview/captured_0053.png",
+    "decorations_file": "assets/decorations/avatar_lake_fossils_trial.json",
+    "decorations_fnv1a64": "3d35a2b2167ec164",
+    "decided_by": "user play judgment",
+    "note": "승인 시험 세트 파일과 runtime/trials 사본은 승격 뒤 삭제했다. 정식 기본 데이터(assets/decorations/avatar_lake.json)가 같은 8개 카메라 위치에서 이 시험 세트와 픽셀 동일함을 확인했고, 이미지별 원래 시험 파일 해시는 trial_sha256 에 남긴다."
+  },
+  "normalization": {
+    "source": "assets/decorations/avatar_lake/source/fossil_raw_01.png",
+    "source_sha256": "1d58e0db3380a6287779d52ace5b65da262825e901c240422773d38566e58844",
+    "crop": {
+      "x": 289,
+      "y": 219,
+      "w": 870,
+      "h": 653,
+      "aspect": "4:3"
+    },
+    "sha256": "a6c67e8a83481c84a517998f3001e8118b9ac57e56aab055ae710471377e16fc",
+    "size": [
+      64,
+      48
+    ],
+    "opaque_pixels": 1990,
+    "palette": [
+      [
+        33,
+        32,
+        31
+      ],
+      [
+        55,
+        51,
+        43
+      ],
+      [
+        76,
+        73,
+        113
+      ],
+      [
+        101,
+        86,
+        69
+      ],
+      [
+        112,
+        93,
+        122
+      ],
+      [
+        128,
+        101,
+        62
+      ],
+      [
+        173,
+        152,
+        136
+      ],
+      [
+        176,
+        128,
+        108
+      ],
+      [
+        193,
+        133,
+        98
+      ],
+      [
+        241,
+        162,
+        91
+      ]
+    ],
+    "palette_size": 10,
+    "palette_in_e0_family": 6,
+    "occupied": {
+      "x": [
+        6,
+        57
+      ],
+      "y": [
+        0,
+        47
+      ]
+    },
+    "script": "build/orch/fossil_norm/normalize_fossil.py"
+  }
+}

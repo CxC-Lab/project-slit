@@ -1,0 +1,103 @@
+{
+  "items": [
+    {
+      "image": "avatar_lake/runtime/fossil01_ammonite.png",
+      "position": [
+        275,
+        501
+      ],
+      "layer": "behind",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/fossil01_ammonite.png",
+      "position": [
+        886,
+        541
+      ],
+      "layer": "behind",
+      "flipX": true
+    },
+    {
+      "image": "avatar_lake/runtime/fossil02_relic.png",
+      "position": [
+        3100,
+        541
+      ],
+      "layer": "behind",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/fossil02_relic.png",
+      "position": [
+        9120,
+        -809
+      ],
+      "layer": "behind",
+      "flipX": true
+    },
+    {
+      "image": "avatar_lake/runtime/fossil03_fragments.png",
+      "position": [
+        2000,
+        541
+      ],
+      "layer": "behind",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/fossil03_foreground_x2000.png",
+      "position": [
+        2000,
+        536
+      ],
+      "layer": "above",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/fossil03_fragments.png",
+      "position": [
+        5600,
+        541
+      ],
+      "layer": "behind",
+      "flipX": true
+    },
+    {
+      "image": "avatar_lake/runtime/fossil03_foreground_x5600.png",
+      "position": [
+        5600,
+        536
+      ],
+      "layer": "above",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/rock_chip_a.png",
+      "position": [
+        916,
+        523
+      ],
+      "layer": "above",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/rock_chip_b.png",
+      "position": [
+        9523,
+        -1200
+      ],
+      "layer": "above",
+      "flipX": true
+    },
+    {
+      "image": "avatar_lake/runtime/rock_boulder.png",
+      "position": [
+        8250,
+        -1255
+      ],
+      "layer": "behind",
+      "flipX": false
+    }
+  ]
+}

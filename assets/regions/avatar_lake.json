@@ -1,6 +1,7 @@
 {
   "id": "avatar_lake",
   "tileset": "avatar_lake",
+  "decorations": "avatar_lake",
   "bounds": [
     0,
     -4800,

@@ -1,0 +1,85 @@
+{
+  "placement": "b",
+  "status": "trial",
+  "layer": "above",
+  "position": [
+    4400,
+    552
+  ],
+  "size": [
+    96,
+    38
+  ],
+  "fossil": {
+    "image": "fossil04_bright_trial_96x72.png",
+    "position": [
+      4400,
+      552
+    ],
+    "flipX": true,
+    "layer": "behind"
+  },
+  "surface_row": 40,
+  "exposure_px": 32,
+  "below_surface_px": 25,
+  "pure_inner_px": 9,
+  "coil_above_surface_px": 6,
+  "moss_runs": [
+    [
+      23,
+      29
+    ],
+    [
+      45,
+      48
+    ],
+    [
+      51,
+      56
+    ],
+    [
+      65,
+      70
+    ]
+  ],
+  "moss_heights": "2-4 px",
+  "line_breaks": [
+    [
+      37,
+      39
+    ],
+    [
+      58,
+      61
+    ]
+  ],
+  "windows_center": [
+    [
+      55,
+      57
+    ],
+    [
+      46,
+      58
+    ],
+    [
+      40,
+      56
+    ],
+    [
+      64,
+      48
+    ]
+  ],
+  "windows_in_pure_inner": 3,
+  "e0_pixels_drawn": 0,
+  "moss_in_top_palette": true,
+  "copies_are_raw04_pixels": true,
+  "copied_raw04_contamination_px": 8,
+  "new_outline_px": 0,
+  "new_bottom_line_px": 0,
+  "coil_clear": true,
+  "visible": "1338/2342 (57%)",
+  "script": "build/orch/fossil_norm/r04/derive_occlusion4.py",
+  "sha256": "a981ffeccc8d8132f1136908f0176741a93ad4a7deb6e5ec67e9f5ba9c47f263"
+}

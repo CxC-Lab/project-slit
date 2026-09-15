@@ -1,0 +1,129 @@
+{
+  "placement": "b",
+  "fossil": {
+    "position": [
+      4400,
+      550
+    ],
+    "flipX": true,
+    "layer": "behind"
+  },
+  "blend": {
+    "position": [
+      4400,
+      550
+    ],
+    "size": [
+      160,
+      66
+    ],
+    "layer": "above"
+  },
+  "phase": {
+    "inner_offset": [
+      0,
+      90
+    ],
+    "inner_match": 1.0,
+    "top_offset_x": 0,
+    "top_match": 1.0,
+    "whole_view_rows_520_589_match": 1.0,
+    "surface": 520,
+    "cx": 4400
+  },
+  "coil_canvas": [
+    38,
+    34
+  ],
+  "contact_zones_s": {
+    "Z1_moss": [
+      -34,
+      -12
+    ],
+    "Z2_moss_tuft": [
+      -10,
+      -5
+    ],
+    "Z3_pebbles": [
+      -3,
+      2
+    ],
+    "Z4_rock_face": [
+      4,
+      21
+    ],
+    "Z5_rock_dissolve": [
+      22,
+      36
+    ]
+  },
+  "contact_zones_world_x": {
+    "Z1_moss": [
+      4402,
+      4424
+    ],
+    "Z2_moss_tuft": [
+      4395,
+      4400
+    ],
+    "Z3_pebbles": [
+      4388,
+      4393
+    ],
+    "Z4_rock_face": [
+      4369,
+      4386
+    ],
+    "Z5_rock_dissolve": [
+      4354,
+      4368
+    ]
+  },
+  "inner_windows_columns": [
+    [
+      26,
+      29
+    ],
+    [
+      34,
+      37
+    ],
+    [
+      42,
+      45
+    ],
+    [
+      50,
+      53
+    ],
+    [
+      57,
+      61
+    ]
+  ],
+  "visible": "1521/2342 (65%)",
+  "visible_split": {
+    "above_surface": 1300,
+    "top_band": 163,
+    "pure_inner": 58
+  },
+  "fossil_px_above_surface": 1439,
+  "above_surface_covered": 139,
+  "pure_inner_windows": 10,
+  "pure_inner_depth_px": 7,
+  "rock_side_outline_eaten": "6/17 (35%)",
+  "rock_above_surface_max": 8,
+  "floating_rock_px": 0,
+  "moss_in_top_palette": true,
+  "rock_in_e0_palette": true,
+  "coil_visible": true,
+  "longest_equal_bottom_run": 3,
+  "outline_px_by_family": {
+    "M": 95,
+    "G": 58,
+    "R": 32
+  },
+  "sha256": "6e7eced77071c9ecfa837f2dfe137f5d49283362e9e37050b901173129f776f7",
+  "status": "trial",
+  "script": "build/orch/fossil_norm/r04/derive_blend4.py"
+}

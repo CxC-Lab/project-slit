@@ -1,0 +1,146 @@
+{
+  "size": [
+    96,
+    72
+  ],
+  "sha256": "92f082399d630aee707d8c17069ea0a146b71b1241ec92427b53a11c1556eb54",
+  "cell_rule": "out(tx,ty) reads src x in [floor(tx*1448/96), floor((tx+1)*1448/96)), y in [floor(ty*1086/72), floor((ty+1)*1086/72)); opaque if >=50% non-background; colour = dominant family, then dominant 12-level bucket, then most frequent exact colour",
+  "snap_rule": "family (green / rock by lavender context r=10 / metal). Metal: rank by luminance -> brass tones by shares 14/18/8/22/28/10%. Moss, rock: luminance p5..p95 stretched to palette range -> nearest tone (rock keeps purple vs orange class). Required colours forced; cap 16 by dropping least-used optional",
+  "tone_counts": {
+    "(33, 32, 31)": 243,
+    "(55, 51, 43)": 312,
+    "(77, 73, 66)": 138,
+    "(101, 86, 69)": 381,
+    "(128, 101, 62)": 486,
+    "(138, 106, 57)": 173,
+    "(40, 65, 40)": 147,
+    "(113, 148, 36)": 46,
+    "(51, 80, 40)": 87,
+    "(31, 55, 36)": 47,
+    "(89, 127, 36)": 61,
+    "(193, 133, 98)": 8,
+    "(83, 78, 116)": 65,
+    "(155, 117, 120)": 59,
+    "(173, 152, 136)": 47,
+    "(112, 93, 122)": 42
+  },
+  "palette": [
+    [
+      31,
+      55,
+      36
+    ],
+    [
+      33,
+      32,
+      31
+    ],
+    [
+      40,
+      65,
+      40
+    ],
+    [
+      51,
+      80,
+      40
+    ],
+    [
+      55,
+      51,
+      43
+    ],
+    [
+      77,
+      73,
+      66
+    ],
+    [
+      83,
+      78,
+      116
+    ],
+    [
+      89,
+      127,
+      36
+    ],
+    [
+      101,
+      86,
+      69
+    ],
+    [
+      112,
+      93,
+      122
+    ],
+    [
+      113,
+      148,
+      36
+    ],
+    [
+      128,
+      101,
+      62
+    ],
+    [
+      138,
+      106,
+      57
+    ],
+    [
+      155,
+      117,
+      120
+    ],
+    [
+      173,
+      152,
+      136
+    ],
+    [
+      193,
+      133,
+      98
+    ]
+  ],
+  "palette_size": 16,
+  "forced_pixels": {},
+  "family_pixels": {
+    "metal": 1733,
+    "moss": 388,
+    "rock": 221
+  },
+  "family_ratio": {
+    "metal": 0.74,
+    "moss": 0.166,
+    "rock": 0.094
+  },
+  "rows": [
+    8,
+    64
+  ],
+  "cols": [
+    23,
+    76
+  ],
+  "rows_0_3_empty": true,
+  "rows_68_71_empty": true,
+  "metal_rows_from_40": [
+    40,
+    63
+  ],
+  "rows_56_plus": {
+    "G": 58,
+    "M": 95,
+    "R": 72
+  },
+  "bottom_rock_longest_row_run": 8,
+  "bottom_rock_widest_component": 13,
+  "source": "assets/decorations/avatar_lake/source/fossil_raw_04.png",
+  "source_sha256": "ad00961dc220e6b6f5a437e71d662ccadb3854b5f54ff92eb9201aebfd5448b9",
+  "status": "trial",
+  "script": "build/orch/fossil_norm/r04/normalize_fossil4.py"
+}

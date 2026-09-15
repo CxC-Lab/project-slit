@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "image": "avatar_lake/runtime/trials/fossil04_bright_trial_96x72.png",
+      "position": [
+        2400,
+        552
+      ],
+      "layer": "behind",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/trials/fossil04_bright_trial_96x72.png",
+      "position": [
+        4400,
+        552
+      ],
+      "layer": "behind",
+      "flipX": true
+    }
+  ]
+}

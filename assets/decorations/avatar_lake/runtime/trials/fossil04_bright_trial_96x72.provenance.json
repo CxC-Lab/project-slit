@@ -1,0 +1,38 @@
+{
+  "status": "trial",
+  "source": "assets/decorations/avatar_lake/runtime/trials/fossil04_trial_96x72.png",
+  "source_sha256": "92f082399d630aee707d8c17069ea0a146b71b1241ec92427b53a11c1556eb54",
+  "sha256": "7ba4c6c33133a05312519d1a24a7e8e1d1e4999c97fbc244bbcfa466247f25ba",
+  "rule": "metal only. keep outline pixels and dark grooves (33 next to lit metal or to moss/rock). one step up the brass ladder 33->55->101->128(->138): 33 inside dark masses ->55; 55 -> 101 in spiral (r<=13 of coil 57,34), upper rows (<=24), rib faces, or fully enclosed by non-groove metal; 77 -> 101 and 101 -> 128 in spiral/upper/rib; 128 -> 138 on rib faces in rows <=18 or in the spiral, capped so 138 <= 15% of metal. moss and E0 unchanged.",
+  "metal_pixels": 1733,
+  "before": {
+    "(33, 32, 31)": 243,
+    "(55, 51, 43)": 312,
+    "(77, 73, 66)": 138,
+    "(101, 86, 69)": 381,
+    "(128, 101, 62)": 486,
+    "(138, 106, 57)": 173
+  },
+  "after": {
+    "(33, 32, 31)": 213,
+    "(55, 51, 43)": 166,
+    "(77, 73, 66)": 65,
+    "(101, 86, 69)": 405,
+    "(128, 101, 62)": 656,
+    "(138, 106, 57)": 228
+  },
+  "changes": {
+    "외곽 유지": 95,
+    "홈·부착물 경계 유지": 180,
+    "(77, 73, 66)→(101, 86, 69)": 73,
+    "(101, 86, 69)→(128, 101, 62)": 225,
+    "(55, 51, 43)→(101, 86, 69)": 176,
+    "(33, 32, 31)→(55, 51, 43)": 30,
+    "(128, 101, 62)→(138, 106, 57)": 55
+  },
+  "metal_mean_luminance": {
+    "before": 79.4,
+    "after": 86.4
+  },
+  "script": "build/orch/fossil_norm/r04/brighten_fossil4.py"
+}

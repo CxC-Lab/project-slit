@@ -1,0 +1,38 @@
+{
+  "status": "approved",
+  "role": "암석 장식(작은 조각 B). 오른쪽 벽 위 above, 반전",
+  "runtime_file": "rock_chip_b.png",
+  "sha256": "e763a842e6b3a27232f9423b3ca6f919ebac1e37a0623c44173ebbea9ac81ba8",
+  "placements": [
+    {
+      "position": [
+        9523,
+        -1200
+      ],
+      "layer": "above",
+      "flipX": true
+    }
+  ],
+  "trial_file": "runtime/trials/rock_chip_b_trial.png",
+  "trial_sha256": "e763a842e6b3a27232f9423b3ca6f919ebac1e37a0623c44173ebbea9ac81ba8",
+  "approval": {
+    "date": "2026-09-16",
+    "capture": "build/preview/captured_0053.png",
+    "decorations_file": "assets/decorations/avatar_lake_fossils_trial.json",
+    "decorations_fnv1a64": "3d35a2b2167ec164",
+    "decided_by": "user play judgment",
+    "note": "승인 시험 세트 파일과 runtime/trials 사본은 승격 뒤 삭제했다. 정식 기본 데이터(assets/decorations/avatar_lake.json)가 같은 8개 카메라 위치에서 이 시험 세트와 픽셀 동일함을 확인했고, 이미지별 원래 시험 파일 해시는 trial_sha256 에 남긴다."
+  },
+  "normalization": {
+    "source": "assets/tiles/avatar_lake/runtime/avatar_lake_inner_e0_full_120.png",
+    "sha256": "e763a842e6b3a27232f9423b3ca6f919ebac1e37a0623c44173ebbea9ac81ba8",
+    "size": [
+      17,
+      11
+    ],
+    "opaque_pixels": 131,
+    "generated": "Edge chip B: same rule, different column and salt.",
+    "role": "edge chip",
+    "script": "build/orch/deco_probe/make_rock_decor.py"
+  }
+}

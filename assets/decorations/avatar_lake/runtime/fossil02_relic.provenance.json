@@ -1,0 +1,143 @@
+{
+  "status": "approved",
+  "role": "보조 대형 기계 화석·거친 화석 유물(raw02). 희귀 발견물",
+  "runtime_file": "fossil02_relic.png",
+  "sha256": "1ee77c35c7d71ba5262a567d4039d97433c0b1b0a7ab339e8a28b266839bc1ec",
+  "placements": [
+    {
+      "position": [
+        3100,
+        541
+      ],
+      "layer": "behind",
+      "flipX": false
+    },
+    {
+      "position": [
+        9120,
+        -809
+      ],
+      "layer": "behind",
+      "flipX": true
+    }
+  ],
+  "trial_file": "runtime/trials/fossil02_trial_64x48.png",
+  "trial_sha256": "1ee77c35c7d71ba5262a567d4039d97433c0b1b0a7ab339e8a28b266839bc1ec",
+  "approval": {
+    "date": "2026-09-16",
+    "capture": "build/preview/captured_0053.png",
+    "decorations_file": "assets/decorations/avatar_lake_fossils_trial.json",
+    "decorations_fnv1a64": "3d35a2b2167ec164",
+    "decided_by": "user play judgment",
+    "note": "승인 시험 세트 파일과 runtime/trials 사본은 승격 뒤 삭제했다. 정식 기본 데이터(assets/decorations/avatar_lake.json)가 같은 8개 카메라 위치에서 이 시험 세트와 픽셀 동일함을 확인했고, 이미지별 원래 시험 파일 해시는 trial_sha256 에 남긴다."
+  },
+  "normalization": {
+    "source": "assets/decorations/avatar_lake/source/fossil_raw_02.png",
+    "source_sha256": "509b7a8467cfe14aa2935d83a0c094c9a870527f8a9c933fb52d7d3e7903bb05",
+    "crop": {
+      "x": 261,
+      "y": 240,
+      "w": 960,
+      "h": 720,
+      "aspect": "4:3",
+      "source_pixels_per_game_pixel": 15
+    },
+    "sha256": "1ee77c35c7d71ba5262a567d4039d97433c0b1b0a7ab339e8a28b266839bc1ec",
+    "size": [
+      64,
+      48
+    ],
+    "surface_row": 27,
+    "opaque_visible": 1127,
+    "opaque_hidden": 838,
+    "moss_colors_kept": [
+      [
+        51,
+        80,
+        40
+      ],
+      [
+        89,
+        127,
+        36
+      ]
+    ],
+    "moss_pixels_total": 39,
+    "moss_pixels_visible": 7,
+    "palette": [
+      [
+        40,
+        39,
+        33
+      ],
+      [
+        50,
+        48,
+        40
+      ],
+      [
+        51,
+        80,
+        40
+      ],
+      [
+        77,
+        73,
+        66
+      ],
+      [
+        83,
+        78,
+        116
+      ],
+      [
+        89,
+        127,
+        36
+      ],
+      [
+        102,
+        89,
+        121
+      ],
+      [
+        138,
+        106,
+        57
+      ],
+      [
+        173,
+        152,
+        136
+      ],
+      [
+        176,
+        128,
+        108
+      ],
+      [
+        193,
+        133,
+        98
+      ],
+      [
+        241,
+        162,
+        91
+      ]
+    ],
+    "palette_size": 12,
+    "palette_in_e0_family": 6,
+    "occupied": {
+      "x": [
+        1,
+        62
+      ],
+      "y": [
+        1,
+        41
+      ]
+    },
+    "script": "build/orch/fossil_norm/normalize_fossil2.py"
+  }
+}

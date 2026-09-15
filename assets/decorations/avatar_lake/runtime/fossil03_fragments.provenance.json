@@ -1,0 +1,107 @@
+{
+  "status": "approved",
+  "role": "기계 화석 파편층·오래된 기계 잔해·광맥(raw03). 위치별 above 전경과 한 쌍",
+  "runtime_file": "fossil03_fragments.png",
+  "sha256": "72abb38b6837698da7d1fcbf81d56701e688b759f4e96003097fa8243f064e47",
+  "placements": [
+    {
+      "position": [
+        2000,
+        541
+      ],
+      "layer": "behind",
+      "flipX": false
+    },
+    {
+      "position": [
+        5600,
+        541
+      ],
+      "layer": "behind",
+      "flipX": true
+    }
+  ],
+  "trial_file": "runtime/trials/fossil03_fragment_trial_64x48.png",
+  "trial_sha256": "72abb38b6837698da7d1fcbf81d56701e688b759f4e96003097fa8243f064e47",
+  "approval": {
+    "date": "2026-09-16",
+    "capture": "build/preview/captured_0053.png",
+    "decorations_file": "assets/decorations/avatar_lake_fossils_trial.json",
+    "decorations_fnv1a64": "3d35a2b2167ec164",
+    "decided_by": "user play judgment",
+    "note": "승인 시험 세트 파일과 runtime/trials 사본은 승격 뒤 삭제했다. 정식 기본 데이터(assets/decorations/avatar_lake.json)가 같은 8개 카메라 위치에서 이 시험 세트와 픽셀 동일함을 확인했고, 이미지별 원래 시험 파일 해시는 trial_sha256 에 남긴다."
+  },
+  "normalization": {
+    "role": "mechanical fossil fragment layer (candidate)",
+    "source": "assets/decorations/avatar_lake/source/fossil_raw_03.png",
+    "source_sha256": "90e1cfe5f69fca28879df8c46961aa503f2fc3a3f89672036fbc9240600e4fee",
+    "crop": {
+      "x": 0,
+      "y": 0,
+      "w": 1448,
+      "h": 1086,
+      "mode": "full canvas"
+    },
+    "sha256": "72abb38b6837698da7d1fcbf81d56701e688b759f4e96003097fa8243f064e47",
+    "size": [
+      64,
+      48
+    ],
+    "surface_row": 27,
+    "row_contract": {
+      "rows_0_9_empty": true,
+      "rows_32_47_empty": true
+    },
+    "occupied": {
+      "x": [
+        3,
+        61
+      ],
+      "y": [
+        11,
+        30
+      ]
+    },
+    "palette": [
+      [
+        0,
+        4,
+        0
+      ],
+      [
+        58,
+        45,
+        21
+      ],
+      [
+        99,
+        72,
+        29
+      ],
+      [
+        199,
+        135,
+        39
+      ],
+      [
+        223,
+        157,
+        39
+      ],
+      [
+        229,
+        168,
+        40
+      ]
+    ],
+    "nearest_brass_distance": [
+      53,
+      23,
+      42,
+      82,
+      113,
+      123
+    ],
+    "script": "build/orch/fossil_norm/normalize_fossil3.py"
+  }
+}
