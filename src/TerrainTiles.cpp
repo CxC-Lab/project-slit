@@ -27,6 +27,10 @@ Terrain::Tileset::Tileset(const std::filesystem::path& file)
             if(found==roles.end()) throw std::runtime_error("Unknown sampling role");
             const auto index=static_cast<unsigned>(found-roles.begin()), exposure=exposures[index];
             const auto mode=entry.at("mode").get<std::string>();
+            if(mode=="assembled" && (exposure&(N|S)) && (exposure&(W|E))) {
+                if(entry.contains("image")||entry.contains("flip"))throw std::runtime_error("Assembled sampling has no image or flip");
+                sampling[index]={Sampling::Assembled,{},false};continue;
+            }
             Sampling samplingMode;
             if(mode=="repeat2d" && exposure==0) samplingMode=Sampling::Repeat2D;
             else if(mode=="edge" && (exposure==N||exposure==S||exposure==W||exposure==E)) samplingMode=Sampling::Edge;
@@ -230,7 +234,7 @@ void TerrainTiles::render(sf::RenderTarget& target,const sf::FloatRect& visible)
         texture.setSmooth(false);
         texture_=std::move(texture);
     }
-    for(const auto& sample:set_.sampling) if(sample.mode!=Terrain::Sampling::Atlas &&
+    for(const auto& sample:set_.sampling) if((sample.mode==Terrain::Sampling::Repeat2D||sample.mode==Terrain::Sampling::Edge) &&
         std::none_of(images_.begin(),images_.end(),[&](const auto& t){return t.path==sample.image;})) {
         sf::Texture texture;
         if(!texture.loadFromFile(sample.image)) throw std::runtime_error("Cannot load sampling image: "+sample.image.string());

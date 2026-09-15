@@ -38,7 +38,7 @@ bool verticalRepeat(const J& cfg) {
     if(!cfg.contains("orientation"))return false; // Legacy north-facing manifests stay byte-compatible.
     const auto& o=cfg.at("orientation");const auto depth=o.at("depth_axis"),repeat=o.at("repeat_axis");
     require((depth=="x"&&repeat=="y"&&o.at("exposure")=="W")||
-            (depth=="y"&&repeat=="x"&&o.at("exposure")=="N"),"Unsupported orientation");
+            (depth=="y"&&repeat=="x"&&(o.at("exposure")=="N"||o.at("exposure")=="S")),"Unsupported orientation");
     require(o.at("seam_axis")==repeat&&o.at("opacity_axis")==depth,"Inconsistent inspection axes");
     return repeat=="y";
 }
@@ -339,35 +339,42 @@ void selfTest(const J& cfg) {
 // Approved-image derivation preserves source RGB; no raw segmentation or quantization.
 sf::Image crevice(const sf::Image& source,const J& cfg,unsigned& face) {
     const auto size=sizeOf(cfg.at("output_size")),input=source.getSize();const auto& d=cfg.at("derivation");
-    require(size.y==input.y&&size.x<=input.x,"Derived output must preserve source period");
-    require(d.at("face_rule")=="after_first_max_dark_column_wrap","Unsupported face rule");
+    const bool vertical=verticalRepeat(cfg);const unsigned depth=vertical?size.x:size.y,period=vertical?size.y:size.x;
+    const unsigned sourceDepth=vertical?input.x:input.y;
+    require(period==(vertical?input.y:input.x)&&depth<=sourceDepth,"Derived output must preserve source period");
+    require(vertical?d.at("face_rule")=="after_first_max_dark_column_wrap":d.at("face_rule")=="before_first_max_dark_row_wrap","Unsupported face rule");
     const auto weights=d.at("luminance_weights").get<std::array<double,3>>();
     for(double w:weights)require(std::isfinite(w)&&w>=0,"Invalid luminance weight");
     const double threshold=d.at("crevice_threshold").get<double>();require(std::isfinite(threshold),"Invalid crevice threshold");
     auto dark=[&](sf::Color p){return weights[0]*p.r+weights[1]*p.g+weights[2]*p.b<threshold;};
     unsigned best=0,maximum=0;
-    for(unsigned x=0;x<input.x;++x){unsigned count=0;for(unsigned y=0;y<input.y;++y)count+=dark(source.getPixel({x,y}));if(count>maximum){maximum=count;best=x;}}
-    face=(best+1)%input.x;
-    const unsigned full=number(d.at("full_columns"),1,size.x-1);
+    for(unsigned a=0;a<sourceDepth;++a){unsigned count=0;for(unsigned b=0;b<period;++b)count+=dark(source.getPixel(vertical?sf::Vector2u{a,b}:sf::Vector2u{b,a}));if(count>maximum){maximum=count;best=a;}}
+    face=(best+(vertical?1:sourceDepth-1))%sourceDepth;
+    const unsigned full=number(d.at(vertical?"full_columns":"full_rows"),1,depth-1);
     const auto& hash=d.at("hash");
-    const auto ym=number(hash.at("y_multiplier"),1,0xffffffffu),xm=number(hash.at("x_multiplier"),1,0xffffffffu);
+    // Legacy side hash fields remain supported without rewriting its manifest/report.
+    const J terms=hash.value("terms",J::array({{{"coordinate","repeat"},{"multiplier",hash.value("y_multiplier",0u)},{"offset",0}},{{"coordinate","depth"},{"multiplier",hash.value("x_multiplier",0u)},{"offset",1}}}));
+    require(terms.is_array()&&terms.size()==2,"Expected two XOR hash terms");
+    for(const auto& term:terms){require(term.at("coordinate")=="depth"||term.at("coordinate")=="repeat","Invalid hash coordinate");number(term.at("multiplier"),1,0xffffffffu);number(term.at("offset"));}
     const auto mask=number(hash.at("mask"),1,0xfffffffeu),range=number(hash.at("range"),1,0xffffffffu);
     require(range==mask+1&&(range&(range-1))==0,"Hash range must match power-of-two mask");
     sf::Image image(size,sf::Color::Transparent);
-    for(unsigned y=0;y<size.y;++y)for(unsigned x=0;x<size.x;++x){auto p=source.getPixel({(face+x)%input.x,y});
-        const auto h=((y*ym)^((x+1)*xm))&mask;
-        const double retention=std::max(0.0,1.0-(double(x)-double(full-1))/double(size.x-(full-1)));
-        if(dark(p)&&(x<full||h<static_cast<unsigned>(range*retention))){p.a=255;image.setPixel({x,y},p);}
+    for(unsigned y=0;y<size.y;++y)for(unsigned x=0;x<size.x;++x){
+        const unsigned distance=vertical?x:depth-1-y,along=vertical?y:x;
+        auto p=source.getPixel(vertical?sf::Vector2u{(face+distance)%sourceDepth,along}:sf::Vector2u{along,(face+sourceDepth-distance)%sourceDepth});
+        unsigned h=0;for(const auto& term:terms)h^=((term.at("coordinate")=="depth"?distance:along)+number(term.at("offset")))*number(term.at("multiplier"),1,0xffffffffu);h&=mask;
+        const double retention=std::max(0.0,1.0-(double(distance)-double(full-1))/double(depth-(full-1)));
+        if(dark(p)&&(distance<full||h<static_cast<unsigned>(range*retention))){p.a=255;image.setPixel({x,y},p);}
     }return image;
 }
 void derivedRun(const fs::path& manifest,const J& cfg,const fs::path& out,bool fixture) {
-    require(verticalRepeat(cfg),"Derived crevice requires vertical orientation");protect(out,manifest,cfg);
+    const bool vertical=verticalRepeat(cfg);require(vertical||cfg.at("orientation").at("exposure")=="S","Derived crevice requires W or S exposure");protect(out,manifest,cfg);
     if(fixture){
         sf::Image image(sf::Vector2u{16u,12u});for(unsigned y=0;y<12;++y)for(unsigned x=0;x<16;++x)
             image.setPixel({x,y},((x+2*y)%5==0||x==4)?sf::Color(30,40,50):sf::Color(160,170,180));
         Outputs files;png(files,"inner.png",image);auto local=cfg;
         local["source"]={{"path","inner.png"},{"expected_size",{16,12}},{"expected_sha256",sha256(files.at("inner.png"))}};
-        local["previews"]["inner"]="inner.png";local["output_size"]={12,12};local["checks"]["expected_size"]={12,12};
+        local["previews"]["inner"]="inner.png";local["output_size"]=vertical?J::array({12,12}):J::array({16,8});local["checks"]["expected_size"]=local["output_size"];
         json(files,"manifest.json",local);publish(out,files);return;
     }
     const auto source=resolved(manifest.parent_path()/cfg.at("source").at("path").get<std::string>());
@@ -380,13 +387,13 @@ void derivedRun(const fs::path& manifest,const J& cfg,const fs::path& out,bool f
     require(cfg.at("candidates").size()==1,"Derived mode requires one fixed candidate");
     for(const auto& candidate:cfg.at("candidates")){
         const auto id=candidate.at("id").get<std::string>();require(!id.empty()&&id.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-")==std::string::npos,"Invalid candidate id");
-        unsigned face=0;const auto image=crevice(inner,cfg,face);auto stats=seams(transpose(image));
+        unsigned face=0;const auto image=crevice(inner,cfg,face);auto stats=seams(vertical?transpose(image):image);
         unsigned partial=0;J colors=J::array();for(unsigned y=0;y<image.getSize().y;++y)for(unsigned x=0;x<image.getSize().x;++x){auto p=image.getPixel({x,y});partial+=p.a!=0&&p.a!=255;if(p.a&&std::find(colors.begin(),colors.end(),rgb(p))==colors.end())colors.push_back(rgb(p));}
         J checks{{"size",image.getSize()==sizeOf(cfg.at("checks").at("expected_size"))},{"binary_alpha",partial==0},
             {"color_seam",stats.at("color_seam_ratio").get<double>()<=cfg.at("checks").at("color_seam_ratio_max").get<double>()},
             {"alpha_seam",stats.at("alpha_edge_mismatches").get<double>()<=stats.at("alpha_internal_mean").get<double>()}};
         require(cfg.at("checks").at("alpha_seam")=="at_most_internal_mean","Unsupported alpha seam rule");
-        stats.update({{"id",id},{"face_column",face},{"palette_rgb",colors},{"checks",checks},{"status",classify(checks,cfg.at("checks"))}});
+        stats.update({{"id",id},{vertical?"face_column":"face_row",face},{"palette_rgb",colors},{"checks",checks},{"status",classify(checks,cfg.at("checks"))}});
         report["candidates"].push_back(stats);png(files,id+".png",image);
     }
     require(sha256(readBytes(source))==hash,"Source changed during run");report["source_sha256_after"]=hash;

@@ -171,6 +171,22 @@ void edgeChecks(const std::filesystem::path& avatarFile)
         check(sideImage.getPixel({10+x,y})==side.getPixel({x,y%7}),"west edge UV");
         check(sideImage.getPixel({49-x,y})==side.getPixel({x,y%7}),"east mirrored edge UV");
     }
+    // Assembled corners retain the base and adjacent bands, without an atlas quad.
+    auto assembled=sides;assembled["sampling"]["bottom"]=data["sampling"]["bottom"];
+    for(const auto* role:{"bottom_left","bottom_right"})assembled["sampling"][role]={{"mode","assembled"}};
+    write(assembled);const auto corners=draw({{{10,0},{80,100}}});
+    for(unsigned y=80;y<100;++y)for(unsigned x=10;x<90;++x){
+        if(x>=30&&x<70)continue;
+        auto expected=y>=92?sf::Color::Blue:sf::Color(10,20,30);
+        if(x<13)expected=side.getPixel({x-10,y%7});
+        if(x>=87)expected=side.getPixel({89-x,y%7});
+        check(corners.getPixel({x,y})==expected,"assembled corners contain only base and edge bands");
+    }
+    for(const auto* role:{"inner","bottom","slab"}){
+        auto invalid=assembled;invalid["sampling"][role]={{"mode","assembled"}};write(invalid);
+        bool rejected=false;try{Terrain::Tileset unused(config);}catch(const std::exception&){rejected=true;}
+        check(rejected,"assembled requires perpendicular exposure pair");
+    }
     for(const auto& [role,mode]:std::vector<std::pair<std::string,std::string>>{{"top","repeat2d"},{"inner","edge"},{"slab","edge"},{"slab","corner"},{"top_left","corner"},{"unknown","edge"}}){
         auto bad=data;bad["sampling"][role]={{"mode",mode},{"image","edge.png"}};write(bad);
         bool rejected=false;try{Terrain::Tileset invalid(config);}catch(const std::exception&){rejected=true;}

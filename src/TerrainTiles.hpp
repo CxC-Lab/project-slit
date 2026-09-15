@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace Terrain {
-enum class Sampling { Atlas, Repeat2D, Edge, Corner };
+enum class Sampling { Atlas, Repeat2D, Edge, Corner, Assembled };
 enum Exposure : unsigned { N=1, S=2, W=4, E=8 };
 inline constexpr std::array<const char*,10> roles{"inner","top","bottom","left","right",
     "top_left","top_right","bottom_left","bottom_right","slab"};

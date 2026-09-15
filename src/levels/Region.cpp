@@ -85,7 +85,7 @@ nlohmann::json Region::captureIdentity() const
 {
     nlohmann::json images=nlohmann::json::array();std::string hash;
     if(tiles_)for(unsigned i=0;i<Terrain::roles.size();++i){
-        const auto& sample=tiles_->sampling()[i];if(sample.mode==Terrain::Sampling::Atlas)continue;
+        const auto& sample=tiles_->sampling()[i];if(sample.mode==Terrain::Sampling::Atlas||sample.mode==Terrain::Sampling::Assembled)continue;
         std::ifstream input(sample.image,std::ios::binary);
         if(!input)throw std::runtime_error("Cannot identify sampling image: "+sample.image.string());
         std::uint64_t value=14695981039346656037ull;
