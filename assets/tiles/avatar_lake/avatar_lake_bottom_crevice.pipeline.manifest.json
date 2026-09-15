@@ -1,0 +1,71 @@
+{
+  "schema": 2,
+  "kind": "boundary_overlay",
+  "mode": "approved_inner_crevice",
+  "id": "avatar_lake_bottom_crevice",
+  "source": {
+    "path": "runtime/avatar_lake_inner_e0_full_120.png",
+    "expected_size": [
+      120,
+      120
+    ],
+    "expected_sha256": "af248e396f70ca8852b15912bcda0fb4b46b03938724ecfce20e5ff46d2afd8d"
+  },
+  "orientation": {
+    "exposure": "S",
+    "depth_axis": "y",
+    "repeat_axis": "x",
+    "seam_axis": "x",
+    "opacity_axis": "y"
+  },
+  "output_size": [
+    120,
+    8
+  ],
+  "derivation": {
+    "luminance_weights": [
+      0.299,
+      0.587,
+      0.114
+    ],
+    "crevice_threshold": 90,
+    "face_rule": "before_first_max_dark_row_wrap",
+    "hash": {
+      "terms": [
+        {
+          "coordinate": "depth",
+          "multiplier": 73856093,
+          "offset": 0
+        },
+        {
+          "coordinate": "repeat",
+          "multiplier": 19349663,
+          "offset": 1
+        }
+      ],
+      "mask": 1023,
+      "range": 1024
+    },
+    "full_rows": 3
+  },
+  "checks": {
+    "expected_size": [
+      120,
+      8
+    ],
+    "color_seam_ratio_max": 1.0,
+    "alpha_seam": "at_most_internal_mean"
+  },
+  "previews": {
+    "inner": "runtime/avatar_lake_inner_e0_full_120.png"
+  },
+  "candidates": [
+    {
+      "id": "crevice_v1",
+      "trial_runtime_candidate": true,
+      "trial_runtime_file": "runtime/trials/avatar_lake_bottom_crevice_v1_trial.png",
+      "approved_runtime_candidate": true,
+      "runtime_file": "runtime/avatar_lake_bottom_crevice_v1.png"
+    }
+  ]
+}

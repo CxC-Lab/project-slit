@@ -1,0 +1,81 @@
+{
+  "candidate" : "crevice_v1",
+  "classification" : "PASS",
+  "manifest" : 
+  {
+    "candidates" : 
+    [
+      {
+        "id" : "crevice_v1",
+        "trial_runtime_candidate" : true,
+        "trial_runtime_file" : "runtime/trials/avatar_lake_bottom_crevice_v1_trial.png"
+      }
+    ],
+    "checks" : 
+    {
+      "alpha_seam" : "at_most_internal_mean",
+      "color_seam_ratio_max" : 1.0,
+      "expected_size" : [ 120, 8 ]
+    },
+    "derivation" : 
+    {
+      "crevice_threshold" : 90,
+      "face_rule" : "before_first_max_dark_row_wrap",
+      "full_rows" : 3,
+      "hash" : 
+      {
+        "mask" : 1023,
+        "range" : 1024,
+        "terms" : 
+        [
+          {
+            "coordinate" : "depth",
+            "multiplier" : 73856093,
+            "offset" : 0
+          },
+          {
+            "coordinate" : "repeat",
+            "multiplier" : 19349663,
+            "offset" : 1
+          }
+        ]
+      },
+      "luminance_weights" : [ 0.29899999999999999, 0.58699999999999997, 0.114 ]
+    },
+    "id" : "avatar_lake_bottom_crevice",
+    "kind" : "boundary_overlay",
+    "mode" : "approved_inner_crevice",
+    "orientation" : 
+    {
+      "depth_axis" : "y",
+      "exposure" : "S",
+      "opacity_axis" : "y",
+      "repeat_axis" : "x",
+      "seam_axis" : "x"
+    },
+    "output_size" : [ 120, 8 ],
+    "previews" : 
+    {
+      "inner" : "runtime/avatar_lake_inner_e0_full_120.png"
+    },
+    "schema" : 2,
+    "source" : 
+    {
+      "expected_sha256" : "af248e396f70ca8852b15912bcda0fb4b46b03938724ecfce20e5ff46d2afd8d",
+      "expected_size" : [ 120, 120 ],
+      "path" : "runtime/avatar_lake_inner_e0_full_120.png"
+    }
+  },
+  "manifest_path" : "assets/tiles/avatar_lake/avatar_lake_bottom_crevice.pipeline.manifest.json",
+  "palette_rgb" : 
+  [
+    [ 83, 78, 116 ],
+    [ 92, 83, 119 ],
+    [ 76, 73, 113 ]
+  ],
+  "runtime_file" : "runtime/trials/avatar_lake_bottom_crevice_v1_trial.png",
+  "runtime_sha256" : "2edc170f59c628e6a5da4806a13f5389b0723bc2353c711eb4f95f29703cc7ed",
+  "schema" : 2,
+  "source_sha256" : "af248e396f70ca8852b15912bcda0fb4b46b03938724ecfce20e5ff46d2afd8d",
+  "status" : "trial"
+}
