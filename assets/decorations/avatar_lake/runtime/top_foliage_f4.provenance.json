@@ -1,0 +1,199 @@
+{
+  "status": "approved",
+  "role": "top 수풀 F4 넓고 낮은 파편형 군락. 긴 수평선을 낮게 끊는다",
+  "runtime_file": "top_foliage_f4.png",
+  "sha256": "90a10ac059f828877cd40fc967ebeda594143e08983e2be82b228bfbeb4cecfa",
+  "canvas": [
+    72,
+    22
+  ],
+  "visible_height": 15,
+  "placement_count": 3,
+  "placements": [
+    {
+      "id": "T5",
+      "position": [
+        1440,
+        403
+      ],
+      "layer": "above",
+      "flipX": false,
+      "zone": "lush",
+      "surface_y": 400,
+      "visible_px": 578,
+      "camouflaged": 0.036
+    },
+    {
+      "id": "T13",
+      "position": [
+        2600,
+        523
+      ],
+      "layer": "above",
+      "flipX": true,
+      "zone": "quiet",
+      "surface_y": 520,
+      "visible_px": 578,
+      "camouflaged": 0.0
+    },
+    {
+      "id": "T15",
+      "position": [
+        6800,
+        523
+      ],
+      "layer": "above",
+      "flipX": false,
+      "zone": "quiet",
+      "surface_y": 520,
+      "visible_px": 578,
+      "camouflaged": 0.0
+    }
+  ],
+  "placement_rule": "layer above. position.y = 윗면 y + 3: 아래 3행이 top 이끼띠 윗부분을 덮어 밑동이 이끼에서 자라난 것처럼 이어진다. 캔버스 전체가 윗면의 여유 구간(낭떠러지 끝 24px, 벽 끝 40px, 폭 300 미만 윗면의 가운데 80px, 머리 위 64px 미만, 기존 장식 ±8px 제외) 안",
+  "layer_decision": {
+    "date": "2026-09-19",
+    "approved_layer": "above",
+    "by": "사용자 판정",
+    "reason": "같은 좌표 비교에서 above 는 밑동이 이끼 끝을 덮어 이음매가 불규칙하게 섞였고, behind 는 이끼띠 윗선이 밑동 앞을 곧게 지나 수풀이 한 줄로 잘려 보였다",
+    "behind_record": "assets/decorations/avatar_lake_topfoliage_behind_record_trial.json (검증 기록 전용, 기본 데이터에 연결하지 않음)"
+  },
+  "judgment": {
+    "result": "PASS",
+    "date": "2026-09-19",
+    "by": "사용자 판정 (F4 독립 판정)",
+    "note": "윗선 높이 3~15px 로 오르내려 울타리·연속 이끼띠로 보이지 않음. 밑동이 폭 전체로 이어지므로 긴 지면에서는 간격을 넓게 둔다"
+  },
+  "trial_file": "runtime/trials/top_foliage_f4_trial.png",
+  "trial_sha256": "90a10ac059f828877cd40fc967ebeda594143e08983e2be82b228bfbeb4cecfa",
+  "approval": {
+    "date": "2026-09-19",
+    "decided_by": "user play judgment",
+    "trial_decorations_file": "assets/decorations/avatar_lake_topfoliage_trial.json",
+    "trial_decorations_fnv1a64": "0d6867a424f36903",
+    "captures": [
+      "build/orch/topfoliage/cap2/above/preview_1.png ~ preview_11.png",
+      "build/orch/topfoliage/judge/spots_x4_1.png ~ spots_x4_4.png",
+      "build/orch/topfoliage/judge/screen_01 ~ screen_11"
+    ],
+    "note": "16곳(above)의 좌표·반전·순서를 그대로 기본 데이터에 연결했다. 승격 뒤 시험 사본과 시험 JSON 은 build/orch/topfoliage/archive/ 로 옮겼다. 같은 좌표의 behind 세트는 avatar_lake_topfoliage_behind_record_trial.json 에 검증 기록으로 남기고 기본 데이터에는 연결하지 않는다."
+  },
+  "normalization": {
+    "role": "넓고 낮은 파편형 군락(독립 판정)",
+    "source": "assets/decorations/avatar_lake/source/top_foliage_raw_01.png",
+    "source_sha256": "fc0bd0942bf11a590134dcbad1f11987bbee81ea328217f6849c2c2adae66bba",
+    "zone_bbox": [
+      811,
+      692,
+      1489,
+      875
+    ],
+    "reduced_size": [
+      68,
+      18
+    ],
+    "canvas": [
+      72,
+      22
+    ],
+    "contract_canvas": [
+      72,
+      22
+    ],
+    "offset": [
+      2,
+      4
+    ],
+    "buried_rows": 3,
+    "visible_height": 15,
+    "rule": "마젠타 제거 → 빈 가로 띠로 2행, 빈 세로 띠로 행마다 2구역 → 구역 bbox 를 보간 없이 정확히 1/10(셀 최빈색, 50% 이상 불투명) → 캔버스 가로 중앙·아래쪽 정렬 → 네 구역 공통 밝기 순위로 승인 top 팔레트 8색 스냅(14/16/12/16/14/14/10/4%)",
+    "opaque_pixels": 693,
+    "palette": {
+      "(89, 127, 36)": 109,
+      "(51, 80, 40)": 109,
+      "(73, 109, 38)": 102,
+      "(31, 55, 36)": 98,
+      "(27, 46, 33)": 96,
+      "(40, 65, 40)": 88,
+      "(113, 148, 36)": 66,
+      "(142, 170, 41)": 25
+    },
+    "bright_ratio": 0.0361,
+    "shape": {
+      "visible_bbox": [
+        67,
+        15
+      ],
+      "visible_opaque": 578,
+      "fill": 0.575,
+      "enclosed_holes": 2,
+      "pieces": 1,
+      "gaps_plus_pieces": 2,
+      "top_concavities": 4,
+      "flat_top_run": 5,
+      "top_profile_std": 3.2,
+      "platform_run_top40": 14,
+      "base_rows_coverage": [
+        0.99,
+        0.99,
+        0.68,
+        0.03
+      ],
+      "lr_mirror_difference": 0.148,
+      "top_concavities_whole_profile": 5
+    },
+    "checks": {
+      "palette": true,
+      "bright": true,
+      "lr_mirror": false,
+      "fill": true,
+      "internal_gaps": true,
+      "top_concavities": false,
+      "flat_top_run": true,
+      "top_profile_std": true,
+      "platform_width": true,
+      "base_contact": false,
+      "alpha_magenta": true,
+      "size_difference": true
+    },
+    "thresholds": {
+      "gaps": 2,
+      "conc": 5,
+      "flat": 10,
+      "std": 2.0
+    },
+    "script": "build/orch/topfoliage/normalize_top_foliage.py",
+    "size_difference": {
+      "visible_area": {
+        "F1": 153,
+        "F2": 340,
+        "F3": 765,
+        "F4": 578
+      },
+      "F2/F1": 2.22,
+      "F3/F2": 2.25,
+      "F4_w_over_visible_h": 4.47
+    },
+    "gate": {
+      "date": "2026-09-19",
+      "result": "통과(명백한 실패 없음)",
+      "raw": {
+        "size": [
+          1536,
+          1024
+        ],
+        "channels": "RGB 8bit",
+        "background": [
+          252,
+          3,
+          250
+        ],
+        "zone_bbox_within_order_max": true,
+        "tolerance_used": false
+      },
+      "note": "잎 군집 뒤에 평탄한 올리브 후광 면((88,110,14) 부근, 구역별 약 8~20%)이 있다. 발광은 아니며 원본 형태의 일부로 보고 제거하지 않았다. 게임 화면에서 윤곽 테두리로 보이는지 판정 항목"
+    },
+    "checks_note": "top_concavities 는 raw02 에서 쓰던 좌우 6열 창으로 쟀다. 주문서 정의(윗쪽 외곽선에서 깊이 2px 이상인 골)에 창 제한이 없어 창 없이도 쟀다: 5 (기준 5). 기준은 바꾸지 않았고 checks 값은 6열 창 결과 그대로다. 불통과 항목은 기록에서 지우지 않는다",
+    "sha256": "90a10ac059f828877cd40fc967ebeda594143e08983e2be82b228bfbeb4cecfa"
+  }
+}

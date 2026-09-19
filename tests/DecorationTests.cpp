@@ -18,9 +18,9 @@ int main() try {
     const Region region(root/"assets/regions/avatar_lake.json");
     check(region.decorationFile().has_value(),"region default exists");
     Decorations real(*region.decorationFile());
-    // Approved placements in draw order (ADR 0012): 15 fossil/rock/vine items, then 52 wall vegetation items.
-    // A missing, added, moved, relayered, reflipped or reordered item fails here; per-item runtime path, approved
-    // provenance and hash are checked by approved_decoration_checks.
+    // Approved placements in draw order (ADR 0012): 15 fossil/rock/vine items, 52 wall vegetation items, then
+    // 16 top foliage items. A missing, added, moved, relayered, reflipped or reordered item fails here; per-item
+    // runtime path, approved provenance and hash are checked by approved_decoration_checks.
     const std::vector<std::tuple<std::string,int,int,std::string,bool>> approved{
         {"fossil01_ammonite",275,501,"behind",false},{"fossil01_ammonite",886,541,"behind",true},
         {"fossil02_relic",3100,541,"behind",false},{"fossil02_relic",9120,-809,"behind",true},
@@ -42,7 +42,12 @@ int main() try {
         {"wall_vine_w1",8712,-160,"above",true},{"wall_vine_w2",8674,124,"above",true},{"wall_vine_w1",8620,376,"above",false},{"wall_vine_w1",9160,-678,"above",false},
         {"wall_vine_w2",9094,-454,"above",true},{"wall_vine_w1",9057,-248,"above",true},{"wall_vine_w2",9130,34,"above",false},{"wall_vine_w1",9080,292,"above",true},
         {"wall_vine_w1",8298,396,"above",false},{"wall_vine_w2",9136,426,"above",true},{"wall_vine_w2",8472,590,"above",false},{"wall_vine_w1",8264,-240,"above",true},
-        {"wall_vine_w1",8642,-410,"above",false},{"wall_vine_w1",9125,-402,"above",false},{"wall_vine_w1",8761,86,"above",true},{"wall_vine_w1",9080,72,"above",true}};
+        {"wall_vine_w1",8642,-410,"above",false},{"wall_vine_w1",9125,-402,"above",false},{"wall_vine_w1",8761,86,"above",true},{"wall_vine_w1",9080,72,"above",true},
+        // Top foliage F1-F4 (top_foliage_raw_01), 16 placements in approved order.
+        {"top_foliage_f3",120,-97,"above",false},{"top_foliage_f1",172,-97,"above",true},{"top_foliage_f2",330,-97,"above",true},{"top_foliage_f3",1250,403,"above",true},
+        {"top_foliage_f4",1440,403,"above",false},{"top_foliage_f2",904,283,"above",false},{"top_foliage_f2",6650,-1947,"above",true},{"top_foliage_f1",7190,-1797,"above",false},
+        {"top_foliage_f2",6850,-1497,"above",false},{"top_foliage_f1",8642,-2177,"above",true},{"top_foliage_f1",8420,523,"above",false},{"top_foliage_f2",1800,523,"above",false},
+        {"top_foliage_f4",2600,523,"above",true},{"top_foliage_f3",4300,523,"above",false},{"top_foliage_f4",6800,523,"above",false},{"top_foliage_f3",9330,523,"above",true}};
     std::ifstream actual(*region.decorationFile());const auto items=J::parse(actual).at("items");
     check(items.size()==approved.size(),"approved default item count");
     for(std::size_t i=0;i<approved.size();++i){
