@@ -98,6 +98,42 @@
       ],
       "layer": "behind",
       "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/vine_mid.png",
+      "position": [
+        876,
+        454
+      ],
+      "layer": "above",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/vine_short.png",
+      "position": [
+        1062,
+        434
+      ],
+      "layer": "above",
+      "flipX": true
+    },
+    {
+      "image": "avatar_lake/runtime/vine_long.png",
+      "position": [
+        352,
+        138
+      ],
+      "layer": "above",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/vine_mid.png",
+      "position": [
+        232,
+        244
+      ],
+      "layer": "above",
+      "flipX": true
     }
   ]
 }

@@ -1,0 +1,91 @@
+{
+  "status": "approved",
+  "role": "매달린 덩굴 짧은형. 암벽 아랫면에서 아래로 매달린다",
+  "runtime_file": "vine_short.png",
+  "sha256": "6adb52d9b6613178827fe9180e5344163ac251e713ae0edcbf1923147470e0c9",
+  "placements": [
+    {
+      "position": [
+        1062,
+        434
+      ],
+      "layer": "above",
+      "flipX": true
+    }
+  ],
+  "attachment": "기준점은 이미지 아래 가장자리 중앙이다. position = 부착면 y + 캔버스 높이 - 2. 위 2행이 지형 아랫면과 겹쳐 뿌리가 암반에서 자라 나온 것처럼 보인다",
+  "trial_file": "runtime/trials/vine_short_trial.png",
+  "trial_sha256": "6adb52d9b6613178827fe9180e5344163ac251e713ae0edcbf1923147470e0c9",
+  "approval": {
+    "date": "2026-09-16",
+    "captures": [
+      "build/orch/vine/cap/vine2/preview_1.png",
+      "build/orch/vine/cap/vine2/preview_2.png"
+    ],
+    "trial_decorations_file": "assets/decorations/avatar_lake_vine_trial.json",
+    "trial_decorations_fnv1a64": "16c7e63eeca4f042",
+    "decided_by": "user play judgment",
+    "note": "위치를 각 2px 올려 위 2행이 지형 아랫면과 겹치게 한 배치를 승인했다. 승격 뒤 시험 사본과 시험 JSON 은 삭제했고, 정식 데이터가 같은 두 화면에서 시험 세트와 픽셀 동일함을 확인했다."
+  },
+  "normalization": {
+    "role": "매달린 덩굴 시험 (vine_short_trial)",
+    "source": "assets/decorations/avatar_lake/source/vine_raw_01.png",
+    "source_sha256": "9347731d76edc49da14543040583fe224f1939a4917e640d62e6b2794f29306a",
+    "component_bbox": [
+      141,
+      194,
+      315,
+      548
+    ],
+    "reduced_size": [
+      18,
+      36
+    ],
+    "canvas": [
+      20,
+      36
+    ],
+    "x_offset": 1,
+    "rule": "배경 분리 → 연결 성분 3개 → bbox 를 1/10(반올림)로 보간 없이 축소(셀 최빈색, 50% 이상 불투명) → 캔버스 위쪽 정렬·가로 중앙 → 세 성분 공통 밝기 순위로 승인 top 팔레트 8색에 스냅",
+    "sha256": "6adb52d9b6613178827fe9180e5344163ac251e713ae0edcbf1923147470e0c9",
+    "opaque_pixels": 309,
+    "opaque_bbox": {
+      "x": [
+        1,
+        18
+      ],
+      "y": [
+        0,
+        35
+      ]
+    },
+    "palette": {
+      "(51, 80, 40)": 58,
+      "(73, 109, 38)": 54,
+      "(89, 127, 36)": 43,
+      "(31, 55, 36)": 40,
+      "(40, 65, 40)": 38,
+      "(27, 46, 33)": 37,
+      "(113, 148, 36)": 34,
+      "(142, 170, 41)": 5
+    },
+    "palette_size": 8,
+    "bright_pixels": 5,
+    "bright_ratio": 0.0162,
+    "root_width_top3": 15,
+    "root_width_ratio": 0.75,
+    "bottom_end_stdev": 8.84,
+    "longest_vertical_run": 36,
+    "longest_run_ratio": 1.0,
+    "longest_thin_run": 2,
+    "flip_difference_px": 330,
+    "flip_difference_ratio": 0.458,
+    "magenta_left": [],
+    "alpha_values": [
+      0,
+      255
+    ],
+    "colors_in_top_palette": true,
+    "script": "build/orch/vine/normalize_vines.py"
+  }
+}

@@ -4,6 +4,9 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <string>
+#include <tuple>
+#include <vector>
 using J=nlohmann::json;
 void check(bool value,const char* reason){if(!value)throw std::runtime_error(reason);}
 int main() try {
@@ -15,7 +18,24 @@ int main() try {
     const Region region(root/"assets/regions/avatar_lake.json");
     check(region.decorationFile().has_value(),"region default exists");
     Decorations real(*region.decorationFile());
-    std::ifstream actual(*region.decorationFile());check(J::parse(actual).at("items").size()==11,"approved default contains eleven items");
+    // Approved placements in draw order (ADR 0012). A missing, added, moved, relayered, reflipped or reordered
+    // item fails here; per-item runtime path, approved provenance and hash are checked by approved_decoration_checks.
+    const std::vector<std::tuple<std::string,int,int,std::string,bool>> approved{
+        {"fossil01_ammonite",275,501,"behind",false},{"fossil01_ammonite",886,541,"behind",true},
+        {"fossil02_relic",3100,541,"behind",false},{"fossil02_relic",9120,-809,"behind",true},
+        {"fossil03_fragments",2000,541,"behind",false},{"fossil03_foreground_x2000",2000,536,"above",false},
+        {"fossil03_fragments",5600,541,"behind",true},{"fossil03_foreground_x5600",5600,536,"above",false},
+        {"rock_chip_a",916,523,"above",false},{"rock_chip_b",9523,-1200,"above",true},{"rock_boulder",8250,-1255,"behind",false},
+        {"vine_mid",876,454,"above",false},{"vine_short",1062,434,"above",true},
+        {"vine_long",352,138,"above",false},{"vine_mid",232,244,"above",true}};
+    std::ifstream actual(*region.decorationFile());const auto items=J::parse(actual).at("items");
+    check(items.size()==approved.size(),"approved default item count");
+    for(std::size_t i=0;i<approved.size();++i){
+        const auto& [name,x,y,layer,flip]=approved[i];const auto& item=items[i];
+        check(item.at("image").get<std::string>()=="avatar_lake/runtime/"+name+".png","approved image in draw order");
+        check(item.at("position")[0].get<double>()==x&&item.at("position")[1].get<double>()==y,"approved position");
+        check(item.at("layer").get<std::string>()==layer&&item.at("flipX").get<bool>()==flip,"approved layer and flip");
+    }
     const auto selection=selectDecorations(region.decorationFile(),"",false);
     check(selection.file==region.decorationFile()&&std::string(selection.mode)=="region_default","default rule");
     check(!selectDecorations(region.decorationFile(),"none",false).file,"none disables default");
