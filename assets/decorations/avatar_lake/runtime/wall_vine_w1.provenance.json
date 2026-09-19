@@ -1,0 +1,438 @@
+{
+  "status": "approved",
+  "role": "벽면 식생 W1 작은 균열 군집. W2 사이의 작은 균열과 빈 공간을 채우는 보조 패치",
+  "runtime_file": "wall_vine_w1.png",
+  "sha256": "938b6d0f4bb2e9c1fddc90d758af4aecd10dbc32ca7eff7f706f58f36419c52c",
+  "canvas": [
+    24,
+    36
+  ],
+  "placement_count": 28,
+  "placements": [
+    {
+      "id": "L2",
+      "position": [
+        266,
+        -22
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "inner",
+      "zone": "lush"
+    },
+    {
+      "id": "L4",
+      "position": [
+        646,
+        50
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "top",
+      "zone": "lush"
+    },
+    {
+      "id": "L7",
+      "position": [
+        76,
+        130
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "inner",
+      "zone": "lush"
+    },
+    {
+      "id": "M2",
+      "position": [
+        422,
+        594
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "M4",
+      "position": [
+        794,
+        562
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "C2",
+      "position": [
+        1001,
+        424
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "edge",
+      "zone": "normal"
+    },
+    {
+      "id": "C4",
+      "position": [
+        1356,
+        536
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "G2",
+      "position": [
+        2598,
+        590
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "inner",
+      "zone": "quiet"
+    },
+    {
+      "id": "G4",
+      "position": [
+        4234,
+        594
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "inner",
+      "zone": "quiet"
+    },
+    {
+      "id": "G6",
+      "position": [
+        5910,
+        594
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "inner",
+      "zone": "quiet"
+    },
+    {
+      "id": "G8",
+      "position": [
+        7536,
+        578
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "inner",
+      "zone": "quiet"
+    },
+    {
+      "id": "P1b",
+      "position": [
+        8240,
+        -1016
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "inner",
+      "zone": "quiet"
+    },
+    {
+      "id": "P1d",
+      "position": [
+        8312,
+        -526
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "P1f",
+      "position": [
+        8320,
+        -78
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "P2b",
+      "position": [
+        8738,
+        -1822
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "inner",
+      "zone": "quiet"
+    },
+    {
+      "id": "P2d",
+      "position": [
+        8780,
+        -1216
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "edge",
+      "zone": "quiet"
+    },
+    {
+      "id": "P2f",
+      "position": [
+        8638,
+        -696
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "P2h",
+      "position": [
+        8712,
+        -160
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "P2j",
+      "position": [
+        8620,
+        376
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "edge",
+      "zone": "normal"
+    },
+    {
+      "id": "P3a",
+      "position": [
+        9160,
+        -678
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "P3c",
+      "position": [
+        9057,
+        -248
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "edge",
+      "zone": "normal"
+    },
+    {
+      "id": "P3e",
+      "position": [
+        9080,
+        292
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "P1h",
+      "position": [
+        8298,
+        396
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "A1",
+      "position": [
+        8264,
+        -240
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "A2",
+      "position": [
+        8642,
+        -410
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "A3",
+      "position": [
+        9125,
+        -402
+      ],
+      "layer": "above",
+      "flipX": false,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "A4",
+      "position": [
+        8761,
+        86
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "inner",
+      "zone": "normal"
+    },
+    {
+      "id": "A5",
+      "position": [
+        9080,
+        72
+      ],
+      "layer": "above",
+      "flipX": true,
+      "type": "inner",
+      "zone": "normal"
+    }
+  ],
+  "placement_rule": "기준점은 이미지 아래 가장자리 중앙. 모두 above. inner·top 시작 배치는 불투명 픽셀의 98% 이상, 가장자리 안쪽 배치는 70% 이상이 순수 inner 위. top 시작은 position.y = 윗면 y + 16 - 2 + 캔버스 높이, 가장자리 안쪽은 불투명 끝을 면에서 6~8px 안쪽. 계획 위치 주변 ±16px(막히면 ±40px)에서 식생의 어두운 픽셀이 어두운 균열 위에 오고 중심이 주황 하이라이트를 피하는 곳을 골랐다",
+  "trial_file": "runtime/trials/wall_vine02_w1_24x36_trial.png",
+  "trial_sha256": "938b6d0f4bb2e9c1fddc90d758af4aecd10dbc32ca7eff7f706f58f36419c52c",
+  "judgment": {
+    "date": "2026-09-19",
+    "by": "사용자 플레이 판정 (판정 자료: build/orch/wallvine2/judge/, build/orch/wallvine2/final/)",
+    "result": "PASS",
+    "final_candidate_canvas": [
+      24,
+      36
+    ],
+    "size_decision": "현재 시험 캔버스(정확한 1/10)를 최종 후보로 유지. 확대하지 않음",
+    "internal_gaps_exception": {
+      "automatic_check": "FAIL (checks.internal_gaps=false, 기준 3 이상, 실측 1)",
+      "approved_by": "육안 판정 예외 (사용자)",
+      "evidence": [
+        "식생 bbox 안 암벽 노출 54.2%, 외곽 오목 6곳",
+        "열린 오목 공간 사이로 암벽 결이 보임",
+        "실제 화면에서 속이 찬 녹색 판으로 보이지 않음"
+      ]
+    }
+  },
+  "approval": {
+    "date": "2026-09-19",
+    "decided_by": "user play judgment",
+    "trial_decorations_file": "assets/decorations/avatar_lake_wallvine02_final_trial.json",
+    "trial_decorations_fnv1a64": "2f498556395e2272",
+    "captures": [
+      "build/orch/wallvine2/final/cap/final/preview_1.png ~ preview_25.png",
+      "build/orch/wallvine2/final/rep_lush_C1.png",
+      "build/orch/wallvine2/final/rep_normal_C3.png",
+      "build/orch/wallvine2/final/rep_normal_pillars23.png",
+      "build/orch/wallvine2/final/rep_quiet_ground_W2.png"
+    ],
+    "note": "최종 후보 52곳(W1 28, W2 24)의 좌표·반전·레이어·순서를 그대로 기본 데이터에 연결했다. 승격 뒤 시험 사본과 시험 JSON 은 build/orch/wallvine2/archive/ 로 옮겼고, 정식 데이터가 같은 25개 화면에서 시험 세트와 픽셀 동일함을 확인했다."
+  },
+  "normalization": {
+    "role": "벽면 식생 패치 W1 크기 비교 시험 (wall_vine02_w1_24x36_trial)",
+    "source": "assets/decorations/avatar_lake/source/wall_vine_raw_02.png",
+    "source_sha256": "4fdbf2ea7cce9dc37a3b50cd59010d1f7e779b806e0a863dcd355e151b395f3a",
+    "zone_bbox": [
+      74,
+      365,
+      307,
+      711
+    ],
+    "reduced_size": [
+      23,
+      35
+    ],
+    "canvas": [
+      24,
+      36
+    ],
+    "offset": [
+      0,
+      1
+    ],
+    "contract_canvas": [
+      28,
+      28
+    ],
+    "size_note": "원본 구역을 보간 없이 정확히 1/10 로 축소했다. 잘라내기·배율 변경·비율 변경·형태 보정 없음. 원본 구역이 주문 최대 크기를 넘어 raw02 주문서의 최초 캔버스 28x28 보다 크다. 2026-09-19 사용자 승인으로 이 캔버스가 최종 캔버스가 됐고, 주문서 판정 결과 표에 승인 캔버스로 기록했다.",
+    "rule": "마젠타 배경 제거 → 완전히 빈 세로 띠로 세 구역 분리 → 구역 bbox 를 1/10 로 보간 없이 축소(셀 최빈색, 50% 이상 불투명) → 캔버스 가로 중앙·아래쪽 정렬 → 세 구역 공통 밝기 순위로 승인 top 팔레트 8색에 스냅(매달린 덩굴과 같은 비율)",
+    "empty_band_widths": [
+      122,
+      49
+    ],
+    "opaque_pixels": 369,
+    "palette": {
+      "(40, 65, 40)": 63,
+      "(51, 80, 40)": 62,
+      "(31, 55, 36)": 60,
+      "(89, 127, 36)": 59,
+      "(27, 46, 33)": 45,
+      "(73, 109, 38)": 43,
+      "(113, 148, 36)": 33,
+      "(142, 170, 41)": 4
+    },
+    "palette_size": 8,
+    "required_present": true,
+    "bright_ratio": 0.0108,
+    "colors_in_top_palette": true,
+    "alpha_values": [
+      0,
+      255
+    ],
+    "magenta_left": [],
+    "shape": {
+      "thin_stem_px": 8,
+      "thin_stem_ratio": 0.222,
+      "parallel_branches": 0,
+      "outer_concavities": 6,
+      "enclosed_holes": 1,
+      "pieces": 1,
+      "gaps_plus_pieces": 1,
+      "cluster_area_ratio": 15.54,
+      "fill_ratio": 0.458,
+      "lr_mirror_difference": 0.419,
+      "tb_mirror_difference": 0.336
+    },
+    "checks": {
+      "thin_stem": true,
+      "parallel_branches": true,
+      "outer_concavities": true,
+      "internal_gaps": false,
+      "cluster_size": true,
+      "lr_mirror": true,
+      "fill": true,
+      "bright": true,
+      "palette": true,
+      "alpha_magenta": true
+    },
+    "checks_note": "internal_gaps(내부 틈+조각 3 이상)는 공식 불통과로 유지한다. 열린 오목 공간의 시각 역할은 합성 화면의 암벽 노출 비율로 별도 판정한다.",
+    "script": "build/orch/wallvine2/normalize_wall_vines02.py",
+    "sha256": "938b6d0f4bb2e9c1fddc90d758af4aecd10dbc32ca7eff7f706f58f36419c52c"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "status": "rejected",
+  "role": "부착형 벽 덩굴 시험 (wall_vine_long_trial)",
+  "source": "assets/decorations/avatar_lake/source/wall_vine_raw_01.png",
+  "source_sha256": "8756bf9f93e3e293ed79d1d954b47e46022f715f07d37b7c30d88d40d241e9f5",
+  "component_bbox": [
+    1055,
+    188,
+    1319,
+    892
+  ],
+  "reduced_size": [
+    26,
+    70
+  ],
+  "canvas": [
+    36,
+    72
+  ],
+  "offset": [
+    0,
+    2
+  ],
+  "rule": "배경 분리 → 연결 성분 3개 → bbox 를 1/10(반올림)로 보간 없이 축소(셀 최빈색, 50% 이상 불투명) → 캔버스 왼쪽 0열·아래쪽 정렬 → 세 성분 공통 밝기 순위로 승인 top 팔레트 8색에 스냅(매달린 덩굴과 같은 비율)",
+  "sha256": "616795513a585c6d5d2580637fec1309ebcafc1dfd4190621306db025112dd81",
+  "opaque_pixels": 876,
+  "palette": {
+    "(51, 80, 40)": 157,
+    "(31, 55, 36)": 142,
+    "(73, 109, 38)": 126,
+    "(40, 65, 40)": 124,
+    "(89, 127, 36)": 111,
+    "(27, 46, 33)": 108,
+    "(113, 148, 36)": 82,
+    "(142, 170, 41)": 26
+  },
+  "palette_size": 8,
+  "required_present": true,
+  "bright_ratio": 0.0297,
+  "colors_in_top_palette": true,
+  "alpha_values": [
+    0,
+    255
+  ],
+  "magenta_left": [],
+  "attach_runs": [
+    [
+      3,
+      6
+    ],
+    [
+      14,
+      14
+    ],
+    [
+      18,
+      19
+    ],
+    [
+      21,
+      22
+    ],
+    [
+      25,
+      29
+    ],
+    [
+      35,
+      36
+    ],
+    [
+      42,
+      42
+    ],
+    [
+      44,
+      44
+    ],
+    [
+      46,
+      47
+    ],
+    [
+      54,
+      56
+    ],
+    [
+      60,
+      60
+    ],
+    [
+      63,
+      64
+    ]
+  ],
+  "attach_run_count": 12,
+  "attach_gaps": [
+    7,
+    3,
+    1,
+    2,
+    5,
+    5,
+    1,
+    1,
+    6,
+    3,
+    2
+  ],
+  "attach_coverage": 0.37,
+  "longest_thin_run": 1,
+  "outer_straight_run": 5,
+  "outer_straight_ratio": 0.07,
+  "outer_concavities": 2,
+  "vertical_mirror_difference": 0.461,
+  "bottom_end_stdev": 11.71,
+  "main_cluster_row": 12,
+  "main_cluster_rel": 0.17,
+  "leaf_to_stem_width_ratio": 23.0,
+  "script": "build/orch/wallvine/normalize_wall_vines.py",
+  "judgment": {
+    "result": "FAIL",
+    "date": "2026-09-19",
+    "reasons": [
+      "암벽 앞면 배치(B안)에서 곧은 세로 줄기와 가로 옆가지가 E자·빗으로 두드러짐",
+      "공기 쪽 배치(A안)는 inner 120px 반복을 줄이지 못함(0%p)",
+      "줄기가 가장자리 밴드 위에 있어 순수 inner 위 비율 17~45%"
+    ],
+    "disposition": "불채택(rejected). raw02 로 대체. 기록으로만 보존하며 어떤 데이터도 참조하지 않는다"
+  }
+}

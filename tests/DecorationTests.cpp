@@ -18,8 +18,9 @@ int main() try {
     const Region region(root/"assets/regions/avatar_lake.json");
     check(region.decorationFile().has_value(),"region default exists");
     Decorations real(*region.decorationFile());
-    // Approved placements in draw order (ADR 0012). A missing, added, moved, relayered, reflipped or reordered
-    // item fails here; per-item runtime path, approved provenance and hash are checked by approved_decoration_checks.
+    // Approved placements in draw order (ADR 0012): 15 fossil/rock/vine items, then 52 wall vegetation items.
+    // A missing, added, moved, relayered, reflipped or reordered item fails here; per-item runtime path, approved
+    // provenance and hash are checked by approved_decoration_checks.
     const std::vector<std::tuple<std::string,int,int,std::string,bool>> approved{
         {"fossil01_ammonite",275,501,"behind",false},{"fossil01_ammonite",886,541,"behind",true},
         {"fossil02_relic",3100,541,"behind",false},{"fossil02_relic",9120,-809,"behind",true},
@@ -27,7 +28,21 @@ int main() try {
         {"fossil03_fragments",5600,541,"behind",true},{"fossil03_foreground_x5600",5600,536,"above",false},
         {"rock_chip_a",916,523,"above",false},{"rock_chip_b",9523,-1200,"above",true},{"rock_boulder",8250,-1255,"behind",false},
         {"vine_mid",876,454,"above",false},{"vine_short",1062,434,"above",true},
-        {"vine_long",352,138,"above",false},{"vine_mid",232,244,"above",true}};
+        {"vine_long",352,138,"above",false},{"vine_mid",232,244,"above",true},
+        // Wall vegetation W1/W2 (wall_vine_raw_02), 52 placements in approved order.
+        {"wall_vine_w2",128,-42,"above",false},{"wall_vine_w1",266,-22,"above",true},{"wall_vine_w2",405,31,"above",true},{"wall_vine_w1",646,50,"above",false},
+        {"wall_vine_w1",76,130,"above",false},{"wall_vine_w2",162,116,"above",true},{"wall_vine_w2",156,592,"above",false},{"wall_vine_w1",422,594,"above",true},
+        {"wall_vine_w2",634,536,"above",true},{"wall_vine_w1",794,562,"above",false},{"wall_vine_w2",971,338,"above",true},{"wall_vine_w1",1001,424,"above",false},
+        {"wall_vine_w2",1284,458,"above",false},{"wall_vine_w1",1356,536,"above",true},{"wall_vine_w2",1762,590,"above",true},{"wall_vine_w1",2598,590,"above",false},
+        {"wall_vine_w2",3448,586,"above",false},{"wall_vine_w1",4234,594,"above",true},{"wall_vine_w2",5062,592,"above",true},{"wall_vine_w1",5910,594,"above",false},
+        {"wall_vine_w2",6738,586,"above",false},{"wall_vine_w1",7536,578,"above",true},{"wall_vine_w2",8306,-1222,"above",false},{"wall_vine_w1",8240,-1016,"above",true},
+        {"wall_vine_w2",8233,-750,"above",false},{"wall_vine_w1",8312,-526,"above",false},{"wall_vine_w2",8294,-304,"above",true},{"wall_vine_w1",8320,-78,"above",true},
+        {"wall_vine_w2",8252,150,"above",false},{"wall_vine_w2",8694,-2122,"above",true},{"wall_vine_w1",8738,-1822,"above",false},{"wall_vine_w2",8668,-1496,"above",false},
+        {"wall_vine_w1",8780,-1216,"above",true},{"wall_vine_w2",8720,-962,"above",true},{"wall_vine_w1",8638,-696,"above",false},{"wall_vine_w2",8768,-422,"above",false},
+        {"wall_vine_w1",8712,-160,"above",true},{"wall_vine_w2",8674,124,"above",true},{"wall_vine_w1",8620,376,"above",false},{"wall_vine_w1",9160,-678,"above",false},
+        {"wall_vine_w2",9094,-454,"above",true},{"wall_vine_w1",9057,-248,"above",true},{"wall_vine_w2",9130,34,"above",false},{"wall_vine_w1",9080,292,"above",true},
+        {"wall_vine_w1",8298,396,"above",false},{"wall_vine_w2",9136,426,"above",true},{"wall_vine_w2",8472,590,"above",false},{"wall_vine_w1",8264,-240,"above",true},
+        {"wall_vine_w1",8642,-410,"above",false},{"wall_vine_w1",9125,-402,"above",false},{"wall_vine_w1",8761,86,"above",true},{"wall_vine_w1",9080,72,"above",true}};
     std::ifstream actual(*region.decorationFile());const auto items=J::parse(actual).at("items");
     check(items.size()==approved.size(),"approved default item count");
     for(std::size_t i=0;i<approved.size();++i){

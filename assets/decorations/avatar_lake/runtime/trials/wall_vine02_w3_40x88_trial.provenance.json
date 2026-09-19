@@ -1,0 +1,94 @@
+{
+  "status": "rejected",
+  "role": "벽면 식생 패치 W3 크기 비교 시험 (wall_vine02_w3_40x88_trial)",
+  "source": "assets/decorations/avatar_lake/source/wall_vine_raw_02.png",
+  "source_sha256": "4fdbf2ea7cce9dc37a3b50cd59010d1f7e779b806e0a863dcd355e151b395f3a",
+  "zone_bbox": [
+    1010,
+    124,
+    1399,
+    973
+  ],
+  "reduced_size": [
+    39,
+    85
+  ],
+  "canvas": [
+    40,
+    88
+  ],
+  "offset": [
+    0,
+    3
+  ],
+  "contract_canvas": [
+    48,
+    72
+  ],
+  "size_note": "원본 구역을 보간 없이 정확히 1/10 로 축소했다. 잘라내기·배율 변경·비율 변경·형태 보정 없음. raw02 주문서의 최초 캔버스 48x72 보다 크다(원본 구역이 주문 최대 크기를 넘음). 사용자 승인 전의 크기 비교용 trial 예외(2026-09-19 사용자 결정 '가')이며, 정식 승격 시 주문서와 최종 캔버스를 다시 일치시켜야 한다.",
+  "rule": "마젠타 배경 제거 → 완전히 빈 세로 띠로 세 구역 분리 → 구역 bbox 를 1/10 로 보간 없이 축소(셀 최빈색, 50% 이상 불투명) → 캔버스 가로 중앙·아래쪽 정렬 → 세 구역 공통 밝기 순위로 승인 top 팔레트 8색에 스냅(매달린 덩굴과 같은 비율)",
+  "empty_band_widths": [
+    122,
+    49
+  ],
+  "sha256": "ed2505d1a92f852506037fef79f5db22e3c37cef7e9c8d68363e68fcb67c6daf",
+  "opaque_pixels": 1316,
+  "palette": {
+    "(51, 80, 40)": 231,
+    "(31, 55, 36)": 220,
+    "(89, 127, 36)": 184,
+    "(73, 109, 38)": 184,
+    "(40, 65, 40)": 169,
+    "(27, 46, 33)": 162,
+    "(113, 148, 36)": 117,
+    "(142, 170, 41)": 49
+  },
+  "palette_size": 8,
+  "required_present": true,
+  "bright_ratio": 0.0372,
+  "colors_in_top_palette": true,
+  "alpha_values": [
+    0,
+    255
+  ],
+  "magenta_left": [],
+  "shape": {
+    "thin_stem_px": 9,
+    "thin_stem_ratio": 0.102,
+    "parallel_branches": 0,
+    "outer_concavities": 14,
+    "enclosed_holes": 0,
+    "pieces": 3,
+    "gaps_plus_pieces": 2,
+    "cluster_area_ratio": 29.19,
+    "fill_ratio": 0.397,
+    "lr_mirror_difference": 0.374,
+    "tb_mirror_difference": 0.414
+  },
+  "checks": {
+    "thin_stem": true,
+    "parallel_branches": true,
+    "outer_concavities": true,
+    "internal_gaps": false,
+    "cluster_size": true,
+    "lr_mirror": true,
+    "fill": true,
+    "bright": true,
+    "palette": true,
+    "alpha_magenta": true
+  },
+  "checks_note": "internal_gaps(내부 틈+조각 3 이상)는 공식 불통과로 유지한다. 열린 오목 공간의 시각 역할은 합성 화면의 암벽 노출 비율로 별도 판정한다.",
+  "script": "build/orch/wallvine2/normalize_wall_vines02.py",
+  "judgment": {
+    "date": "2026-09-19",
+    "by": "사용자 플레이 판정 (판정 자료: build/orch/wallvine2/judge/, build/orch/wallvine2/final/)",
+    "result": "FAIL",
+    "reasons": [
+      "세로로 이어진 하나의 몸통처럼 보임",
+      "사람·해마·척추 같은 독립된 형상으로 읽힘",
+      "원본과 반전의 반복이 쉽게 드러남",
+      "승인된 매달린 덩굴과 역할이 겹침"
+    ],
+    "disposition": "불채택(rejected). 기록으로만 보존. 승인 runtime·기본 데이터·시험 세트 어디에서도 참조하지 않는다. 대체형은 top 수풀·모서리 식생 적용 뒤 필요할 때만 제작(Todo)"
+  }
+}

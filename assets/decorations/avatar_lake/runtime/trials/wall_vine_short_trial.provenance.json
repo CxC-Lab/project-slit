@@ -1,0 +1,91 @@
+{
+  "status": "rejected",
+  "role": "부착형 벽 덩굴 시험 (wall_vine_short_trial)",
+  "source": "assets/decorations/avatar_lake/source/wall_vine_raw_01.png",
+  "source_sha256": "8756bf9f93e3e293ed79d1d954b47e46022f715f07d37b7c30d88d40d241e9f5",
+  "component_bbox": [
+    129,
+    352,
+    272,
+    592
+  ],
+  "reduced_size": [
+    14,
+    24
+  ],
+  "canvas": [
+    20,
+    28
+  ],
+  "offset": [
+    0,
+    4
+  ],
+  "rule": "배경 분리 → 연결 성분 3개 → bbox 를 1/10(반올림)로 보간 없이 축소(셀 최빈색, 50% 이상 불투명) → 캔버스 왼쪽 0열·아래쪽 정렬 → 세 성분 공통 밝기 순위로 승인 top 팔레트 8색에 스냅(매달린 덩굴과 같은 비율)",
+  "sha256": "8f794cafa8ab63b41a9295c832f318695454c9531282e80c5ccf6deda140aa9b",
+  "opaque_pixels": 203,
+  "palette": {
+    "(89, 127, 36)": 34,
+    "(31, 55, 36)": 34,
+    "(51, 80, 40)": 32,
+    "(73, 109, 38)": 27,
+    "(40, 65, 40)": 27,
+    "(27, 46, 33)": 25,
+    "(113, 148, 36)": 15,
+    "(142, 170, 41)": 9
+  },
+  "palette_size": 8,
+  "required_present": true,
+  "bright_ratio": 0.0443,
+  "colors_in_top_palette": true,
+  "alpha_values": [
+    0,
+    255
+  ],
+  "magenta_left": [],
+  "attach_runs": [
+    [
+      5,
+      8
+    ],
+    [
+      11,
+      12
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      18,
+      22
+    ]
+  ],
+  "attach_run_count": 4,
+  "attach_gaps": [
+    2,
+    2,
+    1
+  ],
+  "attach_coverage": 0.54,
+  "longest_thin_run": 1,
+  "outer_straight_run": 3,
+  "outer_straight_ratio": 0.11,
+  "outer_concavities": 1,
+  "vertical_mirror_difference": 0.464,
+  "bottom_end_stdev": 3.17,
+  "main_cluster_row": 11,
+  "main_cluster_rel": 0.39,
+  "leaf_to_stem_width_ratio": 6.5,
+  "script": "build/orch/wallvine/normalize_wall_vines.py",
+  "judgment": {
+    "result": "FAIL",
+    "date": "2026-09-19",
+    "reasons": [
+      "암벽 앞면 배치(B안)에서 곧은 세로 줄기와 가로 옆가지가 E자·빗으로 두드러짐",
+      "공기 쪽 배치(A안)는 inner 120px 반복을 줄이지 못함(0%p)",
+      "줄기가 가장자리 밴드 위에 있어 순수 inner 위 비율 17~45%"
+    ],
+    "disposition": "불채택(rejected). raw02 로 대체. 기록으로만 보존하며 어떤 데이터도 참조하지 않는다"
+  }
+}
