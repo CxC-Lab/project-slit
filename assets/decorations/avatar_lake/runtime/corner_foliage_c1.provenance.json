@@ -1,0 +1,268 @@
+{
+  "status": "approved",
+  "role": "모서리 식생 C1 작은 모서리 잎 뭉치",
+  "runtime_file": "corner_foliage_c1.png",
+  "sha256": "5d718abec803b812f7677ec3b2b9f4a04626289accc57f013f4920a41eded49f",
+  "canvas": [
+    22,
+    24
+  ],
+  "anchor": {
+    "interpretation": "B (raw01 방식, 사용자 승인 2026-09-20)",
+    "ax": 21,
+    "ay": 10,
+    "overhang": 0,
+    "ax_rule": "이미지의 오른쪽 끝 열을 절벽 면으로 본다. raw02 주문서의 측정식(꺾임점 아래 3행 이상인 가장 바깥 열 = 12, 돌출 9)은 A 안이며 불채택됐다",
+    "ay_rule": "꺾임행 = 폭이 최대의 50% 아래로 떨어져 유지되는 첫 행(최대폭 행 아래에서 탐색). 실측 10",
+    "position_right_corner": "(cx - 11 + 1, cy - 10 + 24)",
+    "position_left_corner_flipX": "(cx + 11, cy - 10 + 24)",
+    "cx": "낭떠러지에 맞닿은 가장 바깥 암반 열",
+    "cy": "그 윗면의 충돌 표면 y"
+  },
+  "above_rows": 10,
+  "below_rows": 14,
+  "placement_count": 4,
+  "placements": [
+    {
+      "id": "K5",
+      "corner": [
+        850,
+        280
+      ],
+      "side": "L",
+      "position": [
+        861,
+        294
+      ],
+      "layer": "above",
+      "flipX": true,
+      "inward": 21,
+      "below": 14,
+      "face_h": 120
+    },
+    {
+      "id": "K7",
+      "corner": [
+        1239,
+        -90
+      ],
+      "side": "R",
+      "position": [
+        1229,
+        -76
+      ],
+      "layer": "above",
+      "flipX": false,
+      "inward": 21,
+      "below": 14,
+      "face_h": 50
+    },
+    {
+      "id": "K8",
+      "corner": [
+        590,
+        410
+      ],
+      "side": "L",
+      "position": [
+        601,
+        424
+      ],
+      "layer": "above",
+      "flipX": true,
+      "inward": 21,
+      "below": 14,
+      "face_h": 80
+    },
+    {
+      "id": "K10",
+      "corner": [
+        9199,
+        -830
+      ],
+      "side": "R",
+      "position": [
+        9189,
+        -816
+      ],
+      "layer": "above",
+      "flipX": false,
+      "inward": 21,
+      "below": 14,
+      "face_h": 1350
+    }
+  ],
+  "placement_rule": "layer above. 캔버스 전체가 모서리 안쪽 여유 구간 안(낭떠러지 끝 24px·벽 끝 40px·좁은 윗면 가운데 80px·기존 장식 ±8px 제외). 수직부는 벽면 노출 높이의 1/3 이하",
+  "judgment": {
+    "result": "PASS",
+    "date": "2026-09-20",
+    "by": "사용자 플레이 판정",
+    "basis": [
+      "raw01 의 절벽선과 겹치는 직선 윤곽을 제거했다",
+      "실제 화면에서 칼로 자른 느낌이 사라졌다",
+      "발판 끝이 길어 보이지 않는다",
+      "식생이 허공에 떠 보이지 않는다",
+      "꼬리가 절벽선보다 9~10px 안쪽이지만 절벽 끝에 뿌리내린 군락으로 자연스럽게 읽힌다",
+      "top 이끼·top 수풀·벽면 식생과 같은 생태계로 보인다",
+      "정확한 기하 계약보다 실제 플레이 화면의 자연스러움을 우선했다"
+    ],
+    "rejected_alternatives": {
+      "raw02-A (돌출 9px 해석)": "FAIL. 가는 가지가 허공에 떠 보이고 발판 끝이 길어 보였다",
+      "raw01 (corner_foliage_raw_01.png)": "대체됨. 바깥 윤곽 8행이 절벽선과 겹쳐 잘린 느낌"
+    },
+    "automatic_check_exceptions": [
+      {
+        "item": "돌출 계약 불일치",
+        "detail": "overhang_2_to_4 = false. 측정 돌출 9px(계약 2~4). 최종 승인은 B안 해석이라 실제 배치 돌출은 0px 이다"
+      },
+      {
+        "item": "뿌리 붙음 2행",
+        "detail": "rooted_rows = false (요구 3~5)"
+      },
+      {
+        "item": "바깥 윤곽 최장 4행",
+        "detail": "irregular_outer_edge = false (요구 3행 이하). raw01 의 8행에서 개선됐고 화면에서 직선 윤곽이 사라졌다"
+      },
+      {
+        "item": "모서리 틈 11%",
+        "detail": "corner_gap = false (요구 25%)"
+      },
+      {
+        "item": "외곽 오목 부족",
+        "detail": "outer_concavities C1 1, C2 2 (요구 4)"
+      },
+      {
+        "item": "종류별 면적비 1.54",
+        "detail": "size_difference = false (요구 1.6)"
+      },
+      {
+        "item": "C2 3성분·anchor 2px",
+        "detail": "anchor_connectivity = false. 실제 화면에서 분리된 오류 조각이 아니라 잎 사이의 자연스러운 틈으로 읽혔다. 장식 사각형 밖 변경 0px 이고 충돌·게임플레이 영향 없음"
+      }
+    ],
+    "exception_note": "자동 검사 실패는 normalization.checks 에 그대로 남긴다. 위 항목은 사용자 육안 판정으로 예외 승인했다"
+  },
+  "trial_file": "runtime/trials/corner_foliage_c1_r2_trial.png",
+  "trial_sha256": "5d718abec803b812f7677ec3b2b9f4a04626289accc57f013f4920a41eded49f",
+  "approval": {
+    "date": "2026-09-20",
+    "decided_by": "user play judgment",
+    "trial_decorations_file": "assets/decorations/avatar_lake_cornerfoliage_r2B_trial.json",
+    "trial_decorations_fnv1a64": "0b3b40e7c0be5f76",
+    "captures": [
+      "build/orch/corner/cap_r2/B/preview_1.png ~ preview_7.png",
+      "build/orch/corner/judge/raw02_AB_vs_raw01_x6.png",
+      "build/orch/corner/judge/screen4_02_rightstep.png"
+    ],
+    "note": "K1~K10 10곳(above)의 좌표·반전·순서를 그대로 기본 데이터에 연결했다. 승격 뒤 시험 사본과 시험 JSON 은 build/orch/corner/archive/ 로 옮겼다. raw01 trial 과 raw02-A 세트는 기본 데이터·승인 경로에 연결하지 않는다."
+  },
+  "normalization": {
+    "role": "모서리 식생 C1 작은 모서리 잎 뭉치",
+    "source": "assets/decorations/avatar_lake/source/corner_foliage_raw_02.png",
+    "source_sha256": "4b6f5b62c070fe9e043a65f259c5d5fd492da348bab7a1d1e407471e09f2424e",
+    "zone_bbox": [
+      150,
+      392,
+      371,
+      631
+    ],
+    "reduced_size": [
+      22,
+      24
+    ],
+    "canvas": [
+      22,
+      24
+    ],
+    "contract_canvas": [
+      24,
+      24
+    ],
+    "tolerance": [
+      26,
+      26
+    ],
+    "align": "right+top",
+    "above_rows": 10,
+    "below_rows": 14,
+    "rule": "마젠타 제거 → 빈 세로 띠로 2구역 → 구역 bbox 를 보간 없이 정확히 1/10(셀 최빈색, 50% 이상 불투명) → 캔버스 오른쪽·위쪽 정렬 → 두 구역 공통 밝기 순위로 승인 top 팔레트 8색 스냅(14/16/12/16/14/14/10/4%)",
+    "opaque_pixels": 206,
+    "palette": {
+      "(89, 127, 36)": 35,
+      "(73, 109, 38)": 33,
+      "(31, 55, 36)": 32,
+      "(51, 80, 40)": 32,
+      "(27, 46, 33)": 27,
+      "(113, 148, 36)": 21,
+      "(40, 65, 40)": 19,
+      "(142, 170, 41)": 7
+    },
+    "bright_ratio": 0.034,
+    "shape": {
+      "top_part_px": 128,
+      "inner_part_px": 78,
+      "corner_gap_ratio": 0.111,
+      "anchor_row_run": 10,
+      "anchor_col_run": 4,
+      "bottom_quarter_width": 5,
+      "anchor_row_width": 10,
+      "fill": 0.39,
+      "outer_concavities": 1,
+      "anchor_3x3_opaque": 4,
+      "outer_edge_max_run": 4,
+      "rooted_rows_below_bend": 2,
+      "components": 1,
+      "widths": [
+        2,
+        5,
+        8,
+        9,
+        17,
+        20,
+        21,
+        17,
+        16,
+        13,
+        10,
+        10,
+        8,
+        7,
+        7,
+        8,
+        6,
+        4,
+        5,
+        5,
+        3,
+        2,
+        2,
+        1
+      ]
+    },
+    "checks": {
+      "palette": true,
+      "bright": true,
+      "alpha_magenta": true,
+      "top_and_inner": true,
+      "corner_gap": false,
+      "no_right_angle_border": true,
+      "overhang_2_to_4": false,
+      "taper": true,
+      "fill": true,
+      "outer_concavities": false,
+      "anchor_connectivity": true,
+      "irregular_outer_edge": false,
+      "rooted_rows": false,
+      "size_difference": false
+    },
+    "script": "build/orch/corner/normalize_corner.py",
+    "size_difference": {
+      "opaque": {
+        "C1": 206,
+        "C2": 318
+      },
+      "C2/C1": 1.54
+    },
+    "sha256": "5d718abec803b812f7677ec3b2b9f4a04626289accc57f013f4920a41eded49f"
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "status": "rejected",
+  "role": "모서리 식생 C1 작은 모서리 잎 뭉치",
+  "source": "assets/decorations/avatar_lake/source/corner_foliage_raw_01.png",
+  "source_sha256": "956afa1d875b9056e5837e927c98c1f75770e59ef59dc694f4a902d6876e2dae",
+  "zone_bbox": [
+    173,
+    386,
+    329,
+    603
+  ],
+  "reduced_size": [
+    16,
+    22
+  ],
+  "canvas": [
+    16,
+    22
+  ],
+  "contract_canvas": [
+    24,
+    24
+  ],
+  "tolerance": [
+    26,
+    26
+  ],
+  "align": "right+top",
+  "anchor": {
+    "ax": 15,
+    "ay": 8,
+    "ay_contract": 8,
+    "ay_measured_bend": 7,
+    "rule": "ax = W-1 (절벽 면 열). ay = 계약 행, 단 실측 꺾임행(폭이 최대의 50% 아래로 떨어져 유지되는 첫 행)과 2 이상 차이나면 실측값",
+    "position_right": "(cx - 8 + 1, cy - 8 + 22)",
+    "position_left_flipX": "(cx + 8, cy - 8 + 22)"
+  },
+  "above_rows": 8,
+  "below_rows": 14,
+  "rule": "마젠타 제거 → 빈 세로 띠로 2구역 → 구역 bbox 를 보간 없이 정확히 1/10(셀 최빈색, 50% 이상 불투명) → 캔버스 오른쪽·위쪽 정렬 → 두 구역 공통 밝기 순위로 승인 top 팔레트 8색 스냅(14/16/12/16/14/14/10/4%)",
+  "opaque_pixels": 142,
+  "palette": {
+    "(51, 80, 40)": 26,
+    "(73, 109, 38)": 22,
+    "(31, 55, 36)": 20,
+    "(40, 65, 40)": 19,
+    "(27, 46, 33)": 19,
+    "(89, 127, 36)": 16,
+    "(113, 148, 36)": 14,
+    "(142, 170, 41)": 6
+  },
+  "bright_ratio": 0.0423,
+  "shape": {
+    "top_part_px": 93,
+    "inner_part_px": 49,
+    "corner_gap_ratio": 0.222,
+    "anchor_row_run": 4,
+    "anchor_col_run": 8,
+    "bottom_quarter_width": 4,
+    "anchor_row_width": 4,
+    "fill": 0.403,
+    "outer_concavities": 2,
+    "anchor_3x3_opaque": 6,
+    "components": 1,
+    "widths": [
+      3,
+      12,
+      15,
+      16,
+      16,
+      14,
+      11,
+      6,
+      4,
+      4,
+      3,
+      3,
+      5,
+      5,
+      5,
+      5,
+      3,
+      4,
+      4,
+      1,
+      2,
+      1
+    ],
+    "vertical_part_max_width": 5,
+    "bottom_quarter_vs_vertical_max": 0.8
+  },
+  "checks": {
+    "palette": true,
+    "bright": true,
+    "alpha_magenta": true,
+    "top_and_inner": true,
+    "corner_gap": false,
+    "no_right_angle_border": true,
+    "no_overhang": true,
+    "taper": false,
+    "fill": true,
+    "outer_concavities": false,
+    "anchor_connectivity": true,
+    "size_difference": true
+  },
+  "script": "build/orch/corner/normalize_corner.py",
+  "sha256": "b70ce559434e7e36078f7bb667b5ece884da8cee1eac021a6619d4ee0c6525b2",
+  "size_difference": {
+    "opaque": {
+      "C1": 142,
+      "C2": 362
+    },
+    "C2/C1": 2.55
+  },
+  "checks_note": "taper 는 주문서 정의대로 'ay 행 폭의 60% 이하'로 쟀고 두 종 모두 불통과다. ay 행은 가로 덩어리와 세로 꼬리 사이의 잘록한 목이라 기준 행으로 불리하다. 참고로 세로부 최대폭 대비 아래 1/4 폭은 0.8 다. 기준은 바꾸지 않고 불통과로 기록한다. corner_gap(모서리 6x6 투명 비율)도 불통과이며, 실제 화면의 모서리 암반 노출 비율을 함께 측정해 판정 자료로 남겼다.",
+  "judgment": {
+    "result": "FAIL",
+    "date": "2026-09-20",
+    "by": "사용자 플레이 판정",
+    "reasons": [
+      "바깥 윤곽 8행이 절벽선과 겹쳐 칼로 자른 듯 끊겼다",
+      "꺾임점 아래에서 절벽 면에 붙는 행이 2행뿐이라 살짝 떠 보였다"
+    ],
+    "disposition": "불채택(rejected). raw02-B 로 대체. 기록·비교 자료로만 보존하며 기본 데이터·승인 runtime 경로에 연결하지 않는다"
+  }
+}

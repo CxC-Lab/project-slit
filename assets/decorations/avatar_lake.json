@@ -746,6 +746,96 @@
       ],
       "layer": "above",
       "flipX": true
+    },
+    {
+      "image": "avatar_lake/runtime/corner_foliage_c2.png",
+      "position": [
+        428,
+        -74
+      ],
+      "layer": "above",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/corner_foliage_c2.png",
+      "position": [
+        1182,
+        426
+      ],
+      "layer": "above",
+      "flipX": true
+    },
+    {
+      "image": "avatar_lake/runtime/corner_foliage_c2.png",
+      "position": [
+        1528,
+        426
+      ],
+      "layer": "above",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/corner_foliage_c2.png",
+      "position": [
+        1088,
+        306
+      ],
+      "layer": "above",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/corner_foliage_c1.png",
+      "position": [
+        861,
+        294
+      ],
+      "layer": "above",
+      "flipX": true
+    },
+    {
+      "image": "avatar_lake/runtime/corner_foliage_c2.png",
+      "position": [
+        1102,
+        -64
+      ],
+      "layer": "above",
+      "flipX": true
+    },
+    {
+      "image": "avatar_lake/runtime/corner_foliage_c1.png",
+      "position": [
+        1229,
+        -76
+      ],
+      "layer": "above",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/corner_foliage_c1.png",
+      "position": [
+        601,
+        424
+      ],
+      "layer": "above",
+      "flipX": true
+    },
+    {
+      "image": "avatar_lake/runtime/corner_foliage_c2.png",
+      "position": [
+        8788,
+        -2154
+      ],
+      "layer": "above",
+      "flipX": false
+    },
+    {
+      "image": "avatar_lake/runtime/corner_foliage_c1.png",
+      "position": [
+        9189,
+        -816
+      ],
+      "layer": "above",
+      "flipX": false
     }
   ]
 }

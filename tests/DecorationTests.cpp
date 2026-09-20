@@ -18,8 +18,8 @@ int main() try {
     const Region region(root/"assets/regions/avatar_lake.json");
     check(region.decorationFile().has_value(),"region default exists");
     Decorations real(*region.decorationFile());
-    // Approved placements in draw order (ADR 0012): 15 fossil/rock/vine items, 52 wall vegetation items, then
-    // 16 top foliage items. A missing, added, moved, relayered, reflipped or reordered item fails here; per-item
+    // Approved placements in draw order (ADR 0012): 15 fossil/rock/vine, 52 wall vegetation, 16 top foliage and
+    // 10 corner foliage items. A missing, added, moved, relayered, reflipped or reordered item fails here; per-item
     // runtime path, approved provenance and hash are checked by approved_decoration_checks.
     const std::vector<std::tuple<std::string,int,int,std::string,bool>> approved{
         {"fossil01_ammonite",275,501,"behind",false},{"fossil01_ammonite",886,541,"behind",true},
@@ -47,7 +47,11 @@ int main() try {
         {"top_foliage_f3",120,-97,"above",false},{"top_foliage_f1",172,-97,"above",true},{"top_foliage_f2",330,-97,"above",true},{"top_foliage_f3",1250,403,"above",true},
         {"top_foliage_f4",1440,403,"above",false},{"top_foliage_f2",904,283,"above",false},{"top_foliage_f2",6650,-1947,"above",true},{"top_foliage_f1",7190,-1797,"above",false},
         {"top_foliage_f2",6850,-1497,"above",false},{"top_foliage_f1",8642,-2177,"above",true},{"top_foliage_f1",8420,523,"above",false},{"top_foliage_f2",1800,523,"above",false},
-        {"top_foliage_f4",2600,523,"above",true},{"top_foliage_f3",4300,523,"above",false},{"top_foliage_f4",6800,523,"above",false},{"top_foliage_f3",9330,523,"above",true}};
+        {"top_foliage_f4",2600,523,"above",true},{"top_foliage_f3",4300,523,"above",false},{"top_foliage_f4",6800,523,"above",false},{"top_foliage_f3",9330,523,"above",true},
+        // Corner foliage C1/C2 (corner_foliage_raw_02, anchor interpretation B), 10 placements in approved order.
+        {"corner_foliage_c2",428,-74,"above",false},{"corner_foliage_c2",1182,426,"above",true},{"corner_foliage_c2",1528,426,"above",false},{"corner_foliage_c2",1088,306,"above",false},
+        {"corner_foliage_c1",861,294,"above",true},{"corner_foliage_c2",1102,-64,"above",true},{"corner_foliage_c1",1229,-76,"above",false},{"corner_foliage_c1",601,424,"above",true},
+        {"corner_foliage_c2",8788,-2154,"above",false},{"corner_foliage_c1",9189,-816,"above",false}};
     std::ifstream actual(*region.decorationFile());const auto items=J::parse(actual).at("items");
     check(items.size()==approved.size(),"approved default item count");
     for(std::size_t i=0;i<approved.size();++i){
