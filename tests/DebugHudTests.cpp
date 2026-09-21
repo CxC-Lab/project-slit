@@ -6,19 +6,23 @@ bool sameView(const sf::View& a,const sf::View& b){return a.getCenter()==b.getCe
 int main() try {
     DebugHud hud;
     for(int i=0;i<24;++i)hud.update(.01,{8742,-918.5f});
-    check(hud.performanceText()=="FPS 0.0  |  0.00 ms","no refresh before quarter second");
+    check(hud.performanceText()=="FPS 0.0  |  0.00 ms  |  VSYNC OFF","no refresh before quarter second");
     hud.update(.01,{8742,-918.5f});
-    check(hud.performanceText()=="FPS 100.0  |  10.00 ms","fixed average formatting");
+    check(hud.performanceText()=="FPS 100.0  |  10.00 ms  |  VSYNC OFF","fixed average formatting");
     check(hud.worldText()=="WORLD X 8742.0  Y -918.5","feet coordinate formatting");
     hud.update(.001,{-0.01f,-0.0f});check(hud.worldText()=="WORLD X 0.0  Y 0.0","negative zero removed");
     DebugHud mixed;mixed.update(.1,{});for(int i=0;i<40;++i)mixed.update(.01,{});
     // Forty-one frames / .50 seconds, not the most recent inverse.
-    check(mixed.performanceText()=="FPS 82.0  |  12.20 ms","long frame diluted across window");
+    check(mixed.performanceText()=="FPS 82.0  |  12.20 ms  |  VSYNC OFF","long frame diluted across window");
     for(int i=0;i<75;++i)mixed.update(.01,{});
-    check(mixed.performanceText()=="FPS 100.0  |  10.00 ms","old samples expire from rolling window");
-    for(char c:std::string("0123456789FPSWORLDXYms|.- "))check(DebugHud::hasGlyph(c),"required glyph exists");
+    check(mixed.performanceText()=="FPS 100.0  |  10.00 ms  |  VSYNC OFF","old samples expire from rolling window");
+    for(char c:std::string("0123456789FPSWORLDXYms|.- VNC"))check(DebugHud::hasGlyph(c),"required glyph exists");
+    for(char c:std::string("0123456789FPSWORLDXYms|.-VNC"))check(DebugHud::glyphHasInk(c),"visible glyph has ink");
+    check(!DebugHud::glyphHasInk(' '),"space has no ink");
+    hud.update(0,{},true);check(hud.performanceText().ends_with("VSYNC ON"),"vsync updates without FPS refresh");
+    hud.update(0,{},false);check(hud.performanceText().ends_with("VSYNC OFF"),"vsync off display");
     check(!DebugHud::hasGlyph('?'),"unsupported glyph detected");
-    for(auto size:{sf::Vector2u{800,600},{1920,1080},{2560,1440},{400,300}}){
+    for(auto size:{sf::Vector2u{800,600},{1920,1080},{2560,1440},{400,300},{200,150}}){
         sf::RenderTexture target(size);sf::View camera(sf::FloatRect({100,-400},{800,450}));
         camera.setViewport({{.1f,.1f},{.8f,.8f}});camera.setRotation(sf::degrees(13));target.setView(camera);
         const sf::Color clear(80,90,100);target.clear(clear);hud.enabled=false;hud.render(target);target.display();
@@ -28,6 +32,7 @@ int main() try {
         hud.enabled=true;hud.update(0,{8742,-918.5f});hud.render(target);target.display();const auto first=target.getTexture().copyToImage();
         check(sameView(target.getView(),camera),"enabled view restored");
         const auto panel=hud.panelBounds(size);
+        if(size.x==200)check(panel.size.y==24.f,"narrow window uses integer scale one");
         check(panel.position.x>=0&&panel.position.y>=0&&panel.position.x+panel.size.x<=size.x&&panel.position.y+panel.size.y<=size.y,"panel inside window");
         unsigned changed=0,bright=0;
         for(unsigned y=0;y<size.y;++y)for(unsigned x=0;x<size.x;++x)if(first.getPixel({x,y})!=clear){

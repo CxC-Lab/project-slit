@@ -12,9 +12,14 @@ public:
     static void apply(sf::View& view, sf::Vector2u physicalSize);
     void open(sf::RenderWindow& window);
     bool handleEvent(const sf::Event& event, sf::RenderWindow& window, sf::View& worldView);
+    void setVerticalSync(sf::RenderWindow& window,bool enabled);
+    bool verticalSync() const { return verticalSync_; }
+    unsigned frameLimit() const { return verticalSync_?0u:60u; }
     bool fullscreen() const { return fullscreen_; }
 
 private:
+    void applyTiming(sf::RenderWindow& window) const;
+    bool verticalSync_=false;
     void toggle(sf::RenderWindow& window, sf::View& worldView);
     bool fullscreen_ = false;
     sf::Vector2u windowedSize_{static_cast<unsigned int>(referenceViewSize.x),

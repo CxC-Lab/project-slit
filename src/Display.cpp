@@ -32,7 +32,7 @@ void Display::open(sf::RenderWindow& window)
     window.create(desktop, "Project Slit Prototype", sf::Style::None, sf::State::Windowed);
     window.setPosition({0, 0});
     fullscreen_ = true;
-    window.setFramerateLimit(60);
+    applyTiming(window);
     window.setKeyRepeatEnabled(false);
     window.setMouseCursorVisible(!window.hasFocus());
 }
@@ -54,7 +54,7 @@ void Display::toggle(sf::RenderWindow& window, sf::View& worldView)
         window.setPosition(windowedPosition_);
     }
     fullscreen_ = !fullscreen_;
-    window.setFramerateLimit(60);
+    applyTiming(window);
     window.setKeyRepeatEnabled(false);
     window.setMouseCursorVisible(!window.hasFocus());
     apply(worldView, window.getSize());
@@ -85,4 +85,16 @@ bool Display::handleEvent(const sf::Event& event, sf::RenderWindow& window, sf::
         return true;
     }
     return false;
+}
+
+void Display::setVerticalSync(sf::RenderWindow& window,bool enabled)
+{
+    verticalSync_=enabled;
+    applyTiming(window);
+}
+void Display::applyTiming(sf::RenderWindow& window) const
+{
+    if(!window.isOpen())return; // Also supports selecting the policy before initial creation.
+    window.setFramerateLimit(frameLimit());
+    window.setVerticalSyncEnabled(verticalSync_);
 }

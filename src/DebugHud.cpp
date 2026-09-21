@@ -8,7 +8,7 @@
 #include <string_view>
 
 namespace {
-constexpr std::string_view characters="0123456789FPSWORLDXYms|.- ";
+constexpr std::string_view characters="0123456789FPSWORLDXYms|.- VNC";
 // Five bits per row, seven rows; only HUD characters, no font dependency.
 constexpr std::array<std::array<unsigned,7>,24> glyphs{{
  {{14,17,19,21,25,17,14}},{{4,12,4,4,4,4,14}},{{14,17,1,2,4,8,31}},
@@ -21,6 +21,9 @@ constexpr std::array<std::array<unsigned,7>,24> glyphs{{
  {{0,0,15,16,14,1,30}},{{4,4,4,4,4,4,4}},{{0,0,0,0,0,12,12}}
 }};
 std::array<unsigned,7> glyph(char c) {
+    if(c=='V')return {17,17,17,17,17,10,4};
+    if(c=='N')return {17,25,25,21,19,19,17};
+    if(c=='C')return {14,17,16,16,16,17,14};
     if(c=='-')return {0,0,0,31,0,0,0};
     if(c==' ')return {};
     const auto index=characters.find(c);return index<glyphs.size()?glyphs[index]:std::array<unsigned,7>{};
@@ -33,7 +36,9 @@ std::string fixed(double value,int decimals) {
 }
 }
 bool DebugHud::hasGlyph(char c){return characters.find(c)!=std::string_view::npos;}
-void DebugHud::update(double seconds,sf::Vector2f feet) {
+bool DebugHud::glyphHasInk(char c){const auto rows=glyph(c);return std::any_of(rows.begin(),rows.end(),[](auto row){return row!=0;});}
+void DebugHud::update(double seconds,sf::Vector2f feet,bool vsync) {
+    vsync_=vsync;
     world_="WORLD X "+fixed(feet.x,1)+"  Y "+fixed(feet.y,1);
     if(!std::isfinite(seconds)||seconds<=0)return;
     time_+=seconds;frames_.push_back({time_,seconds});total_+=seconds;
@@ -47,14 +52,14 @@ void DebugHud::update(double seconds,sf::Vector2f feet) {
 }
 unsigned DebugHud::scale(sf::Vector2u pixels) const {
     unsigned result=std::max(2u,pixels.y/450u);
-    const auto width=std::max(performance_.size(),world_.size())*6u+7u;
+    const auto width=std::max(performanceText().size(),world_.size())*6u+7u;
     while(result>1&&(width*result+16u>pixels.x||24u*result+16u>pixels.y))--result;
     return result;
 }
 sf::FloatRect DebugHud::panelBounds(sf::Vector2u pixels) const {
     const auto factor=scale(pixels);
     const float x=std::min(8.f,static_cast<float>(pixels.x)),y=std::min(8.f,static_cast<float>(pixels.y));
-    return {{x,y},{std::min(static_cast<float>((std::max(performance_.size(),world_.size())*6u+7u)*factor),pixels.x-x),
+    return {{x,y},{std::min(static_cast<float>((std::max(performanceText().size(),world_.size())*6u+7u)*factor),pixels.x-x),
                     std::min(24.f*factor,pixels.y-y)}};
 }
 void DebugHud::render(sf::RenderTarget& target) const {
@@ -64,7 +69,8 @@ void DebugHud::render(sf::RenderTarget& target) const {
     const auto bounds=panelBounds(size);const float factor=static_cast<float>(scale(size));
     sf::VertexArray ink(sf::PrimitiveType::Triangles);
     unsigned row=0;
-    for(const auto* text:{&performance_,&world_}){
+    const auto performance=performanceText();
+    for(const auto* text:{&performance,&world_}){
         unsigned column=0;
         for(char c:*text){const auto bits=glyph(c);
             for(unsigned y=0;y<7;++y)for(unsigned x=0;x<5;++x)if(bits[y]&(1u<<(4-x))){

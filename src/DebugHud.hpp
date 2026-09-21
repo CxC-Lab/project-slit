@@ -7,13 +7,15 @@ class DebugHud
 {
 public:
     bool enabled=false;
-    void update(double frameSeconds,sf::Vector2f feet);
-    const std::string& performanceText() const { return performance_; }
+    void update(double frameSeconds,sf::Vector2f feet,bool vsync=false);
+    std::string performanceText() const { return performance_+(vsync_?"  |  VSYNC ON":"  |  VSYNC OFF"); }
     const std::string& worldText() const { return world_; }
     static bool hasGlyph(char c);
+    static bool glyphHasInk(char c);
     sf::FloatRect panelBounds(sf::Vector2u pixels) const;
     void render(sf::RenderTarget& target) const;
 private:
+    bool vsync_=false;
     struct Frame { double end,seconds; };
     std::deque<Frame> frames_;
     double time_=0,total_=0,lastRefresh_=0;

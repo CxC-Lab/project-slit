@@ -1,5 +1,6 @@
 #include "Camera.hpp"
 #include "DebugHud.hpp"
+#include "LaunchOptions.hpp"
 #include "Background.hpp"
 #include "Decorations.hpp"
 #include "Display.hpp"
@@ -82,32 +83,22 @@ struct ClipVisual
 
 int main(int argc, char** argv) try
 {
+    std::vector<std::string_view> arguments;
+    for(int i=1;i<argc;++i)arguments.emplace_back(argv[i]);
+    const auto options=parseLaunchOptions(arguments);
+    if(options.help){std::cout<<launchHelp();return 0;}
     Display display;
     sf::RenderWindow window;
+    display.setVerticalSync(window,options.vsync);
     display.open(window);
     sf::View camera(sf::FloatRect({0.f, 0.f}, Display::referenceViewSize));
     Display::apply(camera, window.getSize());
-
     DebugHud debugHud;
-    bool debugHudFlag=false;
-    std::string region="practice_room",tileset,decorationFile;
-    int first=1;
-    if(argc>1&&!std::string(argv[1]).starts_with("--")){region=argv[1];first=2;}
-    for(int i=first;i<argc;++i){
-        const std::string option=argv[i];
-        if(option=="--debug-hud"){if(debugHudFlag)throw std::runtime_error("Duplicate --debug-hud");debugHudFlag=true;debugHud.enabled=true;continue;}
-        if((option!="--tileset"&&option!="--decorations")||i+1>=argc)
-            throw std::runtime_error("Usage: project_slit.exe [region] [--tileset name] [--decorations file] [--debug-hud]");
-        const std::string value=argv[++i];
-        if(value.empty()||value.starts_with("--"))throw std::runtime_error("Missing option value");
-        auto& destination=option=="--tileset"?tileset:decorationFile;
-        if(!destination.empty())throw std::runtime_error("Duplicate option: "+option);
-        destination=value;
-    }
-    const auto regionFile = Region::findFile(region);
-    const Region room(regionFile,tileset);
+    debugHud.enabled=options.debugHud;
+    const auto regionFile = Region::findFile(options.region);
+    const Region room(regionFile,options.tileset);
     std::optional<Decorations> decorations;
-    const auto decorationSelection=selectDecorations(room.decorationFile(),decorationFile,!tileset.empty());
+    const auto decorationSelection=selectDecorations(room.decorationFile(),options.decorations,!options.tileset.empty());
     if(decorationSelection.file)decorations.emplace(*decorationSelection.file);
     const Background background(regionFile.parent_path().parent_path()/"backgrounds"/regionFile.filename());
     Player player(room.spawn());
@@ -199,7 +190,7 @@ int main(int argc, char** argv) try
         player.update(intent, deltaTime, room.solids(), room.bounds().size.x);
         const auto playerBounds = player.collisionBounds();
         debugHud.update(hudClock.restart().asSeconds(),
-                        {playerBounds.position.x+playerBounds.size.x/2.f,playerBounds.position.y+playerBounds.size.y});
+                        {playerBounds.position.x+playerBounds.size.x/2.f,playerBounds.position.y+playerBounds.size.y},display.verticalSync());
         playerShape.setPosition(playerBounds.position);
         const auto movementState = player.state();
         const int previousJumpFrame = jumping.clip.frameIndex();

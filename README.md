@@ -86,7 +86,7 @@ cmake --build build --config Release
 .\build\Release\project_slit.exe
 ```
 
-인자 없이 실행하면 연습실에서 시작합니다.
+인자 없이 실행하면 연습실에서 시작합니다. HUD·VSync 등 실행 옵션과 조작 키는 [런타임 옵션](docs/runtime-options.md)을 참고하세요.
 
 Avatar Lake 는 아래 두 스크립트로 실행합니다. 어느 폴더에서 실행해도 저장소의 에셋을 찾습니다.
 

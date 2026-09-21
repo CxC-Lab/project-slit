@@ -74,6 +74,7 @@ void gui()
     const sf::Event startupToggle = sf::Event::KeyPressed{.code = sf::Keyboard::Key::Enter, .alt = true};
     display.handleEvent(startupToggle, window, view);
     check(!display.fullscreen(), "startup can recover to windowed");
+    display.setVerticalSync(window,true);
     const auto windowedSize = window.getSize();
     const auto windowedPosition = window.getPosition();
     AnimationClip idle(AnimationClip::findManifest());
@@ -90,6 +91,7 @@ void gui()
     for (int i = 0; i < 2; ++i)
     {
         check(display.handleEvent(pressed, window, view), "Alt Enter consumed by display");
+        check(display.verticalSync()&&display.frameLimit()==0,"VSync survives recreation");
         check(display.fullscreen() == (i == 0), "mode toggles");
         check(view.getCenter() == center, "toggle preserves camera center");
 #ifdef _WIN32
@@ -143,6 +145,12 @@ void gui()
 
 int main(int argc, char** argv) try
 {
+    Display policy;sf::RenderWindow unopened;
+    check(!policy.verticalSync()&&policy.frameLimit()==60,"default OFF limits to 60");
+    policy.setVerticalSync(unopened,true);check(policy.verticalSync()&&policy.frameLimit()==0,"ON disables manual limit");
+    sf::View resizedView;policy.handleEvent(sf::Event::Resized{{400,300}},unopened,resizedView);
+    check(policy.verticalSync()&&policy.frameLimit()==0,"resize preserves timing policy");
+    policy.setVerticalSync(unopened,false);check(!policy.verticalSync()&&policy.frameLimit()==60,"OFF restores limit");
     for (const sf::Vector2u physical : {sf::Vector2u{800, 600}, {1920, 1080}, {3840, 2160}, {2520, 1080},
                                        {1080, 1920}, {10000, 100}, {100, 10000}, {1, 1}})
     {
