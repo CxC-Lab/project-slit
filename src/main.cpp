@@ -1,4 +1,5 @@
 #include "Camera.hpp"
+#include "DebugHud.hpp"
 #include "Background.hpp"
 #include "Decorations.hpp"
 #include "Display.hpp"
@@ -87,13 +88,16 @@ int main(int argc, char** argv) try
     sf::View camera(sf::FloatRect({0.f, 0.f}, Display::referenceViewSize));
     Display::apply(camera, window.getSize());
 
+    DebugHud debugHud;
+    bool debugHudFlag=false;
     std::string region="practice_room",tileset,decorationFile;
     int first=1;
     if(argc>1&&!std::string(argv[1]).starts_with("--")){region=argv[1];first=2;}
     for(int i=first;i<argc;++i){
         const std::string option=argv[i];
+        if(option=="--debug-hud"){if(debugHudFlag)throw std::runtime_error("Duplicate --debug-hud");debugHudFlag=true;debugHud.enabled=true;continue;}
         if((option!="--tileset"&&option!="--decorations")||i+1>=argc)
-            throw std::runtime_error("Usage: project_slit.exe [region] [--tileset name] [--decorations file]");
+            throw std::runtime_error("Usage: project_slit.exe [region] [--tileset name] [--decorations file] [--debug-hud]");
         const std::string value=argv[++i];
         if(value.empty()||value.starts_with("--"))throw std::runtime_error("Missing option value");
         auto& destination=option=="--tileset"?tileset:decorationFile;
@@ -141,6 +145,7 @@ int main(int argc, char** argv) try
     playerSprite.setOrigin(idle.clip.pivot());
     playerSprite.setScale({visualScale, visualScale});
     Input input;
+    sf::Clock hudClock; // Independent real frame duration, including display/capture costs.
     sf::Clock frameClock;
     sf::Clock inputClock;
     bool captureRequested = false;
@@ -163,6 +168,13 @@ int main(int argc, char** argv) try
                     input.reset();
                 continue;
             }
+            if (const auto* key = event->getIf<sf::Event::KeyPressed>(); key && key->code == sf::Keyboard::Key::F3)
+            {
+                if(window.hasFocus())debugHud.enabled=!debugHud.enabled;
+                continue;
+            }
+            if (const auto* key = event->getIf<sf::Event::KeyReleased>(); key && key->code == sf::Keyboard::Key::F3)
+                continue;
             if (const auto* key = event->getIf<sf::Event::KeyPressed>(); key && key->code == sf::Keyboard::Key::F12)
             {
                 if (window.hasFocus()) captureRequested = true;
@@ -186,6 +198,8 @@ int main(int argc, char** argv) try
         const InputIntent intent = input.consume();
         player.update(intent, deltaTime, room.solids(), room.bounds().size.x);
         const auto playerBounds = player.collisionBounds();
+        debugHud.update(hudClock.restart().asSeconds(),
+                        {playerBounds.position.x+playerBounds.size.x/2.f,playerBounds.position.y+playerBounds.size.y});
         playerShape.setPosition(playerBounds.position);
         const auto movementState = player.state();
         const int previousJumpFrame = jumping.clip.frameIndex();
@@ -275,6 +289,7 @@ int main(int argc, char** argv) try
         window.draw(playerSprite);
         if (showPlayerCollider)
             window.draw(playerShape);
+        debugHud.render(window); // Screen space, included in F12 capture below.
         ++renderedFrames;
         if (captureRequested)
         {
