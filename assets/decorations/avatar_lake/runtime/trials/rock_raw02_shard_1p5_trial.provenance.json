@@ -1,0 +1,42 @@
+{
+  "status": "rejected",
+  "role": "밝은 암반 면(자연 균열로 닫힌 조각 하나) — raw02 단일 샘플 게이트",
+  "source": "assets/tiles/avatar_lake/source/rock_raw_02.png",
+  "source_sha256": "7cff7ccacb4e4c594e15bdcc38c9300383392d3b6e9a57c932bb27ca09195332",
+  "scale": "1.5x (E0 대비)",
+  "src_px_per_game_px": 6.967,
+  "closed_in_source_at_this_scale": true,
+  "face_px": 1005,
+  "crevice_ring_px": 194,
+  "canvas": [
+    26,
+    72
+  ],
+  "opaque_ratio": 0.64,
+  "mask_rule": "씨앗이 속한 암반 면 성분(어두운 틈 P00~P02 로 둘러싸인 것) + 원본에서 그 면에 8방향으로 닿는 틈 픽셀. 선을 새로 그리지 않음. 캔버스 가장자리 1px 는 비움",
+  "checks": {
+    "palette_e0_14": true,
+    "alpha_binary": true,
+    "crop_border_opaque_px": 0,
+    "longest_straight_edge": 16,
+    "run_pre_mask": 2.17,
+    "run_post_mask": 1.98,
+    "pass": {
+      "crop_border_zero": true,
+      "straight_edge_le_8": false,
+      "mixel_pre_mask": true
+    }
+  },
+  "sha256": "857364815aa0eb2cb231b54a0e0b59e234a9c9abfff339b0a1fe6d2f19a5d7eb",
+  "script": "build/orch/tiles/raw02gate/derive_gate.py",
+  "judgment": {
+    "result": "NO-GO",
+    "date": "2026-09-21",
+    "placed": false,
+    "failed_checks": [
+      "straight_edge_le_8 (외곽 최장 직선 16px)"
+    ],
+    "visual": "1.0배는 E0 암반 덩어리와 크기가 같아 큰 구조가 생기지 않는다. 1.25·1.5배는 원본 틈이 끊김 없는 얇은 테두리로 둘러 E0 위에 붙인 스티커처럼 읽힌다. E0 에는 틈으로 완전히 둘린 큰 암반 덩어리가 없다(닫힌 성분은 26px 점뿐)",
+    "note": "직선 외곽의 원인은 크롭이 아니라 raw02 조각의 곧은 옆면이다(크롭 경계 접촉 0). 기준은 완화하지 않았다"
+  }
+}

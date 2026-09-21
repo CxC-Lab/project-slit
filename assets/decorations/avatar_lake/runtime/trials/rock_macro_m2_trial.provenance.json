@@ -1,0 +1,137 @@
+{
+  "status": "rejected",
+  "role": "넓은 밝은 암반 면과 짧은 하단 그림자",
+  "source": "assets/tiles/avatar_lake/source/rock_raw_01.png",
+  "source_sha256": "3a1a7a5f44a13cdf40f78ebd4952beb6c88ba8a4457dfff16aa0d109a7f64c8d",
+  "source_bbox": [
+    280,
+    728,
+    728,
+    1176
+  ],
+  "scale_src_px_per_game_px": 7.0,
+  "canvas": [
+    64,
+    64
+  ],
+  "stages": [
+    "fixed_crop",
+    "nearest_point_center",
+    "nearest_palette_rgb (E0 14 colours, squared_rgb_first_tie)",
+    "binary_alpha_mask"
+  ],
+  "palette_rgb": [
+    [
+      76,
+      73,
+      113
+    ],
+    [
+      83,
+      78,
+      116
+    ],
+    [
+      92,
+      83,
+      119
+    ],
+    [
+      102,
+      89,
+      121
+    ],
+    [
+      112,
+      93,
+      122
+    ],
+    [
+      130,
+      103,
+      124
+    ],
+    [
+      144,
+      110,
+      125
+    ],
+    [
+      155,
+      117,
+      120
+    ],
+    [
+      164,
+      122,
+      114
+    ],
+    [
+      176,
+      128,
+      108
+    ],
+    [
+      193,
+      133,
+      98
+    ],
+    [
+      210,
+      140,
+      91
+    ],
+    [
+      173,
+      152,
+      136
+    ],
+    [
+      241,
+      162,
+      91
+    ]
+  ],
+  "mask_rule": "v2 기록본 | v3: 크롭 경계에 닿는 암반 면은 통째로 빼고, 어두운 틈으로 완전히 둘러싸이며 역할 핵심에서 6px 안에 있는 면 + 그 면을 감싸는 틈(경계 2px 안쪽)만 남긴다 → 핵심 밖 중간색 12~60px² 구멍. 이전 규칙 기록 — v2: 핵심 구조(M1 가장 긴 어두운 틈+2px, M2 가장 큰 밝은 면+아래 어두운 띠, M3 균열 전부+1px)에서 핵심으로부터 D px 까지만 넓힘(어두운 틈 P00~P02 에서 멈춤, D 는 불투명 45% 가 될 때까지 1부터 늘림) → 핵심 밖 중간색 구역 12~60px² 비움(45% 하한 유지) → 70% 초과 시 핵심에서 먼 픽셀부터 제거. v1(가장자리까지 채운 뒤 2px 테두리 비움)은 bbox 안쪽 2px 에 직선 사각 윤곽을 만들어 불통과했다",
+  "opaque_pixels": 1757,
+  "core_pixels": 731,
+  "checks": {
+    "fill": 0.428955078125,
+    "edge_occupancy": {
+      "top": 0.062,
+      "bottom": 0.453,
+      "left": 0.0,
+      "right": 0.031
+    },
+    "longest_straight_edge": 20,
+    "constant_width_band_rows": 15,
+    "lr_mirror_difference": 0.482,
+    "run_pre_mask": 2.73,
+    "run_post_mask": 2.8,
+    "colours": 14,
+    "pass": {
+      "palette": true,
+      "alpha_binary": true,
+      "fill_45_70": false,
+      "rect_edge_occupancy": false,
+      "straight_edge_le_8": false,
+      "no_constant_band": true,
+      "mixel_pre_mask": true
+    }
+  },
+  "sha256": "9ec60225e7fbfe6611e482b4abc865be5d9c5e1df42905153b332d9dcf614fed",
+  "note": "파생 trial. 승인 runtime 경로와 분리. 이음매 대비 검사는 배치 화면에서 측정해 별도로 기록한다",
+  "script": "build/orch/tiles/macro/derive_macro.py",
+  "judgment": {
+    "result": "NO-GO",
+    "date": "2026-09-21",
+    "stage": "자동 검사",
+    "failed_checks": [
+      "fill_45_70",
+      "rect_edge_occupancy",
+      "straight_edge_le_8"
+    ],
+    "reason": "원본 rock_raw_01 의 암반 면은 1.5배 축척에서 13개 성분뿐이고 가장 큰 성분이 전체 면의 76% 인 하나의 망이다. 어떤 크기의 창에서도 균열로 둘러싸인 면이 45% 이상인 곳이 없다(최대 1~4%). 그래서 패치 윤곽이 크롭 경계(직선)를 따르거나 암반 면 한가운데를 가를 수밖에 없다. 마스크 규칙 v1(테두리 비움)·v2(핵심 거리 성장)·v3(둘러싸인 면만) 모두 사각 외곽·직선 윤곽 검사를 통과하지 못했다",
+    "placed": false
+  }
+}
