@@ -1,4 +1,5 @@
 #include "DebugHud.hpp"
+#include "PixelFont.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -8,26 +9,6 @@
 #include <string_view>
 
 namespace {
-constexpr std::string_view characters="0123456789FPSWORLDXYms|.- VNC";
-// Five bits per row, seven rows; only HUD characters, no font dependency.
-constexpr std::array<std::array<unsigned,7>,24> glyphs{{
- {{14,17,19,21,25,17,14}},{{4,12,4,4,4,4,14}},{{14,17,1,2,4,8,31}},
- {{30,1,1,14,1,1,30}},{{2,6,10,18,31,2,2}},{{31,16,16,30,1,1,30}},
- {{14,16,16,30,17,17,14}},{{31,1,2,4,8,8,8}},{{14,17,17,14,17,17,14}},
- {{14,17,17,15,1,1,14}},{{31,16,16,30,16,16,16}},{{30,17,17,30,16,16,16}},
- {{15,16,16,14,1,1,30}},{{17,17,17,21,21,21,10}},{{14,17,17,17,17,17,14}},
- {{30,17,17,30,20,18,17}},{{16,16,16,16,16,16,31}},{{30,17,17,17,17,17,30}},
- {{17,17,10,4,10,17,17}},{{17,17,10,4,4,4,4}},{{0,0,26,21,21,21,21}},
- {{0,0,15,16,14,1,30}},{{4,4,4,4,4,4,4}},{{0,0,0,0,0,12,12}}
-}};
-std::array<unsigned,7> glyph(char c) {
-    if(c=='V')return {17,17,17,17,17,10,4};
-    if(c=='N')return {17,25,25,21,19,19,17};
-    if(c=='C')return {14,17,16,16,16,17,14};
-    if(c=='-')return {0,0,0,31,0,0,0};
-    if(c==' ')return {};
-    const auto index=characters.find(c);return index<glyphs.size()?glyphs[index]:std::array<unsigned,7>{};
-}
 std::string fixed(double value,int decimals) {
     // Round before formatting so values rounded to zero never display a minus sign.
     const double factor=std::pow(10.,decimals);value=std::round(value*factor)/factor;
@@ -35,8 +16,8 @@ std::string fixed(double value,int decimals) {
     std::ostringstream text;text.imbue(std::locale::classic());text<<std::fixed<<std::setprecision(decimals)<<value;return text.str();
 }
 }
-bool DebugHud::hasGlyph(char c){return characters.find(c)!=std::string_view::npos;}
-bool DebugHud::glyphHasInk(char c){const auto rows=glyph(c);return std::any_of(rows.begin(),rows.end(),[](auto row){return row!=0;});}
+bool DebugHud::hasGlyph(char c){return std::string_view("0123456789FPSWORLDXYms|.- VNC").find(c)!=std::string_view::npos;}
+bool DebugHud::glyphHasInk(char c){const auto rows=PixelFont::glyph(c);return std::any_of(rows.begin(),rows.end(),[](auto row){return row!=0;});}
 void DebugHud::update(double seconds,sf::Vector2f feet,bool vsync) {
     vsync_=vsync;
     world_="WORLD X "+fixed(feet.x,1)+"  Y "+fixed(feet.y,1);
@@ -72,7 +53,7 @@ void DebugHud::render(sf::RenderTarget& target) const {
     const auto performance=performanceText();
     for(const auto* text:{&performance,&world_}){
         unsigned column=0;
-        for(char c:*text){const auto bits=glyph(c);
+        for(char c:*text){const auto bits=PixelFont::glyph(c);
             for(unsigned y=0;y<7;++y)for(unsigned x=0;x<5;++x)if(bits[y]&(1u<<(4-x))){
                 const auto a=bounds.position+sf::Vector2f{(4.f+static_cast<float>(column*6+x))*factor,(4.f+static_cast<float>(row*9+y))*factor};
                 const auto b=a+sf::Vector2f{factor,factor};

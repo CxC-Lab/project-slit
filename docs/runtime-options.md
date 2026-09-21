@@ -44,4 +44,4 @@ VSync OFF는 WGL swap interval 0 + 수동 60FPS 제한, ON은 interval 1 + 수�
 - VSync ON 에서 입력 반응이 약간 둔해진 듯하다는 사용자 체감이 있었다. 아직 계측된 결함이 아니며, 필요해지면 따로 측정한다.
 - 반응성을 우선하면 기본 OFF, 티어링 제거를 원하면 `--vsync` 를 고른다.
 
-인게임 콘솔은 미구현이다.
+CLI 옵션은 시작 설정이다. 실행 중에는 [개발자 콘솔](developer-console.md)의 `drawdebug`와 `vsync`로 같은 공개 API의 상태를 바꿀 수 있다. 콘솔은 물리 Grave 키로 열며 설정을 파일에 저장하지 않는다.

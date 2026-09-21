@@ -1,5 +1,6 @@
 #include "Camera.hpp"
 #include "DebugHud.hpp"
+#include "DevConsole.hpp"
 #include "LaunchOptions.hpp"
 #include "Background.hpp"
 #include "Decorations.hpp"
@@ -136,6 +137,11 @@ int main(int argc, char** argv) try
     playerSprite.setOrigin(idle.clip.pivot());
     playerSprite.setScale({visualScale, visualScale});
     Input input;
+    DevConsole console;
+    const RuntimeControls consoleControls{
+        [&](bool enabled){debugHud.enabled=enabled;},
+        [&](bool enabled){display.setVerticalSync(window,enabled);}
+    };
     sf::Clock hudClock; // Independent real frame duration, including display/capture costs.
     sf::Clock frameClock;
     sf::Clock inputClock;
@@ -152,6 +158,12 @@ int main(int argc, char** argv) try
                 window.setMouseCursorVisible(true);
                 window.close();
                 break;
+            }
+            if(window.hasFocus()) {
+                const bool wasOpen=console.isOpen();
+                const bool consumed=console.handleEvent(*event,consoleControls);
+                if(wasOpen!=console.isOpen())input.reset();
+                if(consumed)continue;
             }
             if (display.handleEvent(*event, window, camera))
             {
@@ -281,6 +293,7 @@ int main(int argc, char** argv) try
         if (showPlayerCollider)
             window.draw(playerShape);
         debugHud.render(window); // Screen space, included in F12 capture below.
+        console.render(window); // Above HUD, included in F12; simulation continues.
         ++renderedFrames;
         if (captureRequested)
         {
