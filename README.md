@@ -146,6 +146,30 @@ Avatar Lake는 가로 열두 화면 세로 열두 화면, 모두 144화면입니
 
 보이는 범위와 그리는 순서를 게임과 같은 코드에서 가져오므로 미리보기와 실제 화면이 어긋나지 않습니다.
 
+## 이 저장소를 만드는 방식
+
+혼자 하는 프로젝트지만 작업은 한 사람이 처음부터 끝까지 손으로 밀지 않습니다. 터미널 한 화면을 세 칸으로 나눠 **Lead - Dev - Reviewer** 역할을 두고, 작업 하나가 같은 순환을 돌게 합니다.
+
+```
+사용자 요청 → Lead(조사·작업서) → Dev(구현·테스트) → Lead(결과 확인)
+           → Reviewer(독립 재현·PASS/FAIL) → 사용자 플레이 판정 → 커밋·푸시
+```
+
+![Lead 화면: Dev 완료를 확인하고 Reviewer 에게 리뷰를 넘기는 중](docs/images/orchestration-lead-pipeline-2026-09-09.webp)
+
+Lead 는 코드를 직접 쓰지 않습니다. 저장소를 읽어 작업서를 만들고, Dev 에게 보내고, 단계마다 무엇이 끝났는지를 표로 세워 둡니다. 완료 판정은 화면을 눈으로 읽는 대신 작업별 완료 파일로 하고, Dev 가 멈추면 감시 스크립트가 알려 줍니다. 위 화면에서는 Dev 가 넘긴 결과를 확인한 뒤, 자기가 직접 짚은 의심 지점(SFML 3 API 시그니처, 점프 한 프레임의 착지 판정)을 리뷰 항목으로 적어 Reviewer 에게 넘기고 있습니다.
+
+![왼쪽 Dev 의 빌드와 변경 확인, 오른쪽 Reviewer 의 PASS 판정](docs/images/orchestration-dev-reviewer-2026-09-09.png)
+
+Reviewer 는 보고를 믿지 않고 직접 빌드와 CTest 를 다시 돌립니다. 저장소 파일을 고치거나 커밋하지 않고, 마지막 줄에 PASS 또는 FAIL 만 남깁니다. FAIL 이면 Dev 로 되돌아가고, PASS 라도 화면에 보이는 것은 사람이 직접 플레이해 판정합니다. 그래서 자동 검사를 통과하고도 폐기된 후보가 여럿 있습니다. 이 저장소의 NO-GO 기록은 대부분 그렇게 남았습니다.
+
+이 구조에서 지키는 규칙은 단순합니다.
+
+- 승격 직전에만 Reviewer 를 한 번 부른다. 후보를 만들 때마다 부르지 않는다.
+- 화면에 보이는 것의 최종 판정은 사람이 한다. 자동 검사는 사람이 볼 가치가 있는지까지만 가린다.
+- 자동 검사를 통과할 수 없으면 기준을 낮추지 말고 그 방향을 NO-GO 로 닫는다.
+- 게임 동작과 공개 데이터 계약이 바뀌는 결정, 되돌리기 어려운 작업만 사람에게 묻는다.
+
 ## 문서 안내
 
 - [`docs/project-brief.md`](docs/project-brief.md): 프로젝트의 방향, 기술적 가설과 열린 질문
@@ -153,6 +177,8 @@ Avatar Lake는 가로 열두 화면 세로 열두 화면, 모두 144화면입니
 - [`docs/animation-policy.md`](docs/animation-policy.md): 플레이어 스프라이트 제작과 이동 애니메이션 정책
 - [`docs/background-asset-contract.md`](docs/background-asset-contract.md): 시차 배경 레이어 이미지의 제작 규격
 - [`docs/decisions/`](docs/decisions/README.md): 중요한 기술 결정의 ADR 기록 방식
+- [`docs/runtime-options.md`](docs/runtime-options.md): 실행 인자와 조작 키, VSync 선택
+- [`docs/developer-console.md`](docs/developer-console.md): 실행 중 디버그 HUD 와 VSync 를 바꾸는 개발자 콘솔
 - [`experiments/`](experiments/README.md): 독립적인 기술 실험의 계획과 결과
 - [`src/`](src): 현재 이동 프로토타입 구현
 - [`assets/regions/`](assets/regions): 지역의 경계와 발판 배치. 고친 뒤 다시 실행하면 바로 반영됩니다
